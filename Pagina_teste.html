@@ -143,7 +143,12 @@ const btnToggleOnline = document.getElementById("btnToggleOnline");
 
 /** ====== Util ====== */
 function qsParam(name){ return new URLSearchParams(location.search).get(name); }
-function escapeHtml(s){ if(!s) return ""; return s.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&gt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); } // &gt; duplicated intentionally handled below
+function escapeHtml(s){
+  if(!s) return "";
+  return s.replace(/[&<>"']/g, ch => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  })[ch]);
+}
 function gerarCor(nome){ let h=0; for(const c of (nome||"U")) h=c.charCodeAt(0)+((h<<5)-h); return `hsl(${h%360},70%,60%)`; }
 function keyLocal(){ return `cz:tickets:${agente.codigo}:${agente.carteira}`; }
 function saveTickets(){ localStorage.setItem(keyLocal(), JSON.stringify(tickets)); }
@@ -190,15 +195,23 @@ async function boot(){
 
     await verificarOnline();
 
-    loadTickets();
+    try{
+      const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
+      const r = await fetch(url);
+      if (r.ok) {
+        tickets = await r.json();
+        saveTickets(); // opcional, mantém no storage
+      }
+    }catch(_){}
+
     renderTickets();
 
+    // polling de ordem (se quiser manter para UI/preview)
     if(pollingContatos) clearInterval(pollingContatos);
     pollingContatos = setInterval(refreshOrdemCarteira, 5000);
     await refreshOrdemCarteira();
 
     if(!tickets.length) btnPegarProxima.disabled = !agente.online;
-
   }catch(e){
     elMsgAviso.classList.remove("hidden");
     elMsgAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
@@ -284,20 +297,53 @@ btnToggleOnline.onclick = async () => {
 };
 
 /** ====== Distribuição local ====== */
-btnPegarProxima.onclick = () => {
-  if(!agente.online) { alert("Você está offline. Clique em “Ficar online” primeiro."); return; }
-  const jaTenho = new Set(tickets.map(t => t.remetente));
-  const proxima = ordemCache.find(c => !jaTenho.has(c.remetente));
-  if(!proxima){ alert("Não há novas conversas disponíveis nesta carteira."); return; }
-  tickets.unshift(proxima); saveTickets(); renderTickets(); abrirTicket(proxima);
+btnPegarProxima.onclick = async () => {
+  if(!agente.online){ alert("Você está offline. Clique em “Ficar online”."); return; }
+  try{
+    const r = await fetch(`${CONV_API}/api/tickets/claim`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        codigo_do_agente: parseInt(agente.codigo,10),
+        carteira: agente.carteira
+      })
+    });
+    const j = await r.json();
+    if(!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
+
+    // evita duplicar localmente
+    if(!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)){
+      tickets.unshift(j.ticket);
+      saveTickets();
+    }
+    renderTickets();
+    abrirTicket(j.ticket);
+  }catch(e){
+    alert("Falha ao pegar próxima.");
+  }
 };
 
-btnLiberar.onclick = () => {
+
+btnLiberar.onclick = async () => {
   if(!selecionado) return;
-  tickets = tickets.filter(t => t.remetente !== selecionado.remetente);
-  saveTickets(); renderTickets(); limparChat();
-  elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true;
+  try{
+    const r = await fetch(`${CONV_API}/api/tickets/liberar`, {
+      method: "DELETE",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        codigo_do_agente: parseInt(agente.codigo,10),
+        remetente: selecionado.remetente,
+        phone_id: selecionado.phone_id
+      })
+    });
+    const j = await r.json();
+    if(!r.ok || !j.ok){ alert(j.erro || "Não foi possível liberar."); return; }
+    tickets = tickets.filter(t => !(t.remetente===selecionado.remetente && t.phone_id===selecionado.phone_id));
+    saveTickets(); renderTickets(); limparChat();
+    elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true;
+  }catch(e){ alert("Erro ao liberar."); }
 };
+
 
 /** ====== Logout ====== */
 btnLogout.onclick = async () => {
