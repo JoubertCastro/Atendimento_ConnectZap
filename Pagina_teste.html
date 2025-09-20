@@ -62,7 +62,19 @@
       <div id="subInfo" class="text-sm text-gray-500 truncate"></div>
     </div>
     <div class="flex items-center gap-2">
-      <button id="btnLiberar" class="px-3 py-2 text-sm bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50" disabled>Liberar</button>
+      <button id="btnLiberar"
+              class="px-3 py-2 text-sm bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50"
+              disabled>Liberar</button>
+
+      <div class="relative">
+        <button id="btnConcluir"
+                class="px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+                disabled>Concluir</button>
+
+        <div id="menuConcluir"
+            class="hidden absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-20">
+        </div>
+      </div>
     </div>
   </div>
 
@@ -137,9 +149,59 @@ const textarea = document.getElementById("textoMensagem");
 const btnEnviar = document.getElementById("btnEnviar");
 const btnPegarProxima = document.getElementById("btnPegarProxima");
 const btnLiberar = document.getElementById("btnLiberar");
+const btnConcluir = document.getElementById("btnConcluir");
+const menuConcluir = document.getElementById("menuConcluir");
 const digitando = document.getElementById("digitando");
 const btnLogout = document.getElementById("btnLogout");
 const btnToggleOnline = document.getElementById("btnToggleOnline");
+const MOTIVOS_CONCLUSAO = [
+  "Realizou negociação",
+  "Solicitou 2ª via de boleto",
+  "Recusou a proposta",
+  "Dúvidas gerais",
+  "Cliente ficou inativo",
+];
+
+function renderMenuConcluir() {
+  menuConcluir.innerHTML = MOTIVOS_CONCLUSAO.map(m => `
+    <button type="button"
+            data-motivo="${m}"
+            class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50">
+      ${m}
+    </button>
+  `).join("");
+  // handler de clique em cada motivo
+  menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => {
+    btn.onclick = async () => {
+      const motivo = btn.getAttribute("data-motivo");
+      await concluirAtendimento(motivo);
+      fecharMenuConcluir();
+    };
+  });
+}
+
+function abrirMenuConcluir() {
+  if (!selecionado || btnConcluir.disabled) return;
+  menuConcluir.classList.remove("hidden");
+  // clique-fora para fechar
+  document.addEventListener("click", clickForaMenuConcluir, { capture: true });
+}
+function fecharMenuConcluir() {
+  menuConcluir.classList.add("hidden");
+  document.removeEventListener("click", clickForaMenuConcluir, { capture: true });
+}
+function clickForaMenuConcluir(e) {
+  const within = menuConcluir.contains(e.target) || btnConcluir.contains(e.target);
+  if (!within) fecharMenuConcluir();
+}
+
+btnConcluir.onclick = () => {
+  if (menuConcluir.classList.contains("hidden")) abrirMenuConcluir();
+  else fecharMenuConcluir();
+};
+
+// chama no boot
+renderMenuConcluir();
 
 /** ====== Util ====== */
 function qsParam(name){ return new URLSearchParams(location.search).get(name); }
@@ -340,10 +402,9 @@ btnLiberar.onclick = async () => {
     if(!r.ok || !j.ok){ alert(j.erro || "Não foi possível liberar."); return; }
     tickets = tickets.filter(t => !(t.remetente===selecionado.remetente && t.phone_id===selecionado.phone_id));
     saveTickets(); renderTickets(); limparChat();
-    elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true;
+    elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
   }catch(e){ alert("Erro ao liberar."); }
 };
-
 
 /** ====== Logout ====== */
 btnLogout.onclick = async () => {
@@ -409,7 +470,7 @@ async function abrirTicket(t){
   renderTickets();
   elTitulo.textContent = t.nome_exibicao ? `${t.nome_exibicao} (${t.remetente})` : t.remetente;
   elSubInfo.textContent = `conta: ${phoneIdMap[t.phone_id]||t.phone_id}`;
-  textarea.disabled = false; textarea.focus(); btnEnviar.disabled = true; btnLiberar.disabled = false;
+  textarea.disabled = false; textarea.focus(); btnEnviar.disabled = true; btnLiberar.disabled = false; btnConcluir.disabled = false;
 
   lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); chat.innerHTML = "";
 
@@ -420,6 +481,45 @@ async function abrirTicket(t){
     if(!userTyping && !isModalOpen && selecionado) carregarMensagens(true);
   }, 5000);
 }
+
+async function concluirAtendimento(motivo) {
+  if (!selecionado) return;
+  try {
+    btnConcluir.disabled = true;
+
+    const r = await fetch(`${CONV_API}/api/tickets/concluir`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        codigo_do_agente: parseInt(agente.codigo, 10),
+        remetente: selecionado.remetente,
+        phone_id: selecionado.phone_id,
+        motivo
+      })
+    });
+    const j = await r.json();
+    if (!r.ok || !j.ok) {
+      alert(j.erro || "Não foi possível concluir.");
+      btnConcluir.disabled = false;
+      return;
+    }
+
+    // remove da lista e limpa UI
+    tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
+    saveTickets();
+    renderTickets();
+    limparChat();
+    elTitulo.textContent = "Selecione um ticket";
+    elSubInfo.textContent = "";
+    btnLiberar.disabled = true;
+    btnConcluir.disabled = true;
+    selecionado = null;
+  } catch (e) {
+    alert("Erro ao concluir.");
+    btnConcluir.disabled = false;
+  }
+}
+
 
 /** ====== Chat ====== */
 textarea.addEventListener("input", () => {
