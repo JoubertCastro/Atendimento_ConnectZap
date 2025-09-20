@@ -25,14 +25,20 @@
 <!-- Sidebar: Minhas conversas -->
 <aside class="w-1/3 lg:w-1/4 bg-white border-r flex flex-col">
   <div class="p-3 border-b">
-    <div class="flex items-center justify-between">
-      <div>
+    <div class="flex items-center justify-between gap-2">
+      <div class="min-w-0">
         <div class="text-xs text-gray-500">Agente</div>
         <div id="agenteNome" class="font-semibold truncate">—</div>
         <div class="text-xs text-gray-500">Carteira: <span id="agenteCarteira">—</span></div>
         <div class="text-xs text-gray-500">Status: <span id="agenteStatus"><span class="dot offline"></span>Offline</span></div>
       </div>
-      <button id="btnPegarProxima" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">Pegar próxima</button>
+      <div class="flex flex-col items-end gap-2">
+        <!-- ✅ Novo: Toggle Online/Offline -->
+        <button id="btnToggleOnline" class="px-3 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50" disabled>Ficar online</button>
+        <button id="btnPegarProxima" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50" disabled>Pegar próxima</button>
+        <!-- Logout -->
+        <button id="btnLogout" class="px-3 py-1 text-xs bg-gray-100 rounded-md hover:bg-gray-200">Logout</button>
+      </div>
     </div>
     <div id="msgAviso" class="mt-2 text-xs text-amber-600 hidden"></div>
   </div>
@@ -90,8 +96,10 @@
 /** ====== Config de APIs ====== */
 const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/,'');
 const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/,'');
+// (Opcional) redirecionar após logout:
+const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
 
-/** ====== Mapeamento carteira -> phone_id (igual ao seu front atual) ====== */
+/** ====== Mapeamento carteira -> phone_id ====== */
 const phoneIdMap = {
   "732661079928516": "ConnectZap",
   "727586317113885": "Recovery PJ",
@@ -106,8 +114,8 @@ const carteiraToPhoneId = Object.fromEntries(Object.entries(phoneIdMap).map(([id
 
 /** ====== Estado ====== */
 let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
-let tickets = [];              // minhas conversas (array de contatos)
-let selecionado = null;        // contato selecionado (obj)
+let tickets = [];              // minhas conversas
+let selecionado = null;        // contato atual
 let renderedKeys = new Set();  // dedupe no chat
 let lastTimestampMs = null;
 let lastDayRendered = null;
@@ -130,29 +138,44 @@ const btnEnviar = document.getElementById("btnEnviar");
 const btnPegarProxima = document.getElementById("btnPegarProxima");
 const btnLiberar = document.getElementById("btnLiberar");
 const digitando = document.getElementById("digitando");
+const btnLogout = document.getElementById("btnLogout");
+const btnToggleOnline = document.getElementById("btnToggleOnline");
 
 /** ====== Util ====== */
 function qsParam(name){ return new URLSearchParams(location.search).get(name); }
-function escapeHtml(s){ if(!s) return ""; return s.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+function escapeHtml(s){ if(!s) return ""; return s.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&gt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); } // &gt; duplicated intentionally handled below
 function gerarCor(nome){ let h=0; for(const c of (nome||"U")) h=c.charCodeAt(0)+((h<<5)-h); return `hsl(${h%360},70%,60%)`; }
 function keyLocal(){ return `cz:tickets:${agente.codigo}:${agente.carteira}`; }
 function saveTickets(){ localStorage.setItem(keyLocal(), JSON.stringify(tickets)); }
 function loadTickets(){ try{ tickets = JSON.parse(localStorage.getItem(keyLocal())||"[]")||[]; }catch{ tickets=[]; } }
-function setStatus(online){ elAgenteStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline'; agente.online = !!online; btnPegarProxima.disabled = !online; }
+function setStatus(online){
+  elAgenteStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
+  agente.online = !!online;
+  btnPegarProxima.disabled = !online;
+  btnToggleOnline.disabled = false;
+  // troca estilo/label do botão
+  if(agente.online){
+    btnToggleOnline.textContent = "Ficar offline";
+    btnToggleOnline.classList.remove("bg-green-600","hover:bg-green-700");
+    btnToggleOnline.classList.add("bg-gray-100");
+    btnToggleOnline.classList.remove("text-white");
+  }else{
+    btnToggleOnline.textContent = "Ficar online";
+    btnToggleOnline.classList.add("bg-green-600","text-white","hover:bg-green-700");
+    btnToggleOnline.classList.remove("bg-gray-100");
+  }
+}
 
-/** ====== Boot: resolve agente ====== */
+/** ====== Boot ====== */
 async function boot(){
-  // tenta localStorage
   agente.codigo  = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
   agente.origem  = localStorage.getItem("agente_origem") || qsParam("origem") || null;
 
   if(!agente.codigo){
     const cod = prompt("Informe seu código de agente:");
-    if(!cod) return;
-    agente.codigo = String(parseInt(cod,10));
+    if(!cod) return; agente.codigo = String(parseInt(cod,10));
   }
 
-  // busca agente
   try{
     const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(agente.codigo)}`);
     const j = await r.json();
@@ -165,19 +188,15 @@ async function boot(){
     elAgenteNome.textContent = `${agente.nome} (#${agente.codigo})`;
     elAgenteCarteira.textContent = agente.carteira;
 
-    // checa se está online na carteira
     await verificarOnline();
 
-    // carrega minhas conversas salvas
     loadTickets();
     renderTickets();
 
-    // inicia polling de contatos (para “pegar próxima” com base na ordem)
     if(pollingContatos) clearInterval(pollingContatos);
     pollingContatos = setInterval(refreshOrdemCarteira, 5000);
     await refreshOrdemCarteira();
 
-    // atalho: se não tiver conversa, habilita “Pegar próxima”
     if(!tickets.length) btnPegarProxima.disabled = !agente.online;
 
   }catch(e){
@@ -194,16 +213,15 @@ async function verificarOnline(){
     setStatus(achou);
     if(!achou){
       elMsgAviso.classList.remove("hidden");
-      elMsgAviso.textContent = "Você está OFFLINE nesta carteira. Entre online na tela Atendimento para distribuir conversas.";
+      elMsgAviso.textContent = "Você está OFFLINE nesta carteira. Use “Ficar online” para entrar na fila.";
     }else{
-      elMsgAviso.classList.add("hidden");
-      elMsgAviso.textContent = "";
+      elMsgAviso.classList.add("hidden"); elMsgAviso.textContent = "";
     }
   }catch(e){ setStatus(false); }
 }
 
-/** ====== “Ordem lógica” por carteira (somente leitura) ====== */
-let ordemCache = []; // contatos da carteira ordenados
+/** ====== Ordem por carteira ====== */
+let ordemCache = [];
 async function refreshOrdemCarteira(){
   const phoneId = carteiraToPhoneId[agente.carteira];
   if(!phoneId) return;
@@ -211,45 +229,105 @@ async function refreshOrdemCarteira(){
     const res = await fetch(`${CONV_API}/api/conversas/contatos`);
     const contatos = await res.json();
     const filtrados = (contatos||[]).filter(c => c.phone_id === phoneId);
-    // inbound primeiro, ordena por data_hora desc
     filtrados.sort((a,b) => {
       const ai = a.status === 'in', bi = b.status === 'in';
-      if(ai!==bi) return bi - ai; // in vem antes
+      if(ai!==bi) return bi - ai;
       return new Date(b.data_hora) - new Date(a.data_hora);
     });
     ordemCache = filtrados;
-  }catch(e){
-    console.error("Falha ao atualizar ordem", e);
-  }
+  }catch(e){ console.error("Falha ao atualizar ordem", e); }
 }
+
+/** ====== Toggle Online/Offline ====== */
+btnToggleOnline.onclick = async () => {
+  if(!agente.carteira || !agente.codigo) return;
+  elMsgAviso.classList.add("hidden"); elMsgAviso.textContent = "";
+
+  if(!agente.online){
+    // -> Ficar online
+    try{
+      const r = await fetch(`${FILA_API}/fila/online`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          codigo_do_agente: parseInt(agente.codigo,10),
+          carteira: agente.carteira
+        })
+      });
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.erro||"Erro ao entrar online");
+      setStatus(true);
+      await refreshOrdemCarteira();
+    }catch(e){
+      elMsgAviso.classList.remove("hidden");
+      elMsgAviso.textContent = (e?.message||"Falha ao entrar online");
+    }
+  }else{
+    // -> Ficar offline
+    try{
+      const r = await fetch(`${FILA_API}/fila/offline`, {
+        method:"DELETE",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          codigo_do_agente: parseInt(agente.codigo,10),
+          carteira: agente.carteira
+        })
+      });
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.erro||"Erro ao ficar offline");
+      setStatus(false);
+    }catch(e){
+      elMsgAviso.classList.remove("hidden");
+      elMsgAviso.textContent = (e?.message||"Falha ao ficar offline");
+    }
+  }
+};
 
 /** ====== Distribuição local ====== */
 btnPegarProxima.onclick = () => {
-  if(!agente.online) { alert("Você está offline. Vá para Atendimento e fique online."); return; }
+  if(!agente.online) { alert("Você está offline. Clique em “Ficar online” primeiro."); return; }
   const jaTenho = new Set(tickets.map(t => t.remetente));
   const proxima = ordemCache.find(c => !jaTenho.has(c.remetente));
-  if(!proxima){
-    alert("Não há novas conversas disponíveis nesta carteira.");
-    return;
-  }
-  tickets.unshift(proxima);
-  saveTickets();
-  renderTickets();
-  abrirTicket(proxima);
+  if(!proxima){ alert("Não há novas conversas disponíveis nesta carteira."); return; }
+  tickets.unshift(proxima); saveTickets(); renderTickets(); abrirTicket(proxima);
 };
 
 btnLiberar.onclick = () => {
   if(!selecionado) return;
   tickets = tickets.filter(t => t.remetente !== selecionado.remetente);
-  saveTickets();
-  renderTickets();
-  limparChat();
-  elTitulo.textContent = "Selecione um ticket";
-  elSubInfo.textContent = "";
-  btnLiberar.disabled = true;
+  saveTickets(); renderTickets(); limparChat();
+  elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true;
 };
 
-/** ====== Renderização da lista de tickets ====== */
+/** ====== Logout ====== */
+btnLogout.onclick = async () => {
+  try{
+    await fetch(`${FILA_API}/fila/offline`, {
+      method:"DELETE",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo,10), carteira: agente.carteira })
+    }).catch(()=>{});
+  }catch(_){} // ignore
+
+  try{
+    localStorage.removeItem("agente_codigo");
+    localStorage.removeItem("agente_nome");
+    localStorage.removeItem("agente_carteira");
+    localStorage.removeItem("agente_origem");
+    Object.keys(localStorage).forEach(k => { if(k.startsWith("cz:tickets:")) localStorage.removeItem(k); });
+  }catch(_){}
+
+  if(pollingContatos) clearInterval(pollingContatos);
+  if(pollingMensagens) clearInterval(pollingMensagens);
+  setStatus(false);
+  tickets = []; renderTickets(); limparChat();
+  elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true;
+
+  if(LOGOUT_REDIRECT){ window.location.href = LOGOUT_REDIRECT; }
+  else { window.location.reload(); }
+};
+
+/** ====== Lista de tickets ====== */
 function renderTickets(filtro=""){
   const q = (filtro||"").toLowerCase().trim();
   elListaTickets.innerHTML = "";
@@ -279,7 +357,7 @@ function renderTickets(filtro=""){
 }
 function filtrarTickets(v){ renderTickets(v); }
 
-/** ====== Abrir chat do ticket ====== */
+/** ====== Abrir chat ====== */
 async function abrirTicket(t){
   selecionado = t;
   renderTickets();
@@ -287,11 +365,7 @@ async function abrirTicket(t){
   elSubInfo.textContent = `conta: ${phoneIdMap[t.phone_id]||t.phone_id}`;
   textarea.disabled = false; textarea.focus(); btnEnviar.disabled = true; btnLiberar.disabled = false;
 
-  // reset chat
-  lastTimestampMs = null;
-  lastDayRendered = null;
-  renderedKeys.clear();
-  chat.innerHTML = "";
+  lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); chat.innerHTML = "";
 
   await carregarMensagens(false);
 
@@ -301,7 +375,7 @@ async function abrirTicket(t){
   }, 5000);
 }
 
-/** ====== Chat (carregar, enviar, PDF, mídia) ====== */
+/** ====== Chat ====== */
 textarea.addEventListener("input", () => {
   textarea.style.height = "auto";
   textarea.style.height = textarea.scrollHeight + "px";
@@ -336,19 +410,14 @@ function renderMsg(m, incremental){
   if(renderedKeys.has(key)) return;
   if(incremental && lastTimestampMs!==null && tMs<=lastTimestampMs) return;
 
-  // separador de dia
   const dia = new Date(m.data_hora).toLocaleDateString("pt-BR", { timeZone:"America/Sao_Paulo" });
   if(!lastDayRendered || lastDayRendered!==dia){
-    const sep = document.createElement("div");
-    sep.className = "dia";
-    sep.textContent = `— ${dia} —`;
-    chat.appendChild(sep);
-    lastDayRendered = dia;
+    const sep = document.createElement("div"); sep.className = "dia"; sep.textContent = `— ${dia} —`;
+    chat.appendChild(sep); lastDayRendered = dia;
   }
 
   const hora = new Date(m.data_hora).toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit", timeZone:"America/Sao_Paulo"});
-  const div = document.createElement("div");
-  div.className = `msg ${m.status==='in'?'recebida':'enviada'}`;
+  const div = document.createElement("div"); div.className = `msg ${m.status==='in'?'recebida':'enviada'}`;
 
   if(m.tipo==="imagem" || m.mensagem_final==="[image]"){
     div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div>
@@ -365,13 +434,16 @@ function renderMsg(m, incremental){
     if(!m.msg_id){ btn.disabled=true; btn.textContent="Áudio indisponível"; }
     else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
   }else if(m.tipo==="emoji" || m.mensagem_final==="[reaction]"){
-    const wrap = document.createElement("div");
-    wrap.className = "flex items-center gap-2";
+    const wrap = document.createElement("div"); wrap.className = "flex items-center gap-2";
     const emojiEl = document.createElement("span"); emojiEl.className="text-2xl"; emojiEl.textContent="🙂";
     const label = document.createElement("span"); label.className="text-gray-600 italic"; label.textContent="enviou um emote";
     wrap.appendChild(emojiEl); wrap.appendChild(label); div.appendChild(wrap);
     const horaSpan = document.createElement("span"); horaSpan.className="hora"; horaSpan.textContent=hora; div.appendChild(horaSpan);
-    if(m.msg_id){ fetch(`${CONV_API}/api/conversas/emoji/${encodeURIComponent(m.msg_id)}`).then(r=>r.json()).then(j=>{ if(j.ok&&j.emoji) emojiEl.textContent=j.emoji; else label.textContent="emoji não carregado"; }).catch(()=>label.textContent="falha ao carregar emoji"); }
+    if(m.msg_id){
+      fetch(`${CONV_API}/api/conversas/emoji/${encodeURIComponent(m.msg_id)}`)
+        .then(r=>r.json()).then(j=>{ if(j.ok&&j.emoji) emojiEl.textContent=j.emoji; else label.textContent="emoji não carregado"; })
+        .catch(()=>label.textContent="falha ao carregar emoji");
+    }
   }else{
     div.innerHTML = `<div>${escapeHtml(m.mensagem_final||"")}</div><span class="hora">${hora}</span>`;
   }
@@ -397,8 +469,7 @@ async function carregarImagem(div, btn, msg_id){
       const img = document.createElement("img");
       img.src = j.data_uri; img.alt="Imagem"; img.className="mt-2 rounded-lg max-w-[150px] border cursor-pointer";
       img.onclick = () => abrirModalImagem(j.data_uri);
-      div.insertBefore(img, btn);
-      btn.remove();
+      div.insertBefore(img, btn); btn.remove();
     }else throw new Error(j.erro||"Resposta inválida");
   }catch{ alert("Erro ao carregar imagem"); btn.disabled=false; btn.textContent="👁 Ver imagem"; }
 }
@@ -410,8 +481,7 @@ async function carregarAudio(div, btn, msg_id){
     if(j.ok && j.data_uri){
       const audio = document.createElement("audio");
       audio.src = j.data_uri; audio.controls = true; audio.className="mt-2 w-full max-w-xs";
-      div.insertBefore(audio, btn);
-      btn.remove();
+      div.insertBefore(audio, btn); btn.remove();
     }else throw new Error(j.erro||"Resposta inválida");
   }catch{ alert("Erro ao carregar áudio"); btn.disabled=false; btn.textContent="▶ Reproduzir áudio"; }
 }
@@ -480,10 +550,8 @@ function fecharModal(){ imageModal.classList.add("hidden"); modalImg.src=""; isM
 /** ====== Helpers visuais ====== */
 function limparChat(){ chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>'; }
 
-/** ====== Eventos ====== */
-document.getElementById("buscaTicket").addEventListener("input", e => filtrarTickets(e.target.value));
-
 /** ====== Init ====== */
+document.getElementById("buscaTicket").addEventListener("input", e => filtrarTickets(e.target.value));
 boot();
 </script>
 </body>
