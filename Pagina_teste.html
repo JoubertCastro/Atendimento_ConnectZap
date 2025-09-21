@@ -6,75 +6,120 @@
 <title>ConnectZap — Distribuição</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  /* ===================== THEME VARS (novas) ===================== */
+  /* ========== Variáveis e Temas ========== */
   :root{
-    --bg: #f3f4f6;                 /* fundo do chat */
-    --wallpaper: none;             /* url(...) se escolher papel */
-    --bubble-in: #ffffff;          /* recebidas */
-    --bubble-out: #dcf8c6;         /* enviadas */
-    --text: #111827;
-    --muted: #6b7280;
-    --radius: 18px;
-    --pad-v: 10px;                 /* densidade vertical */
-    --pad-h: 14px;                 /* densidade horizontal */
-    --shadow: 0 1px 2px rgba(0,0,0,.08);
+    --app-bg:#f3f4f6;           /* fundo da página */
+    --card-bg:#ffffff;          /* cartões/headers */
+    --text:#111827;             /* texto principal */
+    --muted:#6b7280;            /* texto secundário */
+    --divider:#e5e7eb;          /* linhas/bordas */
+    --accent:#2563eb;           /* azul padrão */
+    --chat-bg:#f9fafb;          /* fundo do chat */
+    --bubble-in:#ffffff;        /* recebida */
+    --bubble-in-border:#e5e7f0; /* borda recebida */
+    --bubble-out-1:#dcf8c6;     /* enviada gradiente */
+    --bubble-out-2:#b8f0a4;
   }
 
-  .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px}
-
-  /* ====== chat background melhorado (mantém classe original) ====== */
-  .chat-enhanced-bg{
-    background: var(--bg);
-    background-image: var(--wallpaper);
-    background-size: cover; background-position: center;
+  /* Tema escuro */
+  .theme-dark{
+    --app-bg:#0f172a;
+    --card-bg:#0b1220;
+    --text:#e5e7eb;
+    --muted:#94a3b8;
+    --divider:#1f2937;
+    --accent:#22c55e;
+    --chat-bg:#0f172a;
+    --bubble-in:#111827;
+    --bubble-in-border:#374151;
+    --bubble-out-1:#134e4a;
+    --bubble-out-2:#065f46;
   }
 
-  /* ====== bolhas ====== */
+  /* Tema azul */
+  .theme-blue{
+    --app-bg:#eef2ff;
+    --card-bg:#ffffff;
+    --text:#0f172a;
+    --muted:#475569;
+    --divider:#e2e8f0;
+    --accent:#2563eb;
+    --chat-bg:#f1f5ff;
+    --bubble-in:#ffffff;
+    --bubble-in-border:#e2e8f0;
+    --bubble-out-1:#dbeafe;
+    --bubble-out-2:#bfdbfe;
+  }
+
+  /* Tema verde */
+  .theme-green{
+    --app-bg:#ecfdf5;
+    --card-bg:#ffffff;
+    --text:#064e3b;
+    --muted:#166534;
+    --divider:#d1fae5;
+    --accent:#16a34a;
+    --chat-bg:#f0fdf4;
+    --bubble-in:#ffffff;
+    --bubble-in-border:#d1fae5;
+    --bubble-out-1:#dcfce7;
+    --bubble-out-2:#bbf7d0;
+  }
+
+  /* Alto contraste */
+  .theme-contrast{
+    --app-bg:#000000;
+    --card-bg:#0a0a0a;
+    --text:#ffffff;
+    --muted:#e5e5e5;
+    --divider:#2e2e2e;
+    --accent:#ffb703;
+    --chat-bg:#000000;
+    --bubble-in:#111111;
+    --bubble-in-border:#333333;
+    --bubble-out-1:#1f2937;
+    --bubble-out-2:#111827;
+  }
+
+  /* Padrões de papel de parede (aplicados no #chat) */
+  #chat{ background: var(--chat-bg) !important; }
+  .wall-none{ background-image:none !important; }
+  .wall-dots{
+    background-image:
+      radial-gradient(#00000014 1px, transparent 1px) !important;
+    background-size: 18px 18px !important;
+  }
+  .wall-grid{
+    background-image:
+      linear-gradient(#00000010 1px, transparent 1px),
+      linear-gradient(90deg, #00000010 1px, transparent 1px) !important;
+    background-size: 22px 22px !important;
+  }
+  .wall-paper{
+    background-image:
+      radial-gradient(#00000007 1px, transparent 1px),
+      linear-gradient(0deg, #fef8e7, #fffdf4) !important;
+    background-size: 22px 22px, auto !important;
+  }
+
+  /* ========== Estilos originais (agora usando variáveis) ========== */
+  body{ background:var(--app-bg); color:var(--text); }
+
+  .card{background:var(--card-bg);border:1px solid var(--divider);border-radius:16px}
   .msg{
-    max-width:70%;
-    padding: calc(var(--pad-v)) calc(var(--pad-h)) 24px calc(var(--pad-h));
-    border-radius:var(--radius);
-    margin:4px 0; position:relative;
-    white-space:pre-wrap; word-wrap:break-word;
-    box-shadow: var(--shadow);
-    font-size:14px; line-height:1.35;
+    max-width:70%;padding:10px 14px 24px;border-radius:18px;margin:4px 0;position:relative;
+    white-space:pre-wrap;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,.08)
   }
   .msg.enviada{
-    background: var(--bubble-out);
-    align-self:flex-end; color: var(--text);
-    border-top-right-radius: 8px;
+    background:linear-gradient(120deg,var(--bubble-out-1),var(--bubble-out-2));
+    align-self:flex-end
   }
   .msg.recebida{
-    background:#fff; /* compat */
-    background: var(--bubble-in);
-    align-self:flex-start; color: var(--text);
-    border:1px solid #e5e7f0;
-    border-top-left-radius: 8px;
+    background:var(--bubble-in);
+    align-self:flex-start;
+    border:1px solid var(--bubble-in-border)
   }
-
-  /* caudas (podem ser desligadas no painel de tema) */
-  .msg.tail.enviada::after,
-  .msg.tail.recebida::after{
-    content:""; position:absolute; bottom:0; width:18px; height:18px; background: inherit;
-  }
-  .msg.tail.enviada::after{
-    right:-6px; border-bottom-left-radius:14px; transform: translateY(-2px) rotate(45deg);
-    box-shadow: 2px 2px 0 rgba(0,0,0,.03);
-  }
-  .msg.tail.recebida::after{
-    left:-6px; border-bottom-right-radius:14px; transform: translateY(-2px) rotate(-45deg);
-    box-shadow: -2px 2px 0 rgba(0,0,0,.03);
-    border-left: 1px solid rgba(0,0,0,.04);
-    border-bottom: 1px solid rgba(0,0,0,.04);
-  }
-
-  /* agrupamento visual (mesmo lado em <=5min) */
-  .msg.joined-prev.enviada{ border-top-right-radius: 6px; }
-  .msg.joined-prev.recebida{ border-top-left-radius: 6px; }
-  .msg.joined-next.enviada{ border-bottom-right-radius: 6px; }
-  .msg.joined-next.recebida{ border-bottom-left-radius: 6px; }
-
-  .msg .hora{font-size:11px;color:#555;position:absolute;bottom:4px;right:8px; display:flex; align-items:center; gap:6px}
+  .msg .hora{font-size:11px;color:#555;position:absolute;bottom:4px;right:8px}
   .msg .btn-responder{position:absolute;top:6px;right:6px;font-size:14px;color:#4b5563;opacity:0;transition:opacity .2s}
   .msg.recebida:hover .btn-responder{opacity:1}
   .dia{text-align:center;margin:12px 0;font-size:12px;color:#888}
@@ -83,42 +128,30 @@
   .dot{width:10px;height:10px;border-radius:9999px;display:inline-block;margin-right:6px}
   .dot.online{background:#16a34a}.dot.offline{background:#9ca3af}
 
-  /* checkmarks (se m.ack vier do backend) */
-  .acks{ font-size:0; line-height:0; display:inline-flex; gap:2px; }
-  .ack{ width:14px; height:14px; display:inline-block; background:currentColor;
-    -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="black" d="M7.629 14.571 2.3 9.243l1.4-1.4 3.929 3.928 8.242-8.243 1.4 1.4z"/></svg>') no-repeat center / 100% 100%;
-    mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="black" d="M7.629 14.571 2.3 9.243l1.4-1.4 3.929 3.928 8.242-8.243 1.4 1.4z"/></svg>') no-repeat center / 100% 100%;
+  /* Dropdown de Tema */
+  .theme-chip{
+    display:flex;align-items:center;gap:.5rem;
+    border:1px solid var(--divider);border-radius:.6rem;padding:.45rem .6rem;cursor:pointer;background:#fff
   }
-  .acks.sent .ack{ color:#94a3b8; }       /* ✓ */
-  .acks.delivered .ack{ color:#60a5fa; }  /* ✓✓ */
-  .acks.read .ack{ color:#3b82f6; }       /* ✓✓ azul */
-
-  /* media bubbles */
-  .media{ display:flex; flex-direction:column; gap:6px; }
-  .media img{ display:block; max-width:280px; border-radius:12px; border:1px solid rgba(0,0,0,.06); cursor:pointer; }
-
-  .audio-wrap{ display:flex; align-items:center; gap:10px; min-width:220px; }
-  .audio-badge{ width:36px; height:36px; border-radius:50%; background:rgba(0,0,0,.08); display:flex; align-items:center; justify-content:center; font-weight:700; }
-  audio{ width:200px; }
-
-  /* botão flutuante de rolar */
-  #scrollBottom{ position:absolute; right:18px; bottom:18px; z-index:5; display:none; }
+  .swatch{width:18px;height:18px;border-radius:999px;border:1px solid #e5e7eb}
+  .wall-chip{border:1px solid var(--divider);border-radius:.6rem;padding:.35rem .6rem;background:#fff;cursor:pointer}
+  .chip-selected{outline:2px solid var(--accent)}
 </style>
 </head>
-<body class="h-screen flex bg-gray-100">
+<body class="h-screen flex">
 
 <!-- Sidebar: Minhas conversas -->
-<aside class="w-1/3 lg:w-1/4 bg-white border-r flex flex-col">
-  <div class="p-3 border-b">
+<aside class="w-1/3 lg:w-1/4 bg-white border-r flex flex-col" style="background:var(--card-bg);border-color:var(--divider);">
+  <div class="p-3 border-b" style="border-color:var(--divider);">
     <div class="flex items-center justify-between gap-2">
       <div class="min-w-0">
-        <div class="text-xs text-gray-500">Agente</div>
+        <div class="text-xs" style="color:var(--muted)">Agente</div>
         <div id="agenteNome" class="font-semibold truncate">—</div>
-        <div class="text-xs text-gray-500">Carteira: <span id="agenteCarteira">—</span></div>
-        <div class="text-xs text-gray-500">Status: <span id="agenteStatus"><span class="dot offline"></span>Offline</span></div>
+        <div class="text-xs" style="color:var(--muted)">Carteira: <span id="agenteCarteira">—</span></div>
+        <div class="text-xs" style="color:var(--muted)">Status: <span id="agenteStatus"><span class="dot offline"></span>Offline</span></div>
       </div>
       <div class="flex flex-col items-end gap-2">
-        <!-- ✅ Toggle Online/Offline (original) -->
+        <!-- Toggle Online/Offline -->
         <button id="btnToggleOnline" class="px-3 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50" disabled>Ficar online</button>
         <button id="btnPegarProxima" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50" disabled>Pegar próxima</button>
         <!-- Logout -->
@@ -128,27 +161,43 @@
     <div id="msgAviso" class="mt-2 text-xs text-amber-600 hidden"></div>
   </div>
 
-  <div class="p-2 border-b">
+  <div class="p-2 border-b" style="border-color:var(--divider);">
     <input id="buscaTicket" class="w-full p-2 border rounded-md text-sm" placeholder="🔍 Buscar nas minhas conversas" oninput="filtrarTickets(this.value)"/>
   </div>
 
   <ul id="listaTickets" class="flex-1 overflow-y-auto"></ul>
 
-  <div class="p-2 text-xs text-gray-500 border-t">
+  <div class="p-2 text-xs" style="color:var(--muted);border-top:1px solid var(--divider);">
     Apenas conversas da sua carteira. “Pegar próxima” usa ordem por última mensagem <em>recebida</em>.
   </div>
 </aside>
 
 <!-- Main: Chat -->
 <main class="flex-1 flex flex-col">
-  <div class="flex items-center justify-between p-3 border-b bg-white">
+  <div class="flex items-center justify-between p-3 border-b" style="background:var(--card-bg);border-color:var(--divider);">
     <div class="min-w-0">
       <div id="tituloConversa" class="font-bold text-lg truncate">Selecione um ticket</div>
-      <div id="subInfo" class="text-sm text-gray-500 truncate"></div>
+      <div id="subInfo" class="text-sm truncate" style="color:var(--muted)"></div>
     </div>
     <div class="flex items-center gap-2">
-      <!-- 🎨 Tema (novo) -->
-      <button id="btnTema" class="px-3 py-2 text-sm bg-white border rounded-md hover:bg-gray-50">🎨 Tema</button>
+      <!-- ========== Botão Tema ========== -->
+      <div class="relative">
+        <button id="btnTema" class="px-3 py-2 text-sm rounded-md border hover:bg-gray-50" style="border-color:var(--divider);">🎨 Tema</button>
+        <div id="menuTema" class="hidden absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg p-3 z-20 space-y-3" style="border-color:var(--divider);">
+          <div class="text-xs" style="color:var(--muted)">Paleta</div>
+          <div id="themePalette" class="grid grid-cols-2 gap-2">
+            <!-- preenchido via JS -->
+          </div>
+          <div class="text-xs mt-1" style="color:var(--muted)">Papel de parede</div>
+          <div id="themeWalls" class="grid grid-cols-3 gap-2">
+            <!-- preenchido via JS -->
+          </div>
+          <div class="flex justify-between items-center pt-1">
+            <button id="btnTemaReset" class="px-3 py-1.5 text-xs rounded-md border hover:bg-gray-50" style="border-color:var(--divider);">Restaurar padrão</button>
+            <span class="text-[11px]" style="color:var(--muted)">As escolhas ficam salvas neste navegador</span>
+          </div>
+        </div>
+      </div>
 
       <button id="btnLiberar"
               class="px-3 py-2 text-sm bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50"
@@ -166,9 +215,8 @@
     </div>
   </div>
 
-  <div id="chat" class="flex-1 p-4 overflow-y-auto flex flex-col space-y-1 bg-gray-50 chat-enhanced-bg relative">
-    <p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>
-    <button id="scrollBottom" class="px-3 py-2 bg-white/90 border rounded-full text-sm shadow">▼ Novas mensagens</button>
+  <div id="chat" class="flex-1 p-4 overflow-y-auto flex flex-col space-y-1 bg-gray-50 wall-none">
+    <p id="loading" class="text-center" style="color:var(--muted)">Pegue uma conversa para iniciar…</p>
   </div>
   <div id="digitando" class="px-4 text-left hidden">Digitando…</div>
 
@@ -179,7 +227,7 @@
     <button onclick="cancelarResposta()" class="text-red-500 text-xs">✖</button>
   </div>
 
-  <div class="p-3 border-t flex space-x-2 bg-white items-center">
+  <div class="p-3 border-t flex space-x-2 items-center" style="background:var(--card-bg);border-color:var(--divider);">
     <input type="file" id="fileInput" accept="application/pdf" class="hidden" onchange="enviarPDF(event)">
     <button onclick="document.getElementById('fileInput').click()" class="bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600">📝 PDF</button>
     <textarea id="textoMensagem" rows="1" class="flex-1 border rounded-md p-2 resize-none" placeholder="Digite uma mensagem…" disabled></textarea>
@@ -193,53 +241,14 @@
   <img id="modalImg" src="" alt="Imagem" class="max-h-[90%] max-w-[90%] rounded-lg shadow-lg">
 </div>
 
-<!-- Painel de Tema (novo) -->
-<div id="panelTema" class="hidden fixed top-16 right-4 z-40 w-[360px] bg-white border rounded-xl shadow-xl">
-  <div class="p-3 border-b font-semibold">Personalizar tema</div>
-  <div class="p-3 space-y-3 text-sm">
-    <div class="grid grid-cols-2 gap-3">
-      <label class="block">Fundo
-        <input id="colorBg" type="color" class="w-full h-9 border rounded" />
-      </label>
-      <label class="block">Bolha recebida
-        <input id="colorIn" type="color" class="w-full h-9 border rounded" />
-      </label>
-      <label class="block">Bolha enviada
-        <input id="colorOut" type="color" class="w-full h-9 border rounded" />
-      </label>
-      <label class="block">Densidade
-        <input id="density" type="range" min="0" max="2" step="1" class="w-full" />
-        <div class="text-xs text-gray-500 mt-1"><span id="densityLabel">Conforto</span></div>
-      </label>
-    </div>
-
-    <div class="space-y-2">
-      <div class="font-medium">Papel de parede</div>
-      <div class="flex gap-2 flex-wrap">
-        <button data-wall="none" class="wp-btn px-2 py-1 border rounded">Nenhum</button>
-        <button data-wall="paper" class="wp-btn px-2 py-1 border rounded">Papel</button>
-        <button data-wall="dots" class="wp-btn px-2 py-1 border rounded">Pontinhos</button>
-        <label class="px-2 py-1 border rounded cursor-pointer">Upload
-          <input id="wpUpload" type="file" accept="image/*" class="hidden">
-        </label>
-      </div>
-    </div>
-
-    <div class="flex items-center justify-between">
-      <label class="flex items-center gap-2"><input id="toggleTails" type="checkbox" class="accent-emerald-600"> Exibir caudas</label>
-      <button id="btnResetTheme" class="text-xs text-gray-500 hover:underline">Restaurar padrão</button>
-    </div>
-  </div>
-</div>
-
 <script>
-/** ====== Config de APIs (original) ====== */
+/** ====== Config de APIs ====== */
 const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/,'');
 const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/,'');
 // (Opcional) redirecionar após logout:
 const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
 
-/** ====== Mapeamento carteira -> phone_id (original) ====== */
+/** ====== Mapeamento carteira -> phone_id ====== */
 const phoneIdMap = {
   "732661079928516": "ConnectZap",
   "727586317113885": "Recovery PJ",
@@ -252,7 +261,7 @@ const phoneIdMap = {
 };
 const carteiraToPhoneId = Object.fromEntries(Object.entries(phoneIdMap).map(([id,nome]) => [nome, id]));
 
-/** ====== Estado (original + extras visuais) ====== */
+/** ====== Estado ====== */
 let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
 let tickets = [];              // minhas conversas
 let selecionado = null;        // contato atual
@@ -265,10 +274,83 @@ let isModalOpen = false;
 let userTyping = false;
 let respostaMsgId = null;
 
-/* agrupamento visual (novo) */
-let lastMsgMeta = null;        // { side, tMs, day }
-let lastSideEl = { in:null, out:null };
+/* ====== Tema (novo) ====== */
+const THEME_KEY = "cz:theme";
+const themePresets = [
+  { id:"default",  label:"Padrão",  sw1:"#dcf8c6", sw2:"#b8f0a4" },
+  { id:"dark",     label:"Escuro",  sw1:"#134e4a", sw2:"#065f46" },
+  { id:"blue",     label:"Azul",    sw1:"#dbeafe", sw2:"#bfdbfe" },
+  { id:"green",    label:"Verde",   sw1:"#dcfce7", sw2:"#bbf7d0" },
+  { id:"contrast", label:"Contraste", sw1:"#1f2937", sw2:"#111827" },
+];
+const wallPresets = [
+  { id:"none",  label:"Sem" },
+  { id:"dots",  label:"Pontinhos" },
+  { id:"grid",  label:"Quadriculado" },
+  { id:"paper", label:"Papel" },
+];
+function loadTheme(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(THEME_KEY)||"{}");
+    return { name: saved.name || "default", wall: saved.wall || "none" };
+  }catch{ return { name:"default", wall:"none" }; }
+}
+function saveTheme(t){
+  localStorage.setItem(THEME_KEY, JSON.stringify(t || {}));
+}
+function applyTheme(t){
+  // paleta (classe no body)
+  document.body.classList.remove("theme-dark","theme-blue","theme-green","theme-contrast");
+  if(t.name && t.name!=="default") document.body.classList.add("theme-"+t.name);
 
+  // papel de parede (classe no #chat)
+  const chat = document.getElementById("chat");
+  chat.classList.remove("wall-none","wall-dots","wall-grid","wall-paper");
+  chat.classList.add("wall-"+(t.wall || "none"));
+
+  saveTheme(t);
+}
+function buildThemeMenu(){
+  const pal = document.getElementById("themePalette");
+  const walls = document.getElementById("themeWalls");
+  const current = loadTheme();
+
+  pal.innerHTML = "";
+  themePresets.forEach(p=>{
+    const btn = document.createElement("button");
+    btn.className = "theme-chip";
+    btn.dataset.theme = p.id;
+    btn.innerHTML = `
+      <span class="swatch" style="background:${p.sw1}"></span>
+      <span class="swatch" style="background:${p.sw2}"></span>
+      <span class="text-sm">${p.label}</span>
+    `;
+    if(current.name===p.id) btn.classList.add("chip-selected");
+    btn.onclick = ()=>{
+      document.querySelectorAll("#themePalette .theme-chip").forEach(b=>b.classList.remove("chip-selected"));
+      btn.classList.add("chip-selected");
+      applyTheme({ name:p.id, wall: loadTheme().wall });
+    };
+    pal.appendChild(btn);
+  });
+
+  walls.innerHTML = "";
+  wallPresets.forEach(w=>{
+    const wb = document.createElement("button");
+    wb.className = "wall-chip text-sm";
+    wb.dataset.wall = w.id;
+    wb.textContent = w.label;
+    if(current.wall===w.id) wb.classList.add("chip-selected");
+    wb.onclick = ()=>{
+      document.querySelectorAll("#themeWalls .wall-chip").forEach(b=>b.classList.remove("chip-selected"));
+      wb.classList.add("chip-selected");
+      applyTheme({ name: loadTheme().name, wall: w.id });
+    };
+    walls.appendChild(wb);
+  });
+}
+
+/** ====== DOM ====== */
 const elAgenteNome = document.getElementById("agenteNome");
 const elAgenteCarteira = document.getElementById("agenteCarteira");
 const elAgenteStatus = document.getElementById("agenteStatus");
@@ -287,91 +369,7 @@ const digitando = document.getElementById("digitando");
 const btnLogout = document.getElementById("btnLogout");
 const btnToggleOnline = document.getElementById("btnToggleOnline");
 
-/* ===== Tema (novo) ===== */
-const btnTema = document.getElementById("btnTema");
-const panelTema = document.getElementById("panelTema");
-const btnScroll = document.getElementById("scrollBottom");
-const THEME_KEY = "cz:theme:v2";
-const defaultTheme = {
-  bg:"#f3f4f6",
-  in:"#ffffff",
-  out:"#dcf8c6",
-  wallpaper:"none",     // none | paper | dots | url(...)
-  customUrl:null,
-  tails:true,
-  density:1             // 0=compacto,1=conforto,2=amplo
-};
-let theme = {...defaultTheme};
-
-function rgbToHex(c){
-  if(!c) return "#ffffff";
-  if(c.startsWith("#")) return c.length===4?("#"+c[1]+c[1]+c[2]+c[2]+c[3]+c[3]):c;
-  const m = c.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/i); if(!m) return "#ffffff";
-  const toHex = n=> ("0"+parseInt(n,10).toString(16)).slice(-2);
-  return "#"+toHex(m[1])+toHex(m[2])+toHex(m[3]);
-}
-function applyTheme(){
-  document.documentElement.style.setProperty("--bg", theme.bg);
-  document.documentElement.style.setProperty("--bubble-in", theme.in);
-  document.documentElement.style.setProperty("--bubble-out", theme.out);
-  const dens = [
-    {v:8, h:12, label:"Compacto"},
-    {v:10,h:14, label:"Conforto"},
-    {v:14,h:16, label:"Amplo"},
-  ][theme.density] || {v:10,h:14,label:"Conforto"};
-  document.documentElement.style.setProperty("--pad-v", dens.v+"px");
-  document.documentElement.style.setProperty("--pad-h", dens.h+"px");
-  const lbl = document.getElementById("densityLabel"); if(lbl) lbl.innerText = dens.label;
-  let wp = "none";
-  if(theme.wallpaper==="paper"){
-    wp = "radial-gradient(ellipse at top left, rgba(255,255,255,.6), rgba(255,255,255,.2)), url('data:image/svg+xml;utf8,\
-<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"180\" height=\"180\" viewBox=\"0 0 180 180\">\
-<path fill=\"%23ffffff\" fill-opacity=\".4\" d=\"M0 0h180v180H0z\"/>\
-<path fill=\"%23d1d5db\" fill-opacity=\".25\" d=\"M0 90h180v1H0zM90 0h1v180h-1z\"/>\
-</svg>')";
-  } else if(theme.wallpaper==="dots"){
-    wp = "radial-gradient(circle at 1px 1px, rgba(0,0,0,.08) 1px, transparent 0) 0 0/18px 18px";
-  } else if(theme.wallpaper && theme.wallpaper.startsWith("url(")){
-    wp = theme.wallpaper;
-  }
-  document.documentElement.style.setProperty("--wallpaper", wp);
-
-  // repopula inputs quando painel aberto
-  if(document.getElementById("colorBg")){
-    document.getElementById("colorBg").value = rgbToHex(theme.bg);
-    document.getElementById("colorIn").value = rgbToHex(theme.in);
-    document.getElementById("colorOut").value = rgbToHex(theme.out);
-    document.getElementById("density").value = theme.density;
-    document.getElementById("toggleTails").checked = !!theme.tails;
-  }
-}
-function saveTheme(){ localStorage.setItem(THEME_KEY, JSON.stringify(theme)); }
-function loadTheme(){ try{ theme = {...defaultTheme, ...(JSON.parse(localStorage.getItem(THEME_KEY)||"{}"))}; }catch{} applyTheme(); }
-loadTheme();
-btnTema.onclick = () => panelTema.classList.toggle("hidden");
-document.getElementById("colorBg").oninput   = e => { theme.bg  = e.target.value; applyTheme(); saveTheme(); };
-document.getElementById("colorIn").oninput   = e => { theme.in  = e.target.value; applyTheme(); saveTheme(); };
-document.getElementById("colorOut").oninput  = e => { theme.out = e.target.value; applyTheme(); saveTheme(); };
-document.getElementById("density").oninput   = e => { theme.density = +e.target.value||1; applyTheme(); saveTheme(); };
-document.getElementById("toggleTails").onchange = e => { theme.tails = !!e.target.checked; saveTheme(); };
-document.getElementById("btnResetTheme").onclick = () => { theme={...defaultTheme}; applyTheme(); saveTheme(); };
-document.querySelectorAll(".wp-btn").forEach(btn=>{
-  btn.onclick = ()=>{
-    const kind = btn.dataset.wall;
-    if(kind==="none"){ theme.wallpaper="none"; theme.customUrl=null; }
-    if(kind==="paper"){ theme.wallpaper="paper"; theme.customUrl=null; }
-    if(kind==="dots"){ theme.wallpaper="dots"; theme.customUrl=null; }
-    applyTheme(); saveTheme();
-  }
-});
-document.getElementById("wpUpload").onchange = e=>{
-  const f = e.target.files[0]; if(!f) return;
-  const url = URL.createObjectURL(f);
-  theme.wallpaper = `url(${url})`; theme.customUrl = url;
-  applyTheme(); saveTheme();
-};
-
-/** ====== Motivos conclusão (original) ====== */
+/* ====== Menu Concluir (original) ====== */
 const MOTIVOS_CONCLUSAO = [
   "Realizou negociação",
   "Solicitou 2ª via de boleto",
@@ -379,7 +377,6 @@ const MOTIVOS_CONCLUSAO = [
   "Dúvidas gerais",
   "Cliente ficou inativo",
 ];
-
 function renderMenuConcluir() {
   menuConcluir.innerHTML = MOTIVOS_CONCLUSAO.map(m => `
     <button type="button"
@@ -388,7 +385,6 @@ function renderMenuConcluir() {
       ${m}
     </button>
   `).join("");
-  // handler de clique em cada motivo
   menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => {
     btn.onclick = async () => {
       const motivo = btn.getAttribute("data-motivo");
@@ -397,11 +393,9 @@ function renderMenuConcluir() {
     };
   });
 }
-
 function abrirMenuConcluir() {
   if (!selecionado || btnConcluir.disabled) return;
   menuConcluir.classList.remove("hidden");
-  // clique-fora para fechar
   document.addEventListener("click", clickForaMenuConcluir, { capture: true });
 }
 function fecharMenuConcluir() {
@@ -412,20 +406,45 @@ function clickForaMenuConcluir(e) {
   const within = menuConcluir.contains(e.target) || btnConcluir.contains(e.target);
   if (!within) fecharMenuConcluir();
 }
-
 btnConcluir.onclick = () => {
   if (menuConcluir.classList.contains("hidden")) abrirMenuConcluir();
   else fecharMenuConcluir();
 };
-
-// chama no boot
 renderMenuConcluir();
 
-/** ====== Util (original) ====== */
+/* ====== Menu Tema (novo) ====== */
+const btnTema = document.getElementById("btnTema");
+const menuTema = document.getElementById("menuTema");
+btnTema.addEventListener("click", (e)=>{
+  e.stopPropagation();
+  if(menuTema.classList.contains("hidden")){
+    buildThemeMenu();
+    menuTema.classList.remove("hidden");
+    document.addEventListener("click", closeThemeOnClickOutside, { capture:true });
+  }else{
+    menuTema.classList.add("hidden");
+    document.removeEventListener("click", closeThemeOnClickOutside, { capture:true });
+  }
+});
+function closeThemeOnClickOutside(ev){
+  const within = menuTema.contains(ev.target) || btnTema.contains(ev.target);
+  if(!within){
+    menuTema.classList.add("hidden");
+    document.removeEventListener("click", closeThemeOnClickOutside, { capture:true });
+  }
+}
+document.getElementById("btnTemaReset").addEventListener("click", ()=>{
+  applyTheme({ name:"default", wall:"none" });
+  buildThemeMenu();
+});
+
+/** ====== Util ====== */
 function qsParam(name){ return new URLSearchParams(location.search).get(name); }
 function escapeHtml(s){
   if(!s) return "";
-  return s.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  return s.replace(/[&<>"']/g, ch => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  })[ch]);
 }
 function gerarCor(nome){ let h=0; for(const c of (nome||"U")) h=c.charCodeAt(0)+((h<<5)-h); return `hsl(${h%360},70%,60%)`; }
 function keyLocal(){ return `cz:tickets:${agente.codigo}:${agente.carteira}`; }
@@ -436,7 +455,6 @@ function setStatus(online){
   agente.online = !!online;
   btnPegarProxima.disabled = !online;
   btnToggleOnline.disabled = false;
-  // troca estilo/label do botão
   if(agente.online){
     btnToggleOnline.textContent = "Ficar offline";
     btnToggleOnline.classList.remove("bg-green-600","hover:bg-green-700");
@@ -449,8 +467,11 @@ function setStatus(online){
   }
 }
 
-/** ====== Boot (original, com login via prompt) ====== */
+/** ====== Boot ====== */
 async function boot(){
+  // aplica tema salvo
+  applyTheme(loadTheme());
+
   agente.codigo  = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
   agente.origem  = localStorage.getItem("agente_origem") || qsParam("origem") || null;
 
@@ -478,13 +499,12 @@ async function boot(){
       const r = await fetch(url);
       if (r.ok) {
         tickets = await r.json();
-        saveTickets(); // opcional, mantém no storage
+        saveTickets();
       }
     }catch(_){}
 
     renderTickets();
 
-    // polling de ordem (se quiser manter para UI/preview)
     if(pollingContatos) clearInterval(pollingContatos);
     pollingContatos = setInterval(refreshOrdemCarteira, 5000);
     await refreshOrdemCarteira();
@@ -496,7 +516,6 @@ async function boot(){
   }
 }
 
-/** ====== Verificar online (original) ====== */
 async function verificarOnline(){
   try{
     const r = await fetch(`${FILA_API}/fila/status?carteira=${encodeURIComponent(agente.carteira)}`);
@@ -512,7 +531,7 @@ async function verificarOnline(){
   }catch(e){ setStatus(false); }
 }
 
-/** ====== Ordem por carteira (original) ====== */
+/** ====== Ordem por carteira ====== */
 let ordemCache = [];
 async function refreshOrdemCarteira(){
   const phoneId = carteiraToPhoneId[agente.carteira];
@@ -530,13 +549,12 @@ async function refreshOrdemCarteira(){
   }catch(e){ console.error("Falha ao atualizar ordem", e); }
 }
 
-/** ====== Toggle Online/Offline (original) ====== */
+/** ====== Toggle Online/Offline ====== */
 btnToggleOnline.onclick = async () => {
   if(!agente.carteira || !agente.codigo) return;
   elMsgAviso.classList.add("hidden"); elMsgAviso.textContent = "";
 
   if(!agente.online){
-    // -> Ficar online
     try{
       const r = await fetch(`${FILA_API}/fila/online`, {
         method:"POST",
@@ -555,7 +573,6 @@ btnToggleOnline.onclick = async () => {
       elMsgAviso.textContent = (e?.message||"Falha ao entrar online");
     }
   }else{
-    // -> Ficar offline
     try{
       const r = await fetch(`${FILA_API}/fila/offline`, {
         method:"DELETE",
@@ -575,7 +592,8 @@ btnToggleOnline.onclick = async () => {
   }
 };
 
-/** ====== Distribuição local (original) ====== */
+/** ====== Distribuição local ====== */
+const btnPegarProxima = document.getElementById("btnPegarProxima");
 btnPegarProxima.onclick = async () => {
   if(!agente.online){ alert("Você está offline. Clique em “Ficar online”."); return; }
   try{
@@ -590,7 +608,6 @@ btnPegarProxima.onclick = async () => {
     const j = await r.json();
     if(!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
 
-    // evita duplicar localmente
     if(!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)){
       tickets.unshift(j.ticket);
       saveTickets();
@@ -602,8 +619,6 @@ btnPegarProxima.onclick = async () => {
   }
 };
 
-/** ====== Liberar (original) ====== */
-const btnLiberar = document.getElementById("btnLiberar");
 btnLiberar.onclick = async () => {
   if(!selecionado) return;
   try{
@@ -624,7 +639,7 @@ btnLiberar.onclick = async () => {
   }catch(e){ alert("Erro ao liberar."); }
 };
 
-/** ====== Logout (original) ====== */
+/** ====== Logout ====== */
 btnLogout.onclick = async () => {
   try{
     await fetch(`${FILA_API}/fila/offline`, {
@@ -632,7 +647,7 @@ btnLogout.onclick = async () => {
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo,10), carteira: agente.carteira })
     }).catch(()=>{});
-  }catch(_){} // ignore
+  }catch(_){} 
 
   try{
     localStorage.removeItem("agente_codigo");
@@ -652,7 +667,7 @@ btnLogout.onclick = async () => {
   else { window.location.reload(); }
 };
 
-/** ====== Lista de tickets (original) ====== */
+/** ====== Lista de tickets ====== */
 function renderTickets(filtro=""){
   const q = (filtro||"").toLowerCase().trim();
   elListaTickets.innerHTML = "";
@@ -682,7 +697,7 @@ function renderTickets(filtro=""){
 }
 function filtrarTickets(v){ renderTickets(v); }
 
-/** ====== Abrir chat (original) ====== */
+/** ====== Abrir chat ====== */
 async function abrirTicket(t){
   selecionado = t;
   renderTickets();
@@ -691,7 +706,6 @@ async function abrirTicket(t){
   textarea.disabled = false; textarea.focus(); btnEnviar.disabled = true; btnLiberar.disabled = false; btnConcluir.disabled = false;
 
   lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); chat.innerHTML = "";
-  lastMsgMeta = null; lastSideEl = { in:null, out:null };
 
   await carregarMensagens(false);
 
@@ -723,7 +737,6 @@ async function concluirAtendimento(motivo) {
       return;
     }
 
-    // remove da lista e limpa UI
     tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
     saveTickets();
     renderTickets();
@@ -739,7 +752,7 @@ async function concluirAtendimento(motivo) {
   }
 }
 
-/** ====== Chat (original + melhorias visuais) ====== */
+/** ====== Chat ====== */
 textarea.addEventListener("input", () => {
   textarea.style.height = "auto";
   textarea.style.height = textarea.scrollHeight + "px";
@@ -749,13 +762,6 @@ textarea.addEventListener("input", () => {
 textarea.addEventListener("keydown", e => {
   if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); if(!btnEnviar.disabled) enviarMensagem(); }
 });
-
-/* botão “▼ Novas mensagens” */
-chat.addEventListener("scroll", ()=>{
-  const near = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 180;
-  btnScroll.style.display = near ? "none" : "block";
-});
-btnScroll.onclick = ()=> chat.scrollTo({ top: chat.scrollHeight, behavior:"smooth" });
 
 async function carregarMensagens(incremental=true){
   if(!selecionado) return;
@@ -767,11 +773,7 @@ async function carregarMensagens(incremental=true){
     const msgs = await r.json();
     msgs.sort((a,b) => new Date(a.data_hora) - new Date(b.data_hora));
 
-    if(!incremental){
-      chat.innerHTML = "";
-      lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear();
-      lastMsgMeta = null; lastSideEl = { in:null, out:null };
-    }
+    if(!incremental){ chat.innerHTML = ""; lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); }
 
     const isNearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 200;
     msgs.forEach(m => renderMsg(m, incremental));
@@ -779,69 +781,35 @@ async function carregarMensagens(incremental=true){
   }catch(e){ console.error(e); }
 }
 
-/* helper checkmarks */
-function renderAcks(container, ack){
-  if(!ack) return;
-  let cls = "sent"; if(ack==="delivered") cls="delivered"; if(ack==="read") cls="read";
-  const wrap = document.createElement("span");
-  wrap.className = "acks "+cls;
-  wrap.innerHTML = `<span class="ack"></span><span class="ack"></span>`;
-  container.appendChild(wrap);
-}
-
-/* agrupamento visual */
-function joinGrouping(side, el, tMs){
-  const prev = lastMsgMeta;
-  if(prev && prev.side===side && (tMs - prev.tMs) <= 5*60*1000){
-    el.classList.add("joined-prev");
-    const lastEl = lastSideEl[side==="in"?"in":"out"];
-    if(lastEl) lastEl.classList.add("joined-next");
-  }
-  lastMsgMeta = { side, tMs, day: lastMsgMeta?.day };
-  lastSideEl[side==="in"?"in":"out"] = el;
-}
-
-/* RENDER MSG (original, agora com melhorias) */
 function renderMsg(m, incremental){
-  const t = new Date(m.data_hora);
-  const tMs = t.getTime();
+  const tMs = new Date(m.data_hora).getTime();
   const key = `${m.data_hora}|${m.status}|${m.mensagem_final||m.tipo||""}`;
   if(renderedKeys.has(key)) return;
   if(incremental && lastTimestampMs!==null && tMs<=lastTimestampMs) return;
 
-  const dia = t.toLocaleDateString("pt-BR", { timeZone:"America/Sao_Paulo" });
+  const dia = new Date(m.data_hora).toLocaleDateString("pt-BR", { timeZone:"America/Sao_Paulo" });
   if(!lastDayRendered || lastDayRendered!==dia){
     const sep = document.createElement("div"); sep.className = "dia"; sep.textContent = `— ${dia} —`;
     chat.appendChild(sep); lastDayRendered = dia;
-    lastMsgMeta = { side:null, tMs:null, day: dia };
-    lastSideEl = { in:null, out:null };
   }
 
-  const hora = t.toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit", timeZone:"America/Sao_Paulo"});
-  const side = (m.status==='in') ? 'in' : 'out';
-  const div = document.createElement("div");
-  div.className = `msg ${m.status==='in'?'recebida':'enviada'} ${theme.tails?'tail':''}`;
+  const hora = new Date(m.data_hora).toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit", timeZone:"America/Sao_Paulo"});
+  const div = document.createElement("div"); div.className = `msg ${m.status==='in'?'recebida':'enviada'}`;
 
   if(m.tipo==="imagem" || m.mensagem_final==="[image]"){
-    // imagem com botão “Ver” e modal
-    const wrap = document.createElement("div"); wrap.className="media";
-    const img = document.createElement("img"); img.alt="Imagem"; img.loading="lazy";
-    const btn = document.createElement("button"); btn.className="text-blue-600 underline text-sm self-start"; btn.textContent="👁 Ver imagem";
+    div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div>
+      <button class="btn-olhinho text-blue-600 underline mt-1">👁 Ver imagem</button>
+      <span class="hora">${hora}</span>`;
+    const btn = div.querySelector(".btn-olhinho");
     if(!m.msg_id){ btn.disabled=true; btn.textContent="Imagem indisponível"; }
-    else btn.onclick = () => carregarImagem(div, btn, m.msg_id, img);
-    wrap.appendChild(img); wrap.appendChild(btn);
-    div.appendChild(wrap);
-    const span = document.createElement("span"); span.className="hora"; span.textContent=hora; div.appendChild(span);
+    else btn.onclick = () => carregarImagem(div, btn, m.msg_id);
   }else if(m.tipo==="audio" || m.mensagem_final==="[audio]"){
-    // áudio com lazy load
-    const aw = document.createElement("div"); aw.className="audio-wrap";
-    const badge = document.createElement("div"); badge.className="audio-badge"; badge.textContent="♪";
-    const audio = document.createElement("audio"); audio.controls=true; audio.className="hidden";
-    const btn = document.createElement("button"); btn.className="text-blue-600 underline text-sm"; btn.textContent="Carregar áudio";
-    btn.onclick = () => carregarAudio(div, btn, m.msg_id, audio);
-    aw.appendChild(badge); aw.appendChild(audio); aw.appendChild(btn);
-    div.appendChild(aw);
-    const span = document.createElement("span"); span.className="hora"; span.textContent=hora; div.appendChild(span);
+    div.innerHTML = `<div class="text-gray-600 italic">[áudio recebido]</div>
+      <button class="btn-audio text-blue-600 underline mt-1">▶ Reproduzir áudio</button>
+      <span class="hora">${hora}</span>`;
+    const btn = div.querySelector(".btn-audio");
+    if(!m.msg_id){ btn.disabled=true; btn.textContent="Áudio indisponível"; }
+    else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
   }else if(m.tipo==="emoji" || m.mensagem_final==="[reaction]"){
     const wrap = document.createElement("div"); wrap.className = "flex items-center gap-2";
     const emojiEl = document.createElement("span"); emojiEl.className="text-2xl"; emojiEl.textContent="🙂";
@@ -854,11 +822,9 @@ function renderMsg(m, incremental){
         .catch(()=>label.textContent="falha ao carregar emoji");
     }
   }else{
-    // texto normal
     div.innerHTML = `<div>${escapeHtml(m.mensagem_final||"")}</div><span class="hora">${hora}</span>`;
   }
 
-  // responder (apenas recebidas)
   if(m.status==='in'){
     const btn = document.createElement("button");
     btn.className = "btn-responder"; btn.title="Responder"; btn.innerHTML="↩";
@@ -866,50 +832,37 @@ function renderMsg(m, incremental){
     div.appendChild(btn);
   }
 
-  // checkmarks (se vier m.ack) — só nas enviadas
-  if(m.status==='out'){
-    const h = div.querySelector(".hora");
-    if(h) renderAcks(h, m.ack);
-  }
-
-  // agrupamento visual por lado <=5min
-  joinGrouping(side, div, tMs);
-
   chat.appendChild(div);
   renderedKeys.add(key);
   if(lastTimestampMs===null || tMs>lastTimestampMs) lastTimestampMs = tMs;
 }
 
-/** ====== Mídias (originais) ====== */
-async function carregarImagem(div, btn, msg_id, imgEl){
+async function carregarImagem(div, btn, msg_id){
   btn.disabled=true; btn.textContent="⏳ Carregando…";
   try{
     const r = await fetch(`${CONV_API}/api/conversas/image/${encodeURIComponent(msg_id)}`);
     const j = await r.json();
     if(j.ok && j.data_uri){
-      const img = imgEl || document.createElement("img");
+      const img = document.createElement("img");
       img.src = j.data_uri; img.alt="Imagem"; img.className="mt-2 rounded-lg max-w-[150px] border cursor-pointer";
       img.onclick = () => abrirModalImagem(j.data_uri);
-      if(!imgEl) div.insertBefore(img, btn);
-      btn.remove();
+      div.insertBefore(img, btn); btn.remove();
     }else throw new Error(j.erro||"Resposta inválida");
   }catch{ alert("Erro ao carregar imagem"); btn.disabled=false; btn.textContent="👁 Ver imagem"; }
 }
-async function carregarAudio(div, btn, msg_id, audioEl){
+async function carregarAudio(div, btn, msg_id){
   btn.disabled=true; btn.textContent="⏳ Carregando…";
   try{
     const r = await fetch(`${CONV_API}/api/conversas/audio/${encodeURIComponent(msg_id)}`);
     const j = await r.json();
     if(j.ok && j.data_uri){
-      const audio = audioEl || document.createElement("audio");
+      const audio = document.createElement("audio");
       audio.src = j.data_uri; audio.controls = true; audio.className="mt-2 w-full max-w-xs";
-      if(!audioEl) div.insertBefore(audio, btn);
-      btn.remove();
+      div.insertBefore(audio, btn); btn.remove();
     }else throw new Error(j.erro||"Resposta inválida");
   }catch{ alert("Erro ao carregar áudio"); btn.disabled=false; btn.textContent="▶ Reproduzir áudio"; }
 }
 
-/** ====== Responder / Cancelar (original) ====== */
 function responderMensagem(msgId, conteudo){
   respostaMsgId = msgId || null;
   document.getElementById("respostaTexto").innerText = (conteudo||"").slice(0,50);
@@ -922,7 +875,6 @@ function cancelarResposta(){
   document.getElementById("respostaTexto").innerText = "";
 }
 
-/** ====== Enviar texto (original) ====== */
 async function enviarMensagem(){
   if(!selecionado) return;
   const texto = textarea.value.trim(); if(!texto) return;
@@ -941,7 +893,6 @@ async function enviarMensagem(){
   finally{ userTyping=false; btnEnviar.disabled = textarea.value.trim().length===0; }
 }
 
-/** ====== Enviar PDF (original) ====== */
 async function enviarPDF(event){
   const file = event.target.files[0];
   if(!file) return;
@@ -965,7 +916,7 @@ async function enviarPDF(event){
   finally{ event.target.value=""; }
 }
 
-/** ====== Modal imagem (original) ====== */
+/** ====== Modal imagem ====== */
 const imageModal = document.getElementById("imageModal");
 const modalImg = document.getElementById("modalImg");
 const closeModal = document.getElementById("closeModal");
@@ -973,10 +924,10 @@ function abrirModalImagem(src){ isModalOpen=true; modalImg.src=src; imageModal.c
 closeModal.onclick = fecharModal; imageModal.onclick = e => { if(e.target===imageModal) fecharModal(); };
 function fecharModal(){ imageModal.classList.add("hidden"); modalImg.src=""; isModalOpen=false; }
 
-/** ====== Helpers visuais (original) ====== */
-function limparChat(){ chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>'; }
+/** ====== Helpers visuais ====== */
+function limparChat(){ chat.innerHTML = '<p id="loading" class="text-center" style="color:var(--muted)">Pegue uma conversa para iniciar…</p>'; }
 
-/** ====== Init (original) ====== */
+/** ====== Init ====== */
 document.getElementById("buscaTicket").addEventListener("input", e => filtrarTickets(e.target.value));
 boot();
 </script>
