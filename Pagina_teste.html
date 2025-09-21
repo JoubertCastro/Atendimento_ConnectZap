@@ -185,13 +185,9 @@
         <button id="btnTema" class="px-3 py-2 text-sm rounded-md border hover:bg-gray-50" style="border-color:var(--divider);">🎨 Tema</button>
         <div id="menuTema" class="hidden absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg p-3 z-20 space-y-3" style="border-color:var(--divider);">
           <div class="text-xs" style="color:var(--muted)">Paleta</div>
-          <div id="themePalette" class="grid grid-cols-2 gap-2">
-            <!-- preenchido via JS -->
-          </div>
+          <div id="themePalette" class="grid grid-cols-2 gap-2"></div>
           <div class="text-xs mt-1" style="color:var(--muted)">Papel de parede</div>
-          <div id="themeWalls" class="grid grid-cols-3 gap-2">
-            <!-- preenchido via JS -->
-          </div>
+          <div id="themeWalls" class="grid grid-cols-3 gap-2"></div>
           <div class="flex justify-between items-center pt-1">
             <button id="btnTemaReset" class="px-3 py-1.5 text-xs rounded-md border hover:bg-gray-50" style="border-color:var(--divider);">Restaurar padrão</button>
             <span class="text-[11px]" style="color:var(--muted)">As escolhas ficam salvas neste navegador</span>
@@ -304,9 +300,9 @@ function applyTheme(t){
   if(t.name && t.name!=="default") document.body.classList.add("theme-"+t.name);
 
   // papel de parede (classe no #chat)
-  const chat = document.getElementById("chat");
-  chat.classList.remove("wall-none","wall-dots","wall-grid","wall-paper");
-  chat.classList.add("wall-"+(t.wall || "none"));
+  const chatEl = document.getElementById("chat");
+  chatEl.classList.remove("wall-none","wall-dots","wall-grid","wall-paper");
+  chatEl.classList.add("wall-"+(t.wall || "none"));
 
   saveTheme(t);
 }
@@ -593,7 +589,6 @@ btnToggleOnline.onclick = async () => {
 };
 
 /** ====== Distribuição local ====== */
-const btnPegarProxima = document.getElementById("btnPegarProxima");
 btnPegarProxima.onclick = async () => {
   if(!agente.online){ alert("Você está offline. Clique em “Ficar online”."); return; }
   try{
