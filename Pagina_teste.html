@@ -3,152 +3,92 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ConnectZap — Distribuição</title>
+<title>ConnectZap — Agentes</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  /* ========== Variáveis e Temas ========== */
-  :root{
-    --app-bg:#f3f4f6;           /* fundo da página */
-    --card-bg:#ffffff;          /* cartões/headers */
-    --text:#111827;             /* texto principal */
-    --muted:#6b7280;            /* texto secundário */
-    --divider:#e5e7eb;          /* linhas/bordas */
-    --accent:#2563eb;           /* azul padrão */
-    --chat-bg:#f9fafb;          /* fundo do chat */
-    --bubble-in:#ffffff;        /* recebida */
-    --bubble-in-border:#e5e7f0; /* borda recebida */
-    --bubble-out-1:#dcf8c6;     /* enviada gradiente */
-    --bubble-out-2:#b8f0a4;
-  }
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px}
 
-  /* Tema escuro */
-  .theme-dark{
-    --app-bg:#0f172a;
-    --card-bg:#0b1220;
-    --text:#e5e7eb;
-    --muted:#94a3b8;
-    --divider:#1f2937;
-    --accent:#22c55e;
-    --chat-bg:#0f172a;
-    --bubble-in:#111827;
-    --bubble-in-border:#374151;
-    --bubble-out-1:#134e4a;
-    --bubble-out-2:#065f46;
-  }
-
-  /* Tema azul */
-  .theme-blue{
-    --app-bg:#eef2ff;
-    --card-bg:#ffffff;
-    --text:#0f172a;
-    --muted:#475569;
-    --divider:#e2e8f0;
-    --accent:#2563eb;
-    --chat-bg:#f1f5ff;
-    --bubble-in:#ffffff;
-    --bubble-in-border:#e2e8f0;
-    --bubble-out-1:#dbeafe;
-    --bubble-out-2:#bfdbfe;
-  }
-
-  /* Tema verde */
-  .theme-green{
-    --app-bg:#ecfdf5;
-    --card-bg:#ffffff;
-    --text:#064e3b;
-    --muted:#166534;
-    --divider:#d1fae5;
-    --accent:#16a34a;
-    --chat-bg:#f0fdf4;
-    --bubble-in:#ffffff;
-    --bubble-in-border:#d1fae5;
-    --bubble-out-1:#dcfce7;
-    --bubble-out-2:#bbf7d0;
-  }
-
-  /* Alto contraste */
-  .theme-contrast{
-    --app-bg:#000000;
-    --card-bg:#0a0a0a;
-    --text:#ffffff;
-    --muted:#e5e5e5;
-    --divider:#2e2e2e;
-    --accent:#ffb703;
-    --chat-bg:#000000;
-    --bubble-in:#111111;
-    --bubble-in-border:#333333;
-    --bubble-out-1:#1f2937;
-    --bubble-out-2:#111827;
-  }
-
-  /* Padrões de papel de parede (aplicados no #chat) */
-  #chat{ background: var(--chat-bg) !important; }
-  .wall-none{ background-image:none !important; }
-  .wall-dots{
-    background-image:
-      radial-gradient(#00000014 1px, transparent 1px) !important;
-    background-size: 18px 18px !important;
-  }
-  .wall-grid{
-    background-image:
-      linear-gradient(#00000010 1px, transparent 1px),
-      linear-gradient(90deg, #00000010 1px, transparent 1px) !important;
-    background-size: 22px 22px !important;
-  }
-  .wall-paper{
-    background-image:
-      radial-gradient(#00000007 1px, transparent 1px),
-      linear-gradient(0deg, #fef8e7, #fffdf4) !important;
-    background-size: 22px 22px, auto !important;
-  }
-
-  /* ========== Estilos originais (agora usando variáveis) ========== */
-  body{ background:var(--app-bg); color:var(--text); }
-
-  .card{background:var(--card-bg);border:1px solid var(--divider);border-radius:16px}
+  /* ========= Bolhas de mensagem (ajustadas) ========= */
   .msg{
-    max-width:70%;padding:10px 14px 24px;border-radius:18px;margin:4px 0;position:relative;
-    white-space:pre-wrap;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,.08)
+    display:inline-block;                         /* encolhe ao conteúdo */
+    max-width:min(70%, 560px);
+    padding:10px 14px 18px;
+    margin:6px 0;
+    position:relative;
+    border-radius:18px;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    box-shadow:0 1px 2px rgba(0,0,0,.10);
+    transition:background .18s ease;
   }
+  @media (max-width:768px){ .msg{ max-width:86%; } }
+
   .msg.enviada{
-    background:linear-gradient(120deg,var(--bubble-out-1),var(--bubble-out-2));
-    align-self:flex-end
+    align-self:flex-end;
+    background:linear-gradient(120deg, var(--bubble-out-g1, #dcf8c6), var(--bubble-out-g2, #b8f0a4));
+    color:#111827;
   }
   .msg.recebida{
-    background:var(--bubble-in);
     align-self:flex-start;
-    border:1px solid var(--bubble-in-border)
+    background:var(--bubble-in-bg, #fff);
+    border:1px solid var(--bubble-in-border, #e2e8f0);
   }
-  .msg .hora{font-size:11px;color:#555;position:absolute;bottom:4px;right:8px}
-  .msg .btn-responder{position:absolute;top:6px;right:6px;font-size:14px;color:#4b5563;opacity:0;transition:opacity .2s}
-  .msg.recebida:hover .btn-responder{opacity:1}
+  .msg .hora{
+    position:absolute; right:8px; bottom:4px;
+    font-size:11px; color:#4b5563;
+  }
+
+  /* Caudas dos balões */
+  .msg.enviada::after, .msg.recebida::after{
+    content:"";
+    position:absolute; bottom:0; width:14px; height:14px;
+    clip-path:polygon(0 0, 100% 0, 0 100%);
+  }
+  .msg.enviada::after{
+    right:-7px;
+    background:linear-gradient(120deg, var(--bubble-out-g1, #dcf8c6), var(--bubble-out-g2, #b8f0a4));
+  }
+  .msg.recebida::after{
+    left:-7px;
+    background:var(--bubble-in-bg, #fff);
+    border-left:1px solid var(--bubble-in-border, #e2e8f0);
+    border-bottom:1px solid var(--bubble-in-border, #e2e8f0);
+  }
+
+  /* Ações dentro do balão (ex: responder) */
+  .msg .actions{
+    position:absolute; top:6px; right:6px;
+    display:flex; gap:6px;
+    opacity:0; pointer-events:none;
+    transition:opacity .18s ease;
+  }
+  .msg:hover .actions,
+  .msg:focus-within .actions{ opacity:1; pointer-events:auto; }
+  .icon-btn{ font-size:14px; color:#64748b; cursor:pointer; }
+  .icon-btn:hover{ color:#2563eb; }
+
+  /* Mídia dentro do balão */
+  .msg img.thumb{ max-width:280px; height:auto; border-radius:12px; border:1px solid #e5e7eb; cursor:pointer; }
+
+  /* Itens já existentes */
   .dia{text-align:center;margin:12px 0;font-size:12px;color:#888}
   .ticket-selected{background:#f0f9ff !important}
   .badge{background:#22c55e;color:#fff;font-size:10px;font-weight:700;border-radius:9999px;padding:2px 6px;min-width:18px;text-align:center}
   .dot{width:10px;height:10px;border-radius:9999px;display:inline-block;margin-right:6px}
   .dot.online{background:#16a34a}.dot.offline{background:#9ca3af}
-
-  /* Dropdown de Tema */
-  .theme-chip{
-    display:flex;align-items:center;gap:.5rem;
-    border:1px solid var(--divider);border-radius:.6rem;padding:.45rem .6rem;cursor:pointer;background:#fff
-  }
-  .swatch{width:18px;height:18px;border-radius:999px;border:1px solid #e5e7eb}
-  .wall-chip{border:1px solid var(--divider);border-radius:.6rem;padding:.35rem .6rem;background:#fff;cursor:pointer}
-  .chip-selected{outline:2px solid var(--accent)}
 </style>
 </head>
-<body class="h-screen flex">
+<body class="h-screen flex bg-gray-100">
 
 <!-- Sidebar: Minhas conversas -->
-<aside class="w-1/3 lg:w-1/4 bg-white border-r flex flex-col" style="background:var(--card-bg);border-color:var(--divider);">
-  <div class="p-3 border-b" style="border-color:var(--divider);">
+<aside class="w-1/3 lg:w-1/4 bg-white border-r flex flex-col">
+  <div class="p-3 border-b">
     <div class="flex items-center justify-between gap-2">
       <div class="min-w-0">
-        <div class="text-xs" style="color:var(--muted)">Agente</div>
+        <div class="text-xs text-gray-500">Agente</div>
         <div id="agenteNome" class="font-semibold truncate">—</div>
-        <div class="text-xs" style="color:var(--muted)">Carteira: <span id="agenteCarteira">—</span></div>
-        <div class="text-xs" style="color:var(--muted)">Status: <span id="agenteStatus"><span class="dot offline"></span>Offline</span></div>
+        <div class="text-xs text-gray-500">Carteira: <span id="agenteCarteira">—</span></div>
+        <div class="text-xs text-gray-500">Status: <span id="agenteStatus"><span class="dot offline"></span>Offline</span></div>
       </div>
       <div class="flex flex-col items-end gap-2">
         <!-- Toggle Online/Offline -->
@@ -161,40 +101,25 @@
     <div id="msgAviso" class="mt-2 text-xs text-amber-600 hidden"></div>
   </div>
 
-  <div class="p-2 border-b" style="border-color:var(--divider);">
+  <div class="p-2 border-b">
     <input id="buscaTicket" class="w-full p-2 border rounded-md text-sm" placeholder="🔍 Buscar nas minhas conversas" oninput="filtrarTickets(this.value)"/>
   </div>
 
   <ul id="listaTickets" class="flex-1 overflow-y-auto"></ul>
 
-  <div class="p-2 text-xs" style="color:var(--muted);border-top:1px solid var(--divider);">
+  <div class="p-2 text-xs text-gray-500 border-t">
     Apenas conversas da sua carteira. “Pegar próxima” usa ordem por última mensagem <em>recebida</em>.
   </div>
 </aside>
 
 <!-- Main: Chat -->
 <main class="flex-1 flex flex-col">
-  <div class="flex items-center justify-between p-3 border-b" style="background:var(--card-bg);border-color:var(--divider);">
+  <div class="flex items-center justify-between p-3 border-b bg-white">
     <div class="min-w-0">
       <div id="tituloConversa" class="font-bold text-lg truncate">Selecione um ticket</div>
-      <div id="subInfo" class="text-sm truncate" style="color:var(--muted)"></div>
+      <div id="subInfo" class="text-sm text-gray-500 truncate"></div>
     </div>
     <div class="flex items-center gap-2">
-      <!-- ========== Botão Tema ========== -->
-      <div class="relative">
-        <button id="btnTema" class="px-3 py-2 text-sm rounded-md border hover:bg-gray-50" style="border-color:var(--divider);">🎨 Tema</button>
-        <div id="menuTema" class="hidden absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg p-3 z-20 space-y-3" style="border-color:var(--divider);">
-          <div class="text-xs" style="color:var(--muted)">Paleta</div>
-          <div id="themePalette" class="grid grid-cols-2 gap-2"></div>
-          <div class="text-xs mt-1" style="color:var(--muted)">Papel de parede</div>
-          <div id="themeWalls" class="grid grid-cols-3 gap-2"></div>
-          <div class="flex justify-between items-center pt-1">
-            <button id="btnTemaReset" class="px-3 py-1.5 text-xs rounded-md border hover:bg-gray-50" style="border-color:var(--divider);">Restaurar padrão</button>
-            <span class="text-[11px]" style="color:var(--muted)">As escolhas ficam salvas neste navegador</span>
-          </div>
-        </div>
-      </div>
-
       <button id="btnLiberar"
               class="px-3 py-2 text-sm bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50"
               disabled>Liberar</button>
@@ -211,8 +136,8 @@
     </div>
   </div>
 
-  <div id="chat" class="flex-1 p-4 overflow-y-auto flex flex-col space-y-1 bg-gray-50 wall-none">
-    <p id="loading" class="text-center" style="color:var(--muted)">Pegue uma conversa para iniciar…</p>
+  <div id="chat" class="flex-1 p-4 overflow-y-auto flex flex-col space-y-1 bg-gray-50">
+    <p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>
   </div>
   <div id="digitando" class="px-4 text-left hidden">Digitando…</div>
 
@@ -223,7 +148,7 @@
     <button onclick="cancelarResposta()" class="text-red-500 text-xs">✖</button>
   </div>
 
-  <div class="p-3 border-t flex space-x-2 items-center" style="background:var(--card-bg);border-color:var(--divider);">
+  <div class="p-3 border-t flex space-x-2 bg-white items-center">
     <input type="file" id="fileInput" accept="application/pdf" class="hidden" onchange="enviarPDF(event)">
     <button onclick="document.getElementById('fileInput').click()" class="bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600">📝 PDF</button>
     <textarea id="textoMensagem" rows="1" class="flex-1 border rounded-md p-2 resize-none" placeholder="Digite uma mensagem…" disabled></textarea>
@@ -270,83 +195,6 @@ let isModalOpen = false;
 let userTyping = false;
 let respostaMsgId = null;
 
-/* ====== Tema (novo) ====== */
-const THEME_KEY = "cz:theme";
-const themePresets = [
-  { id:"default",  label:"Padrão",  sw1:"#dcf8c6", sw2:"#b8f0a4" },
-  { id:"dark",     label:"Escuro",  sw1:"#134e4a", sw2:"#065f46" },
-  { id:"blue",     label:"Azul",    sw1:"#dbeafe", sw2:"#bfdbfe" },
-  { id:"green",    label:"Verde",   sw1:"#dcfce7", sw2:"#bbf7d0" },
-  { id:"contrast", label:"Contraste", sw1:"#1f2937", sw2:"#111827" },
-];
-const wallPresets = [
-  { id:"none",  label:"Sem" },
-  { id:"dots",  label:"Pontinhos" },
-  { id:"grid",  label:"Quadriculado" },
-  { id:"paper", label:"Papel" },
-];
-function loadTheme(){
-  try{
-    const saved = JSON.parse(localStorage.getItem(THEME_KEY)||"{}");
-    return { name: saved.name || "default", wall: saved.wall || "none" };
-  }catch{ return { name:"default", wall:"none" }; }
-}
-function saveTheme(t){
-  localStorage.setItem(THEME_KEY, JSON.stringify(t || {}));
-}
-function applyTheme(t){
-  // paleta (classe no body)
-  document.body.classList.remove("theme-dark","theme-blue","theme-green","theme-contrast");
-  if(t.name && t.name!=="default") document.body.classList.add("theme-"+t.name);
-
-  // papel de parede (classe no #chat)
-  const chatEl = document.getElementById("chat");
-  chatEl.classList.remove("wall-none","wall-dots","wall-grid","wall-paper");
-  chatEl.classList.add("wall-"+(t.wall || "none"));
-
-  saveTheme(t);
-}
-function buildThemeMenu(){
-  const pal = document.getElementById("themePalette");
-  const walls = document.getElementById("themeWalls");
-  const current = loadTheme();
-
-  pal.innerHTML = "";
-  themePresets.forEach(p=>{
-    const btn = document.createElement("button");
-    btn.className = "theme-chip";
-    btn.dataset.theme = p.id;
-    btn.innerHTML = `
-      <span class="swatch" style="background:${p.sw1}"></span>
-      <span class="swatch" style="background:${p.sw2}"></span>
-      <span class="text-sm">${p.label}</span>
-    `;
-    if(current.name===p.id) btn.classList.add("chip-selected");
-    btn.onclick = ()=>{
-      document.querySelectorAll("#themePalette .theme-chip").forEach(b=>b.classList.remove("chip-selected"));
-      btn.classList.add("chip-selected");
-      applyTheme({ name:p.id, wall: loadTheme().wall });
-    };
-    pal.appendChild(btn);
-  });
-
-  walls.innerHTML = "";
-  wallPresets.forEach(w=>{
-    const wb = document.createElement("button");
-    wb.className = "wall-chip text-sm";
-    wb.dataset.wall = w.id;
-    wb.textContent = w.label;
-    if(current.wall===w.id) wb.classList.add("chip-selected");
-    wb.onclick = ()=>{
-      document.querySelectorAll("#themeWalls .wall-chip").forEach(b=>b.classList.remove("chip-selected"));
-      wb.classList.add("chip-selected");
-      applyTheme({ name: loadTheme().name, wall: w.id });
-    };
-    walls.appendChild(wb);
-  });
-}
-
-/** ====== DOM ====== */
 const elAgenteNome = document.getElementById("agenteNome");
 const elAgenteCarteira = document.getElementById("agenteCarteira");
 const elAgenteStatus = document.getElementById("agenteStatus");
@@ -364,8 +212,6 @@ const menuConcluir = document.getElementById("menuConcluir");
 const digitando = document.getElementById("digitando");
 const btnLogout = document.getElementById("btnLogout");
 const btnToggleOnline = document.getElementById("btnToggleOnline");
-
-/* ====== Menu Concluir (original) ====== */
 const MOTIVOS_CONCLUSAO = [
   "Realizou negociação",
   "Solicitou 2ª via de boleto",
@@ -373,6 +219,8 @@ const MOTIVOS_CONCLUSAO = [
   "Dúvidas gerais",
   "Cliente ficou inativo",
 ];
+
+/* ======= Menu concluir ======= */
 function renderMenuConcluir() {
   menuConcluir.innerHTML = MOTIVOS_CONCLUSAO.map(m => `
     <button type="button"
@@ -408,32 +256,6 @@ btnConcluir.onclick = () => {
 };
 renderMenuConcluir();
 
-/* ====== Menu Tema (novo) ====== */
-const btnTema = document.getElementById("btnTema");
-const menuTema = document.getElementById("menuTema");
-btnTema.addEventListener("click", (e)=>{
-  e.stopPropagation();
-  if(menuTema.classList.contains("hidden")){
-    buildThemeMenu();
-    menuTema.classList.remove("hidden");
-    document.addEventListener("click", closeThemeOnClickOutside, { capture:true });
-  }else{
-    menuTema.classList.add("hidden");
-    document.removeEventListener("click", closeThemeOnClickOutside, { capture:true });
-  }
-});
-function closeThemeOnClickOutside(ev){
-  const within = menuTema.contains(ev.target) || btnTema.contains(ev.target);
-  if(!within){
-    menuTema.classList.add("hidden");
-    document.removeEventListener("click", closeThemeOnClickOutside, { capture:true });
-  }
-}
-document.getElementById("btnTemaReset").addEventListener("click", ()=>{
-  applyTheme({ name:"default", wall:"none" });
-  buildThemeMenu();
-});
-
 /** ====== Util ====== */
 function qsParam(name){ return new URLSearchParams(location.search).get(name); }
 function escapeHtml(s){
@@ -465,9 +287,6 @@ function setStatus(online){
 
 /** ====== Boot ====== */
 async function boot(){
-  // aplica tema salvo
-  applyTheme(loadTheme());
-
   agente.codigo  = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
   agente.origem  = localStorage.getItem("agente_origem") || qsParam("origem") || null;
 
@@ -642,7 +461,7 @@ btnLogout.onclick = async () => {
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo,10), carteira: agente.carteira })
     }).catch(()=>{});
-  }catch(_){} 
+  }catch(_){}
 
   try{
     localStorage.removeItem("agente_codigo");
@@ -758,6 +577,16 @@ textarea.addEventListener("keydown", e => {
   if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); if(!btnEnviar.disabled) enviarMensagem(); }
 });
 
+/* Heurística robusta para direção da mensagem */
+function isIncoming(m){
+  const s = (m.status || "").toLowerCase();
+  if (typeof m.from_me === "boolean") return !m.from_me;
+  if (m.direction) return String(m.direction).toLowerCase().startsWith("in");
+  if (["in","received","incoming"].includes(s)) return true;
+  if (["out","sent","delivered","read","outgoing"].includes(s)) return false;
+  return s === "in";
+}
+
 async function carregarMensagens(incremental=true){
   if(!selecionado) return;
   let url = `${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`;
@@ -789,7 +618,9 @@ function renderMsg(m, incremental){
   }
 
   const hora = new Date(m.data_hora).toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit", timeZone:"America/Sao_Paulo"});
-  const div = document.createElement("div"); div.className = `msg ${m.status==='in'?'recebida':'enviada'}`;
+  const div = document.createElement("div");
+  const incoming = isIncoming(m);
+  div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
 
   if(m.tipo==="imagem" || m.mensagem_final==="[image]"){
     div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div>
@@ -820,11 +651,15 @@ function renderMsg(m, incremental){
     div.innerHTML = `<div>${escapeHtml(m.mensagem_final||"")}</div><span class="hora">${hora}</span>`;
   }
 
-  if(m.status==='in'){
-    const btn = document.createElement("button");
-    btn.className = "btn-responder"; btn.title="Responder"; btn.innerHTML="↩";
-    btn.onclick = () => responderMensagem(m.msg_id, m.mensagem_final||"");
-    div.appendChild(btn);
+  /* Ação de Responder (aparece ao passar o mouse) — apenas em mensagens recebidas */
+  if(incoming){
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    const replyBtn = document.createElement("button");
+    replyBtn.className = "icon-btn"; replyBtn.title = "Responder"; replyBtn.textContent = "↩";
+    replyBtn.onclick = () => responderMensagem(m.msg_id, m.mensagem_final || "");
+    actions.appendChild(replyBtn);
+    div.appendChild(actions);
   }
 
   chat.appendChild(div);
@@ -839,7 +674,7 @@ async function carregarImagem(div, btn, msg_id){
     const j = await r.json();
     if(j.ok && j.data_uri){
       const img = document.createElement("img");
-      img.src = j.data_uri; img.alt="Imagem"; img.className="mt-2 rounded-lg max-w-[150px] border cursor-pointer";
+      img.src = j.data_uri; img.alt="Imagem"; img.className="thumb mt-2";
       img.onclick = () => abrirModalImagem(j.data_uri);
       div.insertBefore(img, btn); btn.remove();
     }else throw new Error(j.erro||"Resposta inválida");
@@ -920,7 +755,7 @@ closeModal.onclick = fecharModal; imageModal.onclick = e => { if(e.target===imag
 function fecharModal(){ imageModal.classList.add("hidden"); modalImg.src=""; isModalOpen=false; }
 
 /** ====== Helpers visuais ====== */
-function limparChat(){ chat.innerHTML = '<p id="loading" class="text-center" style="color:var(--muted)">Pegue uma conversa para iniciar…</p>'; }
+function limparChat(){ chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>'; }
 
 /** ====== Init ====== */
 document.getElementById("buscaTicket").addEventListener("input", e => filtrarTickets(e.target.value));
