@@ -7,70 +7,12 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px}
-
-  /* ========= Bolhas de mensagem (ajustadas) ========= */
-  .msg{
-    display:inline-block;                         /* encolhe ao conteúdo */
-    max-width:min(70%, 560px);
-    padding:10px 14px 18px;
-    margin:6px 0;
-    position:relative;
-    border-radius:18px;
-    word-break:break-word;
-    overflow-wrap:anywhere;
-    box-shadow:0 1px 2px rgba(0,0,0,.10);
-    transition:background .18s ease;
-  }
-  @media (max-width:768px){ .msg{ max-width:86%; } }
-
-  .msg.enviada{
-    align-self:flex-end;
-    background:linear-gradient(120deg, var(--bubble-out-g1, #dcf8c6), var(--bubble-out-g2, #b8f0a4));
-    color:#111827;
-  }
-  .msg.recebida{
-    align-self:flex-start;
-    background:var(--bubble-in-bg, #fff);
-    border:1px solid var(--bubble-in-border, #e2e8f0);
-  }
-  .msg .hora{
-    position:absolute; right:8px; bottom:4px;
-    font-size:11px; color:#4b5563;
-  }
-
-  /* Caudas dos balões */
-  .msg.enviada::after, .msg.recebida::after{
-    content:"";
-    position:absolute; bottom:0; width:14px; height:14px;
-    clip-path:polygon(0 0, 100% 0, 0 100%);
-  }
-  .msg.enviada::after{
-    right:-7px;
-    background:linear-gradient(120deg, var(--bubble-out-g1, #dcf8c6), var(--bubble-out-g2, #b8f0a4));
-  }
-  .msg.recebida::after{
-    left:-7px;
-    background:var(--bubble-in-bg, #fff);
-    border-left:1px solid var(--bubble-in-border, #e2e8f0);
-    border-bottom:1px solid var(--bubble-in-border, #e2e8f0);
-  }
-
-  /* Ações dentro do balão (ex: responder) */
-  .msg .actions{
-    position:absolute; top:6px; right:6px;
-    display:flex; gap:6px;
-    opacity:0; pointer-events:none;
-    transition:opacity .18s ease;
-  }
-  .msg:hover .actions,
-  .msg:focus-within .actions{ opacity:1; pointer-events:auto; }
-  .icon-btn{ font-size:14px; color:#64748b; cursor:pointer; }
-  .icon-btn:hover{ color:#2563eb; }
-
-  /* Mídia dentro do balão */
-  .msg img.thumb{ max-width:280px; height:auto; border-radius:12px; border:1px solid #e5e7eb; cursor:pointer; }
-
-  /* Itens já existentes */
+  .msg{max-width:70%;padding:10px 14px 24px;border-radius:18px;margin:4px 0;position:relative;white-space:pre-wrap;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .msg.enviada{background:linear-gradient(120deg,#dcf8c6,#b8f0a4);align-self:flex-end}
+  .msg.recebida{background:#fff;align-self:flex-start;border:1px solid #e5e7f0}
+  .msg .hora{font-size:11px;color:#555;position:absolute;bottom:4px;right:8px}
+  .msg .btn-responder{position:absolute;top:6px;right:6px;font-size:14px;color:#4b5563;opacity:0;transition:opacity .2s}
+  .msg.recebida:hover .btn-responder{opacity:1}
   .dia{text-align:center;margin:12px 0;font-size:12px;color:#888}
   .ticket-selected{background:#f0f9ff !important}
   .badge{background:#22c55e;color:#fff;font-size:10px;font-weight:700;border-radius:9999px;padding:2px 6px;min-width:18px;text-align:center}
@@ -91,7 +33,7 @@
         <div class="text-xs text-gray-500">Status: <span id="agenteStatus"><span class="dot offline"></span>Offline</span></div>
       </div>
       <div class="flex flex-col items-end gap-2">
-        <!-- Toggle Online/Offline -->
+        <!-- ✅ Novo: Toggle Online/Offline -->
         <button id="btnToggleOnline" class="px-3 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50" disabled>Ficar online</button>
         <button id="btnPegarProxima" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50" disabled>Pegar próxima</button>
         <!-- Logout -->
@@ -195,6 +137,9 @@ let isModalOpen = false;
 let userTyping = false;
 let respostaMsgId = null;
 
+/** ====== Constantes de documento ====== */
+const DOC_PREVIEW_MAX = 2 * 1024 * 1024; // 2MB -> abre preview embutido para PDFs
+
 const elAgenteNome = document.getElementById("agenteNome");
 const elAgenteCarteira = document.getElementById("agenteCarteira");
 const elAgenteStatus = document.getElementById("agenteStatus");
@@ -220,7 +165,6 @@ const MOTIVOS_CONCLUSAO = [
   "Cliente ficou inativo",
 ];
 
-/* ======= Menu concluir ======= */
 function renderMenuConcluir() {
   menuConcluir.innerHTML = MOTIVOS_CONCLUSAO.map(m => `
     <button type="button"
@@ -229,6 +173,7 @@ function renderMenuConcluir() {
       ${m}
     </button>
   `).join("");
+  // handler de clique em cada motivo
   menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => {
     btn.onclick = async () => {
       const motivo = btn.getAttribute("data-motivo");
@@ -237,9 +182,11 @@ function renderMenuConcluir() {
     };
   });
 }
+
 function abrirMenuConcluir() {
   if (!selecionado || btnConcluir.disabled) return;
   menuConcluir.classList.remove("hidden");
+  // clique-fora para fechar
   document.addEventListener("click", clickForaMenuConcluir, { capture: true });
 }
 function fecharMenuConcluir() {
@@ -250,10 +197,13 @@ function clickForaMenuConcluir(e) {
   const within = menuConcluir.contains(e.target) || btnConcluir.contains(e.target);
   if (!within) fecharMenuConcluir();
 }
+
 btnConcluir.onclick = () => {
   if (menuConcluir.classList.contains("hidden")) abrirMenuConcluir();
   else fecharMenuConcluir();
 };
+
+// chama no boot
 renderMenuConcluir();
 
 /** ====== Util ====== */
@@ -273,6 +223,7 @@ function setStatus(online){
   agente.online = !!online;
   btnPegarProxima.disabled = !online;
   btnToggleOnline.disabled = false;
+  // troca estilo/label do botão
   if(agente.online){
     btnToggleOnline.textContent = "Ficar offline";
     btnToggleOnline.classList.remove("bg-green-600","hover:bg-green-700");
@@ -283,6 +234,14 @@ function setStatus(online){
     btnToggleOnline.classList.add("bg-green-600","text-white","hover:bg-green-700");
     btnToggleOnline.classList.remove("bg-gray-100");
   }
+}
+
+function bytesToHuman(n){
+  if(!n && n !== 0) return "";
+  const u=["B","KB","MB","GB","TB"];
+  let i=0, s=n;
+  while(s>=1024 && i<u.length-1){ s/=1024; i++; }
+  return `${s.toFixed(s>=10||i===0?0:1)} ${u[i]}`;
 }
 
 /** ====== Boot ====== */
@@ -314,12 +273,13 @@ async function boot(){
       const r = await fetch(url);
       if (r.ok) {
         tickets = await r.json();
-        saveTickets();
+        saveTickets(); // opcional, mantém no storage
       }
     }catch(_){}
 
     renderTickets();
 
+    // polling de ordem (se quiser manter para UI/preview)
     if(pollingContatos) clearInterval(pollingContatos);
     pollingContatos = setInterval(refreshOrdemCarteira, 5000);
     await refreshOrdemCarteira();
@@ -370,6 +330,7 @@ btnToggleOnline.onclick = async () => {
   elMsgAviso.classList.add("hidden"); elMsgAviso.textContent = "";
 
   if(!agente.online){
+    // -> Ficar online
     try{
       const r = await fetch(`${FILA_API}/fila/online`, {
         method:"POST",
@@ -388,6 +349,7 @@ btnToggleOnline.onclick = async () => {
       elMsgAviso.textContent = (e?.message||"Falha ao entrar online");
     }
   }else{
+    // -> Ficar offline
     try{
       const r = await fetch(`${FILA_API}/fila/offline`, {
         method:"DELETE",
@@ -422,6 +384,7 @@ btnPegarProxima.onclick = async () => {
     const j = await r.json();
     if(!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
 
+    // evita duplicar localmente
     if(!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)){
       tickets.unshift(j.ticket);
       saveTickets();
@@ -432,6 +395,7 @@ btnPegarProxima.onclick = async () => {
     alert("Falha ao pegar próxima.");
   }
 };
+
 
 btnLiberar.onclick = async () => {
   if(!selecionado) return;
@@ -461,7 +425,7 @@ btnLogout.onclick = async () => {
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo,10), carteira: agente.carteira })
     }).catch(()=>{});
-  }catch(_){}
+  }catch(_){} // ignore
 
   try{
     localStorage.removeItem("agente_codigo");
@@ -551,6 +515,7 @@ async function concluirAtendimento(motivo) {
       return;
     }
 
+    // remove da lista e limpa UI
     tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
     saveTickets();
     renderTickets();
@@ -566,6 +531,7 @@ async function concluirAtendimento(motivo) {
   }
 }
 
+
 /** ====== Chat ====== */
 textarea.addEventListener("input", () => {
   textarea.style.height = "auto";
@@ -576,16 +542,6 @@ textarea.addEventListener("input", () => {
 textarea.addEventListener("keydown", e => {
   if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); if(!btnEnviar.disabled) enviarMensagem(); }
 });
-
-/* Heurística robusta para direção da mensagem */
-function isIncoming(m){
-  const s = (m.status || "").toLowerCase();
-  if (typeof m.from_me === "boolean") return !m.from_me;
-  if (m.direction) return String(m.direction).toLowerCase().startsWith("in");
-  if (["in","received","incoming"].includes(s)) return true;
-  if (["out","sent","delivered","read","outgoing"].includes(s)) return false;
-  return s === "in";
-}
 
 async function carregarMensagens(incremental=true){
   if(!selecionado) return;
@@ -618,9 +574,7 @@ function renderMsg(m, incremental){
   }
 
   const hora = new Date(m.data_hora).toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit", timeZone:"America/Sao_Paulo"});
-  const div = document.createElement("div");
-  const incoming = isIncoming(m);
-  div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
+  const div = document.createElement("div"); div.className = `msg ${m.status==='in'?'recebida':'enviada'}`;
 
   if(m.tipo==="imagem" || m.mensagem_final==="[image]"){
     div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div>
@@ -629,6 +583,7 @@ function renderMsg(m, incremental){
     const btn = div.querySelector(".btn-olhinho");
     if(!m.msg_id){ btn.disabled=true; btn.textContent="Imagem indisponível"; }
     else btn.onclick = () => carregarImagem(div, btn, m.msg_id);
+
   }else if(m.tipo==="audio" || m.mensagem_final==="[audio]"){
     div.innerHTML = `<div class="text-gray-600 italic">[áudio recebido]</div>
       <button class="btn-audio text-blue-600 underline mt-1">▶ Reproduzir áudio</button>
@@ -636,6 +591,32 @@ function renderMsg(m, incremental){
     const btn = div.querySelector(".btn-audio");
     if(!m.msg_id){ btn.disabled=true; btn.textContent="Áudio indisponível"; }
     else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
+
+  }else if(m.tipo==="document" || m.mensagem_final==="[document]"){
+    // ✅ Documento recebido
+    div.innerHTML = `<div class="text-gray-600 italic">[documento recebido]</div>
+      <button class="btn-doc text-blue-600 underline mt-1">📎 Ver documento</button>
+      <span class="hora">${hora}</span>`;
+    const btn = div.querySelector(".btn-doc");
+    if(!m.msg_id){ btn.disabled=true; btn.textContent="Documento indisponível"; }
+    else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
+
+  }else if(typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")){
+    // ✅ Nosso envio de PDF (mensagens_avulsas) vira um cartão com link
+    const lines = m.mensagem_final.split("\n");
+    const filename = (lines[0]||"").replace("📎 PDF:","").trim() || "Arquivo";
+    const link = (lines[1]||"").replace("🔗","").trim();
+    div.innerHTML = `
+      <div class="flex items-start gap-2">
+        <div class="text-xl leading-none">📄</div>
+        <div class="min-w-0">
+          <div class="font-semibold">${escapeHtml(filename)}</div>
+          ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="text-blue-600 underline break-all">Abrir/baixar</a>` : `<span class="text-slate-500">sem link</span>`}
+        </div>
+      </div>
+      <span class="hora">${hora}</span>
+    `;
+
   }else if(m.tipo==="emoji" || m.mensagem_final==="[reaction]"){
     const wrap = document.createElement("div"); wrap.className = "flex items-center gap-2";
     const emojiEl = document.createElement("span"); emojiEl.className="text-2xl"; emojiEl.textContent="🙂";
@@ -644,22 +625,18 @@ function renderMsg(m, incremental){
     const horaSpan = document.createElement("span"); horaSpan.className="hora"; horaSpan.textContent=hora; div.appendChild(horaSpan);
     if(m.msg_id){
       fetch(`${CONV_API}/api/conversas/emoji/${encodeURIComponent(m.msg_id)}`)
-        .then(r=>r.json()).then(j=>{ if(j.ok&&j.emoji) emojiEl.textContent=j.emoji; else label.textContent="emoji não carregado"; })
+        .then(r=>r.json()).then(j=>{ if(j.ok&&j.emoji) emojiEl.textContent = j.emoji; else label.textContent = "emoji não carregado"; })
         .catch(()=>label.textContent="falha ao carregar emoji");
     }
   }else{
     div.innerHTML = `<div>${escapeHtml(m.mensagem_final||"")}</div><span class="hora">${hora}</span>`;
   }
 
-  /* Ação de Responder (aparece ao passar o mouse) — apenas em mensagens recebidas */
-  if(incoming){
-    const actions = document.createElement("div");
-    actions.className = "actions";
-    const replyBtn = document.createElement("button");
-    replyBtn.className = "icon-btn"; replyBtn.title = "Responder"; replyBtn.textContent = "↩";
-    replyBtn.onclick = () => responderMensagem(m.msg_id, m.mensagem_final || "");
-    actions.appendChild(replyBtn);
-    div.appendChild(actions);
+  if(m.status==='in'){
+    const btn = document.createElement("button");
+    btn.className = "btn-responder"; btn.title="Responder"; btn.innerHTML="↩";
+    btn.onclick = () => responderMensagem(m.msg_id, m.mensagem_final||"");
+    div.appendChild(btn);
   }
 
   chat.appendChild(div);
@@ -674,7 +651,7 @@ async function carregarImagem(div, btn, msg_id){
     const j = await r.json();
     if(j.ok && j.data_uri){
       const img = document.createElement("img");
-      img.src = j.data_uri; img.alt="Imagem"; img.className="thumb mt-2";
+      img.src = j.data_uri; img.alt="Imagem"; img.className="mt-2 rounded-lg max-w-[150px] border cursor-pointer";
       img.onclick = () => abrirModalImagem(j.data_uri);
       div.insertBefore(img, btn); btn.remove();
     }else throw new Error(j.erro||"Resposta inválida");
@@ -691,6 +668,61 @@ async function carregarAudio(div, btn, msg_id){
       div.insertBefore(audio, btn); btn.remove();
     }else throw new Error(j.erro||"Resposta inválida");
   }catch{ alert("Erro ao carregar áudio"); btn.disabled=false; btn.textContent="▶ Reproduzir áudio"; }
+}
+
+/** 🔹 Documento (novo) */
+async function carregarDocumento(div, btn, msg_id){
+  btn.disabled = true; btn.textContent = "⏳ Carregando…";
+  try{
+    const r = await fetch(`${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}`);
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.erro || "Falha no backend");
+
+    const filename = j.filename || "arquivo";
+    const mime = j.mime_type || "application/octet-stream";
+    const size = j.size_bytes ?? null;
+
+    // container para preview/links
+    const box = document.createElement("div");
+    box.className = "mt-2 space-y-1";
+
+    // Se for PDF pequeno, mostra preview
+    if(mime.startsWith("application/pdf") && j.data_uri && (size === null || size <= DOC_PREVIEW_MAX)){
+      const preview = document.createElement("embed");
+      preview.src = j.data_uri;
+      preview.type = mime;
+      preview.className = "w-[260px] h-[200px] rounded border";
+      box.appendChild(preview);
+
+      const meta = document.createElement("div");
+      meta.className = "text-xs text-slate-600";
+      const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+      meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div>
+                        <div>${size?bytesToHuman(size):""}</div>
+                        <a href="${link}" target="_blank" class="text-blue-600 underline">Abrir/baixar</a>`;
+      box.appendChild(meta);
+    }else{
+      // Outros tipos ou arquivo grande: só linkar para download
+      const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+      const row = document.createElement("div");
+      row.className = "flex items-start gap-2";
+      row.innerHTML = `
+        <div class="text-xl leading-none">📎</div>
+        <div class="min-w-0">
+          <div class="font-semibold truncate">${escapeHtml(filename)}</div>
+          <div class="text-xs text-slate-600">${escapeHtml(mime)} ${size?("• "+bytesToHuman(size)):""}</div>
+          <a href="${link}" target="_blank" class="text-blue-600 underline break-all">Baixar documento</a>
+        </div>`;
+      box.appendChild(row);
+    }
+
+    div.insertBefore(box, btn);
+    btn.remove();
+  }catch(e){
+    console.error(e);
+    alert("Erro ao carregar documento");
+    btn.disabled = false; btn.textContent = "📎 Ver documento";
+  }
 }
 
 function responderMensagem(msgId, conteudo){
