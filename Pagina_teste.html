@@ -7,13 +7,67 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px}
-  .msg{max-width:70%;padding:10px 14px 24px;border-radius:18px;margin:4px 0;position:relative;white-space:pre-wrap;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-  .msg.enviada{background:linear-gradient(120deg,#dcf8c6,#b8f0a4);align-self:flex-end}
-  .msg.recebida{background:#fff;align-self:flex-start;border:1px solid #e5e7f0}
-  .msg .hora{font-size:11px;color:#555;position:absolute;bottom:4px;right:8px}
-  .msg .btn-responder{position:absolute;top:6px;right:6px;font-size:14px;color:#4b5563;opacity:0;transition:opacity .2s}
-  .msg.recebida:hover .btn-responder{opacity:1}
+
+  /* ========= Balões (iguais ao Supervisor) ========= */
+  .msg{
+    display:inline-block;                       /* encolhe ao conteúdo */
+    max-width:min(70%, 560px);
+    padding:10px 14px 18px;                     /* espaço pro relógio */
+    margin:6px 0;
+    position:relative;
+    border-radius:18px;
+    word-break:break-word;
+    overflow-wrap:anywhere;                     /* evita estouro com links/PDF */
+    white-space:normal;                         /* remove pre-wrap que “esticava” */
+    box-shadow:0 1px 2px rgba(0,0,0,.10);
+    transition:background .18s ease;
+  }
+  @media (max-width:768px){ .msg{ max-width:86%; } }
+
+  .msg.enviada{
+    align-self:flex-end;
+    background:linear-gradient(120deg, var(--bubble-out-g1,#dcf8c6), var(--bubble-out-g2,#b8f0a4));
+    color:#111827;
+  }
+  .msg.recebida{
+    align-self:flex-start;
+    background:var(--bubble-in-bg,#fff);
+    border:1px solid var(--bubble-in-border,#e2e8f0);
+  }
+  .msg .hora{
+    position:absolute; right:8px; bottom:4px;
+    font-size:11px; color:#4b5563;
+  }
+
+  /* Caudas */
+  .msg.enviada::after, .msg.recebida::after{
+    content:""; position:absolute; bottom:0; width:14px; height:14px;
+    clip-path:polygon(0 0, 100% 0, 0 100%);
+  }
+  .msg.enviada::after{
+    right:-7px;
+    background:linear-gradient(120deg, var(--bubble-out-g1,#dcf8c6), var(--bubble-out-g2,#b8f0a4));
+  }
+  .msg.recebida::after{
+    left:-7px;
+    background:var(--bubble-in-bg,#fff);
+    border-left:1px solid var(--bubble-in-border,#e2e8f0);
+    border-bottom:1px solid var(--bubble-in-border,#e2e8f0);
+  }
+
+  /* Botão responder */
+  .msg .btn-responder{
+    position:absolute; top:6px; right:6px;
+    font-size:14px; color:#4b5563; opacity:0; transition:opacity .2s;
+  }
+  .msg.recebida:hover .btn-responder{ opacity:1; }
+
+  /* Mídia no balão */
+  .msg img.thumb{ max-width:280px; height:auto; border-radius:12px; border:1px solid #e5e7eb; cursor:pointer; }
+
+  /* Separador de dia */
   .dia{text-align:center;margin:12px 0;font-size:12px;color:#888}
+
   .ticket-selected{background:#f0f9ff !important}
   .badge{background:#22c55e;color:#fff;font-size:10px;font-weight:700;border-radius:9999px;padding:2px 6px;min-width:18px;text-align:center}
   .dot{width:10px;height:10px;border-radius:9999px;display:inline-block;margin-right:6px}
@@ -21,6 +75,7 @@
 
   /* ====== Cartão de mensagem de sistema ====== */
   .msg.system{background:#f8fafc; border:1px dashed #cbd5e1; align-self:center; max-width:80%}
+  .msg.system::after{ display:none; } /* sem cauda para system */
   .sys-title{font-weight:700; font-size:.9rem; display:flex; align-items:center; gap:.5rem}
   .sys-body{font-size:.92rem; color:#334155}
   .sys-meta{font-size:.75rem; color:#64748b}
@@ -40,7 +95,7 @@
         <div class="text-xs text-gray-500">Status: <span id="agenteStatus"><span class="dot offline"></span>Offline</span></div>
       </div>
       <div class="flex flex-col items-end gap-2">
-        <!-- ✅ Novo: Toggle Online/Offline -->
+        <!-- Toggle Online/Offline -->
         <button id="btnToggleOnline" class="px-3 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50" disabled>Ficar online</button>
         <button id="btnPegarProxima" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50" disabled>Pegar próxima</button>
         <!-- Logout -->
@@ -242,13 +297,22 @@ function setStatus(online){
     btnToggleOnline.classList.remove("bg-gray-100");
   }
 }
-
 function bytesToHuman(n){
   if(!n && n !== 0) return "";
   const u=["B","KB","MB","GB","TB"];
   let i=0, s=n;
   while(s>=1024 && i<u.length-1){ s/=1024; i++; }
   return `${s.toFixed(s>=10||i===0?0:1)} ${u[i]}`;
+}
+
+/* Heurística robusta de direção (igual ao Supervisor) */
+function isIncoming(m){
+  const s = (m.status || "").toLowerCase();
+  if (typeof m.from_me === "boolean") return !m.from_me;
+  if (m.direction) return String(m.direction).toLowerCase().startsWith("in");
+  if (["in","received","incoming"].includes(s)) return true;
+  if (["out","sent","delivered","read","outgoing"].includes(s)) return false;
+  return s === "in";
 }
 
 /** ====== Boot ====== */
@@ -581,9 +645,9 @@ function renderMsg(m, incremental){
   }
 
   const hora = new Date(m.data_hora).toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit", timeZone:"America/Sao_Paulo"});
-  const isIncoming = (m.status === 'in'); // heurística mantida
+  const incoming = isIncoming(m);
   const div = document.createElement("div");
-  div.className = `msg ${isIncoming?'recebida':'enviada'}`;
+  div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
 
   if(m.tipo==="imagem" || m.mensagem_final==="[image]"){
     div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div>
@@ -602,7 +666,7 @@ function renderMsg(m, incremental){
     else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
 
   }else if(m.tipo==="document" || m.mensagem_final==="[document]"){
-    // ✅ Documento recebido
+    // Documento recebido
     div.innerHTML = `<div class="text-gray-600 italic">[documento recebido]</div>
       <button class="btn-doc text-blue-600 underline mt-1">📎 Ver documento</button>
       <span class="hora">${hora}</span>`;
@@ -611,7 +675,7 @@ function renderMsg(m, incremental){
     else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
 
   }else if(typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")){
-    // ✅ Nosso envio de PDF (mensagens_avulsas) vira um cartão com link
+    // Nosso envio de PDF vira um cartão com link
     const lines = m.mensagem_final.split("\n");
     const filename = (lines[0]||"").replace("📎 PDF:","").trim() || "Arquivo";
     const link = (lines[1]||"").replace("🔗","").trim();
@@ -639,7 +703,7 @@ function renderMsg(m, incremental){
     }
 
   }else if(m.tipo==="system" || m.mensagem_final==="[system]"){
-    /* ✅ Evento de sistema */
+    /* Evento de sistema */
     div.className = "msg system";
     div.innerHTML = `
       <div class="sys-title"><span>ℹ️ Evento do sistema</span> <span class="sys-pill">carregando…</span></div>
@@ -693,7 +757,7 @@ function renderMsg(m, incremental){
   }
 
   // Botão responder apenas para mensagens do cliente (não para system)
-  if(m.status==='in' && !(m.tipo==="system" || m.mensagem_final==="[system]")){
+  if(incoming && !(m.tipo==="system" || m.mensagem_final==="[system]")){
     const btn = document.createElement("button");
     btn.className = "btn-responder"; btn.title="Responder"; btn.innerHTML="↩";
     btn.onclick = () => responderMensagem(m.msg_id, m.mensagem_final||"");
@@ -712,7 +776,7 @@ async function carregarImagem(div, btn, msg_id){
     const j = await r.json();
     if(j.ok && j.data_uri){
       const img = document.createElement("img");
-      img.src = j.data_uri; img.alt="Imagem"; img.className="mt-2 rounded-lg max-w-[150px] border cursor-pointer";
+      img.src = j.data_uri; img.alt="Imagem"; img.className="thumb mt-2";
       img.onclick = () => abrirModalImagem(j.data_uri);
       div.insertBefore(img, btn); btn.remove();
     }else throw new Error(j.erro||"Resposta inválida");
@@ -731,7 +795,7 @@ async function carregarAudio(div, btn, msg_id){
   }catch{ alert("Erro ao carregar áudio"); btn.disabled=false; btn.textContent="▶ Reproduzir áudio"; }
 }
 
-/** 🔹 Documento (novo) */
+/** 🔹 Documento */
 async function carregarDocumento(div, btn, msg_id){
   btn.disabled = true; btn.textContent = "⏳ Carregando…";
   try{
