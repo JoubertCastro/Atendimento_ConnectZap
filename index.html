@@ -18,6 +18,13 @@
   .badge{background:#22c55e;color:#fff;font-size:10px;font-weight:700;border-radius:9999px;padding:2px 6px;min-width:18px;text-align:center}
   .dot{width:10px;height:10px;border-radius:9999px;display:inline-block;margin-right:6px}
   .dot.online{background:#16a34a}.dot.offline{background:#9ca3af}
+
+  /* ====== Cartão de mensagem de sistema ====== */
+  .msg.system{background:#f8fafc; border:1px dashed #cbd5e1; align-self:center; max-width:80%}
+  .sys-title{font-weight:700; font-size:.9rem; display:flex; align-items:center; gap:.5rem}
+  .sys-body{font-size:.92rem; color:#334155}
+  .sys-meta{font-size:.75rem; color:#64748b}
+  .sys-pill{display:inline-block; font-size:.7rem; font-weight:700; padding:.1rem .4rem; border-radius:9999px; background:#eef2ff; color:#3730a3}
 </style>
 </head>
 <body class="h-screen flex bg-gray-100">
@@ -137,6 +144,9 @@ let isModalOpen = false;
 let userTyping = false;
 let respostaMsgId = null;
 
+/** ====== Constantes de documento ====== */
+const DOC_PREVIEW_MAX = 2 * 1024 * 1024; // 2MB -> abre preview embutido para PDFs
+
 const elAgenteNome = document.getElementById("agenteNome");
 const elAgenteCarteira = document.getElementById("agenteCarteira");
 const elAgenteStatus = document.getElementById("agenteStatus");
@@ -231,6 +241,14 @@ function setStatus(online){
     btnToggleOnline.classList.add("bg-green-600","text-white","hover:bg-green-700");
     btnToggleOnline.classList.remove("bg-gray-100");
   }
+}
+
+function bytesToHuman(n){
+  if(!n && n !== 0) return "";
+  const u=["B","KB","MB","GB","TB"];
+  let i=0, s=n;
+  while(s>=1024 && i<u.length-1){ s/=1024; i++; }
+  return `${s.toFixed(s>=10||i===0?0:1)} ${u[i]}`;
 }
 
 /** ====== Boot ====== */
@@ -563,7 +581,9 @@ function renderMsg(m, incremental){
   }
 
   const hora = new Date(m.data_hora).toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit", timeZone:"America/Sao_Paulo"});
-  const div = document.createElement("div"); div.className = `msg ${m.status==='in'?'recebida':'enviada'}`;
+  const isIncoming = (m.status === 'in'); // heurística mantida
+  const div = document.createElement("div");
+  div.className = `msg ${isIncoming?'recebida':'enviada'}`;
 
   if(m.tipo==="imagem" || m.mensagem_final==="[image]"){
     div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div>
@@ -572,6 +592,7 @@ function renderMsg(m, incremental){
     const btn = div.querySelector(".btn-olhinho");
     if(!m.msg_id){ btn.disabled=true; btn.textContent="Imagem indisponível"; }
     else btn.onclick = () => carregarImagem(div, btn, m.msg_id);
+
   }else if(m.tipo==="audio" || m.mensagem_final==="[audio]"){
     div.innerHTML = `<div class="text-gray-600 italic">[áudio recebido]</div>
       <button class="btn-audio text-blue-600 underline mt-1">▶ Reproduzir áudio</button>
@@ -579,6 +600,32 @@ function renderMsg(m, incremental){
     const btn = div.querySelector(".btn-audio");
     if(!m.msg_id){ btn.disabled=true; btn.textContent="Áudio indisponível"; }
     else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
+
+  }else if(m.tipo==="document" || m.mensagem_final==="[document]"){
+    // ✅ Documento recebido
+    div.innerHTML = `<div class="text-gray-600 italic">[documento recebido]</div>
+      <button class="btn-doc text-blue-600 underline mt-1">📎 Ver documento</button>
+      <span class="hora">${hora}</span>`;
+    const btn = div.querySelector(".btn-doc");
+    if(!m.msg_id){ btn.disabled=true; btn.textContent="Documento indisponível"; }
+    else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
+
+  }else if(typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")){
+    // ✅ Nosso envio de PDF (mensagens_avulsas) vira um cartão com link
+    const lines = m.mensagem_final.split("\n");
+    const filename = (lines[0]||"").replace("📎 PDF:","").trim() || "Arquivo";
+    const link = (lines[1]||"").replace("🔗","").trim();
+    div.innerHTML = `
+      <div class="flex items-start gap-2">
+        <div class="text-xl leading-none">📄</div>
+        <div class="min-w-0">
+          <div class="font-semibold">${escapeHtml(filename)}</div>
+          ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="text-blue-600 underline break-all">Abrir/baixar</a>` : `<span class="text-slate-500">sem link</span>`}
+        </div>
+      </div>
+      <span class="hora">${hora}</span>
+    `;
+
   }else if(m.tipo==="emoji" || m.mensagem_final==="[reaction]"){
     const wrap = document.createElement("div"); wrap.className = "flex items-center gap-2";
     const emojiEl = document.createElement("span"); emojiEl.className="text-2xl"; emojiEl.textContent="🙂";
@@ -587,14 +634,66 @@ function renderMsg(m, incremental){
     const horaSpan = document.createElement("span"); horaSpan.className="hora"; horaSpan.textContent=hora; div.appendChild(horaSpan);
     if(m.msg_id){
       fetch(`${CONV_API}/api/conversas/emoji/${encodeURIComponent(m.msg_id)}`)
-        .then(r=>r.json()).then(j=>{ if(j.ok&&j.emoji) emojiEl.textContent=j.emoji; else label.textContent="emoji não carregado"; })
+        .then(r=>r.json()).then(j=>{ if(j.ok&&j.emoji) emojiEl.textContent = j.emoji; else label.textContent = "emoji não carregado"; })
         .catch(()=>label.textContent="falha ao carregar emoji");
     }
+
+  }else if(m.tipo==="system" || m.mensagem_final==="[system]"){
+    /* ✅ Evento de sistema */
+    div.className = "msg system";
+    div.innerHTML = `
+      <div class="sys-title"><span>ℹ️ Evento do sistema</span> <span class="sys-pill">carregando…</span></div>
+      <div class="sys-body mt-1">Obtendo detalhes…</div>
+      <div class="sys-meta mt-1"></div>
+      <span class="hora">${hora}</span>
+    `;
+    if(!m.msg_id){
+      div.querySelector(".sys-body").textContent = "Detalhes indisponíveis (sem msg_id).";
+      const pill = div.querySelector(".sys-pill"); if(pill) pill.textContent = "indisponível";
+    }else{
+      (async ()=>{
+        try{
+          const r = await fetch(`${CONV_API}/api/conversas/system/${encodeURIComponent(m.msg_id)}`);
+          const j = await r.json();
+          const pill = div.querySelector(".sys-pill");
+          const bodyEl = div.querySelector(".sys-body");
+          const metaEl = div.querySelector(".sys-meta");
+
+          if(!j.ok){
+            if(pill) pill.textContent = "erro";
+            bodyEl.textContent = j.erro || "Falha ao obter detalhes do evento.";
+            return;
+          }
+
+          if(pill) pill.textContent = j.type || "system";
+
+          if(j.type==="user_changed_number" && j.old_wa_id && j.wa_id){
+            bodyEl.innerHTML = `
+              O cliente alterou o número:<br>
+              <span class="font-semibold">${escapeHtml(j.old_wa_id)}</span>
+              <span class="mx-1">→</span>
+              <span class="font-semibold">${escapeHtml(j.wa_id)}</span>
+            `;
+          }else{
+            bodyEl.textContent = j.body || "Evento de sistema recebido.";
+          }
+
+          const src = j.from || j.old_wa_id || "";
+          const pid = j.phone_id ? ` • conta: ${escapeHtml(j.phone_id)}` : "";
+          metaEl.textContent = `${src ? "Origem: "+src : ""}${pid}`;
+        }catch(e){
+          const pill = div.querySelector(".sys-pill"); if(pill) pill.textContent = "erro";
+          div.querySelector(".sys-body").textContent = "Falha ao carregar detalhes do evento.";
+        }
+      })();
+    }
+
   }else{
     div.innerHTML = `<div>${escapeHtml(m.mensagem_final||"")}</div><span class="hora">${hora}</span>`;
   }
 
-  if(m.status==='in'){
+  // Botão responder apenas para mensagens do cliente (não para system)
+  if(m.status==='in' && !(m.tipo==="system" || m.mensagem_final==="[system]")){
     const btn = document.createElement("button");
     btn.className = "btn-responder"; btn.title="Responder"; btn.innerHTML="↩";
     btn.onclick = () => responderMensagem(m.msg_id, m.mensagem_final||"");
@@ -630,6 +729,61 @@ async function carregarAudio(div, btn, msg_id){
       div.insertBefore(audio, btn); btn.remove();
     }else throw new Error(j.erro||"Resposta inválida");
   }catch{ alert("Erro ao carregar áudio"); btn.disabled=false; btn.textContent="▶ Reproduzir áudio"; }
+}
+
+/** 🔹 Documento (novo) */
+async function carregarDocumento(div, btn, msg_id){
+  btn.disabled = true; btn.textContent = "⏳ Carregando…";
+  try{
+    const r = await fetch(`${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}`);
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.erro || "Falha no backend");
+
+    const filename = j.filename || "arquivo";
+    const mime = j.mime_type || "application/octet-stream";
+    const size = j.size_bytes ?? null;
+
+    // container para preview/links
+    const box = document.createElement("div");
+    box.className = "mt-2 space-y-1";
+
+    // Se for PDF pequeno, mostra preview
+    if(mime.startsWith("application/pdf") && j.data_uri && (size === null || size <= DOC_PREVIEW_MAX)){
+      const preview = document.createElement("embed");
+      preview.src = j.data_uri;
+      preview.type = mime;
+      preview.className = "w-[260px] h-[200px] rounded border";
+      box.appendChild(preview);
+
+      const meta = document.createElement("div");
+      meta.className = "text-xs text-slate-600";
+      const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+      meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div>
+                        <div>${size?bytesToHuman(size):""}</div>
+                        <a href="${link}" target="_blank" class="text-blue-600 underline">Abrir/baixar</a>`;
+      box.appendChild(meta);
+    }else{
+      // Outros tipos ou arquivo grande: só linkar para download
+      const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+      const row = document.createElement("div");
+      row.className = "flex items-start gap-2";
+      row.innerHTML = `
+        <div class="text-xl leading-none">📎</div>
+        <div class="min-w-0">
+          <div class="font-semibold truncate">${escapeHtml(filename)}</div>
+          <div class="text-xs text-slate-600">${escapeHtml(mime)} ${size?("• "+bytesToHuman(size)):""}</div>
+          <a href="${link}" target="_blank" class="text-blue-600 underline break-all">Baixar documento</a>
+        </div>`;
+      box.appendChild(row);
+    }
+
+    div.insertBefore(box, btn);
+    btn.remove();
+  }catch(e){
+    console.error(e);
+    alert("Erro ao carregar documento");
+    btn.disabled = false; btn.textContent = "📎 Ver documento";
+  }
 }
 
 function responderMensagem(msgId, conteudo){

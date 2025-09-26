@@ -18,6 +18,13 @@
   .badge{background:#22c55e;color:#fff;font-size:10px;font-weight:700;border-radius:9999px;padding:2px 6px;min-width:18px;text-align:center}
   .dot{width:10px;height:10px;border-radius:9999px;display:inline-block;margin-right:6px}
   .dot.online{background:#16a34a}.dot.offline{background:#9ca3af}
+
+  /* ====== Cartão de mensagem de sistema ====== */
+  .msg.system{background:#f8fafc; border:1px dashed #cbd5e1; align-self:center; max-width:80%}
+  .sys-title{font-weight:700; font-size:.9rem; display:flex; align-items:center; gap:.5rem}
+  .sys-body{font-size:.92rem; color:#334155}
+  .sys-meta{font-size:.75rem; color:#64748b}
+  .sys-pill{display:inline-block; font-size:.7rem; font-weight:700; padding:.1rem .4rem; border-radius:9999px; background:#eef2ff; color:#3730a3}
 </style>
 </head>
 <body class="h-screen flex bg-gray-100">
@@ -574,7 +581,9 @@ function renderMsg(m, incremental){
   }
 
   const hora = new Date(m.data_hora).toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit", timeZone:"America/Sao_Paulo"});
-  const div = document.createElement("div"); div.className = `msg ${m.status==='in'?'recebida':'enviada'}`;
+  const isIncoming = (m.status === 'in'); // heurística mantida
+  const div = document.createElement("div");
+  div.className = `msg ${isIncoming?'recebida':'enviada'}`;
 
   if(m.tipo==="imagem" || m.mensagem_final==="[image]"){
     div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div>
@@ -628,11 +637,63 @@ function renderMsg(m, incremental){
         .then(r=>r.json()).then(j=>{ if(j.ok&&j.emoji) emojiEl.textContent = j.emoji; else label.textContent = "emoji não carregado"; })
         .catch(()=>label.textContent="falha ao carregar emoji");
     }
+
+  }else if(m.tipo==="system" || m.mensagem_final==="[system]"){
+    /* ✅ Evento de sistema */
+    div.className = "msg system";
+    div.innerHTML = `
+      <div class="sys-title"><span>ℹ️ Evento do sistema</span> <span class="sys-pill">carregando…</span></div>
+      <div class="sys-body mt-1">Obtendo detalhes…</div>
+      <div class="sys-meta mt-1"></div>
+      <span class="hora">${hora}</span>
+    `;
+    if(!m.msg_id){
+      div.querySelector(".sys-body").textContent = "Detalhes indisponíveis (sem msg_id).";
+      const pill = div.querySelector(".sys-pill"); if(pill) pill.textContent = "indisponível";
+    }else{
+      (async ()=>{
+        try{
+          const r = await fetch(`${CONV_API}/api/conversas/system/${encodeURIComponent(m.msg_id)}`);
+          const j = await r.json();
+          const pill = div.querySelector(".sys-pill");
+          const bodyEl = div.querySelector(".sys-body");
+          const metaEl = div.querySelector(".sys-meta");
+
+          if(!j.ok){
+            if(pill) pill.textContent = "erro";
+            bodyEl.textContent = j.erro || "Falha ao obter detalhes do evento.";
+            return;
+          }
+
+          if(pill) pill.textContent = j.type || "system";
+
+          if(j.type==="user_changed_number" && j.old_wa_id && j.wa_id){
+            bodyEl.innerHTML = `
+              O cliente alterou o número:<br>
+              <span class="font-semibold">${escapeHtml(j.old_wa_id)}</span>
+              <span class="mx-1">→</span>
+              <span class="font-semibold">${escapeHtml(j.wa_id)}</span>
+            `;
+          }else{
+            bodyEl.textContent = j.body || "Evento de sistema recebido.";
+          }
+
+          const src = j.from || j.old_wa_id || "";
+          const pid = j.phone_id ? ` • conta: ${escapeHtml(j.phone_id)}` : "";
+          metaEl.textContent = `${src ? "Origem: "+src : ""}${pid}`;
+        }catch(e){
+          const pill = div.querySelector(".sys-pill"); if(pill) pill.textContent = "erro";
+          div.querySelector(".sys-body").textContent = "Falha ao carregar detalhes do evento.";
+        }
+      })();
+    }
+
   }else{
     div.innerHTML = `<div>${escapeHtml(m.mensagem_final||"")}</div><span class="hora">${hora}</span>`;
   }
 
-  if(m.status==='in'){
+  // Botão responder apenas para mensagens do cliente (não para system)
+  if(m.status==='in' && !(m.tipo==="system" || m.mensagem_final==="[system]")){
     const btn = document.createElement("button");
     btn.className = "btn-responder"; btn.title="Responder"; btn.innerHTML="↩";
     btn.onclick = () => responderMensagem(m.msg_id, m.mensagem_final||"");
