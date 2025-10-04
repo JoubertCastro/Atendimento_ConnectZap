@@ -99,7 +99,7 @@
         <button id="btnToggleOnline" class="px-3 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50" disabled>Ficar online</button>
         <button id="btnPegarProxima" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50" disabled>Pegar próxima</button>
         <!-- NOVO: Pedir prioridade -->
-        <button id="btnPrioridade" class="px-3 py-2 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50" disabled>Pedir prioridade</button>
+        <button id="btnPrioridade" class="px-3 py-2 text-sm rounded-md text-white disabled:opacity-50" disabled>Pedir prioridade</button>
         <!-- Logout -->
         <button id="btnLogout" class="px-3 py-1 text-xs bg-gray-100 rounded-md hover:bg-gray-200">Logout</button>
       </div>
@@ -219,7 +219,7 @@ let lastTimestampMs = null;
 let lastDayRendered = null;
 let pollingContatos = null;
 let pollingMensagens = null;
-let isModalOpen = false;
+let isModalOpen = false;       // vale também para o modal de prioridade
 let userTyping = false;
 let respostaMsgId = null;
 
@@ -316,10 +316,22 @@ function loadTickets(){ try{ tickets = JSON.parse(localStorage.getItem(keyLocal(
 function setStatus(online){
   elAgenteStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
   agente.online = !!online;
+
+  // Pegar próxima
   btnPegarProxima.disabled = !online;
-  btnPrioridade.disabled = !online; // novo
+
+  // Prioridade (muda cor também)
+  btnPrioridade.disabled = !online;
+  if(online){
+    btnPrioridade.classList.remove('bg-gray-200','text-gray-500','hover:bg-gray-200','cursor-not-allowed');
+    btnPrioridade.classList.add('bg-purple-600','text-white','hover:bg-purple-700');
+  }else{
+    btnPrioridade.classList.remove('bg-purple-600','text-white','hover:bg-purple-700');
+    btnPrioridade.classList.add('bg-gray-200','text-gray-500','hover:bg-gray-200','cursor-not-allowed');
+  }
+
+  // Toggle Online
   btnToggleOnline.disabled = false;
-  // troca estilo/label do botão
   if(agente.online){
     btnToggleOnline.textContent = "Ficar offline";
     btnToggleOnline.classList.remove("bg-green-600","hover:bg-green-700");
@@ -375,25 +387,25 @@ async function boot(){
 
     try{
       const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
-      const r = await fetch(url);
-      if (r.ok) {
-        tickets = await r.json();
+      const r2 = await fetch(url);
+      if (r2.ok) {
+        tickets = await r2.json();
         saveTickets(); // opcional, mantém no storage
       }
-    }catch(_){}}
-    catch(e){
+    }catch(_){ /* ignore */ }
+
+    renderTickets();
+
+    // polling de ordem (se quiser manter para UI/preview)
+    if(pollingContatos) clearInterval(pollingContatos);
+    pollingContatos = setInterval(refreshOrdemCarteira, 5000);
+    await refreshOrdemCarteira();
+
+    if(!tickets.length) btnPegarProxima.disabled = !agente.online;
+  }catch(e){
     elMsgAviso.classList.remove("hidden");
     elMsgAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
   }
-
-  renderTickets();
-
-  // polling de ordem (se quiser manter para UI/preview)
-  if(pollingContatos) clearInterval(pollingContatos);
-  pollingContatos = setInterval(refreshOrdemCarteira, 5000);
-  await refreshOrdemCarteira();
-
-  if(!tickets.length) btnPegarProxima.disabled = !agente.online;
 }
 
 async function verificarOnline(){
@@ -508,19 +520,36 @@ btnPrioridade.onclick = () => {
 };
 
 function abrirPriorityModal(){
+  isModalOpen = true;
   priorityInfo.classList.add('hidden');
   priorityErro.classList.add('hidden');
   priorityTelefone.value = '';
   priorityModal.classList.remove('hidden');
   setTimeout(()=>priorityTelefone.focus(), 50);
 }
-function fecharPriorityModal(){ priorityModal.classList.add('hidden'); }
+function fecharPriorityModal(){
+  isModalOpen = false;
+  priorityModal.classList.add('hidden');
+}
 
+// Enter para buscar dentro do input
+priorityTelefone.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); btnPriorityBuscar.click(); }
+});
+// Esc fecha modal
+document.addEventListener('keydown', (e)=>{
+  if(!priorityModal.classList.contains('hidden') && e.key === 'Escape'){
+    fecharPriorityModal();
+  }
+});
+
+// normalização igual ao backend (mantém DDI 55 e remove '9' após DDI+DDD)
 function normalizarTelefone(raw){
-  const d = String(raw||'').replace(/\D/g,'');
+  let d = String(raw||'').replace(/\D/g,'');
   if(!d) return '';
-  if(d.startsWith('55')) return d;
-  return '55'+d; // assume Brasil
+  if(!d.startsWith('55')) d = '55' + d;
+  d = d.replace(/(?<=^55\d{2})9/, '');
+  return d;
 }
 
 async function findContatoNaOrdem(remetente){
@@ -537,22 +566,6 @@ async function findContatoNaOrdem(remetente){
   }catch{ return null; }
 }
 
-async function solicitarPrioridade(remetente, phone_id){
-  // Tenta uma claim direcionada (backend pode aceitar estes campos)
-  const body = {
-    codigo_do_agente: parseInt(agente.codigo,10),
-    carteira: agente.carteira,
-    remetente,
-    phone_id,
-    prioridade: true
-  };
-  const r = await fetch(`${CONV_API}/api/tickets/claim`, {
-    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
-  });
-  const j = await r.json().catch(()=>({ok:false, erro:'Falha na resposta'}));
-  return { httpOk: r.ok, data: j };
-}
-
 btnPriorityBuscar.onclick = async () => {
   priorityInfo.classList.add('hidden');
   priorityErro.classList.add('hidden');
@@ -564,25 +577,30 @@ btnPriorityBuscar.onclick = async () => {
     return;
   }
 
-  // encontra contato na carteira
-  const contato = await findContatoNaOrdem(nrm);
-  if(!contato){
-    priorityErro.textContent = 'Contato não encontrado na sua carteira ou sem histórico recente.';
-    priorityErro.classList.remove('hidden');
-    return;
-  }
+  const phoneIdCarteira = carteiraToPhoneId[agente.carteira];
 
-  // tenta solicitar/forçar prioridade
+  // (opcional) tenta achar no cache/refetch — apenas para UX
+  await findContatoNaOrdem(nrm);
+
+  // chama o backend com prioridade (ele decide: sucesso / já em atendimento / 404)
   btnPriorityBuscar.disabled = true; btnPriorityBuscar.textContent = 'Solicitando…';
   try{
-    const { httpOk, data } = await solicitarPrioridade(contato.remetente, contato.phone_id);
+    const body = {
+      codigo_do_agente: parseInt(agente.codigo,10),
+      carteira: agente.carteira,
+      remetente: nrm,
+      phone_id: phoneIdCarteira,
+      prioridade: true
+    };
+    const r = await fetch(`${CONV_API}/api/tickets/claim`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    const data = await r.json().catch(()=>({ok:false, erro:'Falha na resposta'}));
 
-    if(httpOk && data && data.ok && data.ticket){
-      // Sucesso: ticket veio para este agente
+    if(r.ok && data && data.ok && data.ticket){
       priorityInfo.innerHTML = `<span class="text-emerald-700 font-medium">Prioridade concedida.</span> Abrindo o ticket…`;
       priorityInfo.classList.remove('hidden');
 
-      // injeta na lista local se ainda não existir
       if(!tickets.find(t => t.remetente === data.ticket.remetente && t.phone_id === data.ticket.phone_id)){
         tickets.unshift(data.ticket);
         saveTickets();
@@ -593,15 +611,19 @@ btnPriorityBuscar.onclick = async () => {
       return;
     }
 
-    // mensagens de conflito/atendimento existente
     if(data && (data.assigned_to || data.atendimento)){
-      const owner = data.assigned_to || data.atendimento; // {codigo, nome}
+      const owner = data.assigned_to || data.atendimento;
       priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome||'—')}</strong> (#${escapeHtml(String(owner.codigo||'—'))}).`;
       priorityErro.classList.remove('hidden');
       return;
     }
 
-    // mensagens genéricas
+    if(r.status === 404){
+      priorityErro.textContent = 'Contato não está na fila desta carteira.';
+      priorityErro.classList.remove('hidden');
+      return;
+    }
+
     const msg = (data && (data.erro||data.message)) || 'Não foi possível conceder prioridade.';
     priorityErro.textContent = msg;
     priorityErro.classList.remove('hidden');
@@ -643,7 +665,7 @@ btnLogout.onclick = async () => {
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo,10), carteira: agente.carteira })
     }).catch(()=>{});
-  }catch(_){} // ignore
+  }catch(_){}
 
   try{
     localStorage.removeItem("agente_codigo");
@@ -651,7 +673,7 @@ btnLogout.onclick = async () => {
     localStorage.removeItem("agente_carteira");
     localStorage.removeItem("agente_origem");
     Object.keys(localStorage).forEach(k => { if(k.startsWith("cz:tickets:")) localStorage.removeItem(k); });
-  }catch(_){ }
+  }catch(_){}
 
   if(pollingContatos) clearInterval(pollingContatos);
   if(pollingMensagens) clearInterval(pollingMensagens);
