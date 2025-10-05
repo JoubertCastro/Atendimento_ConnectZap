@@ -548,9 +548,18 @@ function normalizarTelefone(raw){
   let d = String(raw||'').replace(/\D/g,'');
   if(!d) return '';
   if(!d.startsWith('55')) d = '55' + d;
-  d = d.replace(/(?<=^55\d{2})9/, '');
-  return d;
+
+  // pega o pedaço depois de 55 + DDD (4 dígitos)
+  const head = d.slice(0, 4);
+  const rest = d.slice(4);
+
+  // se for celular (9 dígitos) e começa com 9, remove só esse 9 extra
+  if (rest.length === 9 && rest.startsWith('9')) {
+    return head + rest.slice(1);
+  }
+  return head + rest; // fixo (8) ou outros formatos – não mexe
 }
+
 
 async function findContatoNaOrdem(remetente){
   // tenta no cache de contatos desta carteira primeiro
@@ -571,8 +580,8 @@ btnPriorityBuscar.onclick = async () => {
   priorityErro.classList.add('hidden');
 
   const nrm = normalizarTelefone(priorityTelefone.value);
-  if(nrm.length < 11){
-    priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).';
+  if (nrm.length < 12) {
+    priorityErro.textContent = 'Informe DDI (55) + DDD (2) + número (8).';
     priorityErro.classList.remove('hidden');
     return;
   }
