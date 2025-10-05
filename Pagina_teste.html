@@ -581,7 +581,7 @@ btnPriorityBuscar.onclick = async () => {
   priorityErro.classList.add('hidden');
 
   const nrm = normalizarTelefone(priorityTelefone.value);
-  if(nrm.length < 12){
+  if(nrm.length < 11){
     priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).';
     priorityErro.classList.remove('hidden');
     return;
