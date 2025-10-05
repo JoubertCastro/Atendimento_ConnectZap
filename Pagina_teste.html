@@ -544,20 +544,21 @@ document.addEventListener('keydown', (e)=>{
 });
 
 // normalização igual ao backend (mantém DDI 55 e remove '9' após DDI+DDD)
+// 55 + DDD + número. Se rest tiver 9 dígitos e começar com 9, removemos o 9.
 function normalizarTelefone(raw){
   let d = String(raw || '').replace(/\D/g, '');
   if (!d) return '';
   if (!d.startsWith('55')) d = '55' + d;
 
-  const head = d.slice(0, 4);   // 55 + DDD (2)
-  let rest = d.slice(4);        // número local
+  const ddi = d.slice(0, 2);   // 55
+  const ddd = d.slice(2, 4);   // 2 dígitos
+  let rest  = d.slice(4);      // restante
 
-  if (rest.length === 9 && rest.startsWith('9')) {
-    rest = rest.slice(1);       // remove o 9 “extra” de celular
+  if (rest.length === 9 && rest[0] === '9') {
+    rest = rest.slice(1);      // remove o 9 “extra” de celular
   }
-  return head + rest;
+  return ddi + ddd + rest;
 }
-
 
 async function findContatoNaOrdem(remetente){
   // tenta no cache de contatos desta carteira primeiro
@@ -578,12 +579,13 @@ btnPriorityBuscar.onclick = async () => {
   priorityErro.classList.add('hidden');
 
   const nrm = normalizarTelefone(priorityTelefone.value);
-  if(nrm.length < 12){
-    priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).';
+
+  if (nrm.length !== 12) {
+    priorityErro.textContent = 'Informe DDI (55) + DDD (2) + número (8).';
     priorityErro.classList.remove('hidden');
     return;
   }
-  
+
   priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`;
   priorityInfo.classList.remove('hidden');
 
