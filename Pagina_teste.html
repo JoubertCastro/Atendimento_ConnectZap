@@ -179,7 +179,7 @@
     <div class="p-4 space-y-3">
       <label class="block text-sm text-gray-600">Telefone do cliente (apenas números)</label>
       <input id="priorityTelefone" class="w-full p-2 border rounded-md" placeholder="Ex: 61999999999 ou 5561999999999"/>
-      <p class="text-xs text-gray-500">Dica: adiciono automaticamente o DDI 55 se você não informar.</p>
+      <p class="text-xs text-gray-500">Atenção: informe um telefone valido DD + 8/9 Digitos.</p>
       <div id="priorityInfo" class="text-sm text-gray-700 hidden"></div>
       <div id="priorityErro" class="text-sm text-red-600 hidden"></div>
     </div>
@@ -571,11 +571,14 @@ btnPriorityBuscar.onclick = async () => {
   priorityErro.classList.add('hidden');
 
   const nrm = normalizarTelefone(priorityTelefone.value);
-  if(nrm.length < 12){
-    priorityErro.textContent = 'Informe um telefone válido.';
+  if(nrm.length < 11){
+    priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).';
     priorityErro.classList.remove('hidden');
     return;
   }
+  
+  priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`;
+  priorityInfo.classList.remove('hidden');
 
   const phoneIdCarteira = carteiraToPhoneId[agente.carteira];
 
