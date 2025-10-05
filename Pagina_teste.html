@@ -200,6 +200,7 @@ const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
 /** ====== Mapeamento carteira -> phone_id ====== */
 const phoneIdMap = {
   "732661079928516": "ConnectZap",
+  "805610009301153": "Banco PAN",
   "727586317113885": "Recovery PJ",
   "802977069563598": "Recovery PF",
   "821562937700669": "Mercado Pago Cobrança",
@@ -544,20 +545,12 @@ document.addEventListener('keydown', (e)=>{
 });
 
 // normalização igual ao backend (mantém DDI 55 e remove '9' após DDI+DDD)
-// 55 + DDD + número. Se rest tiver 9 dígitos e começar com 9, removemos o 9.
 function normalizarTelefone(raw){
-  let d = String(raw || '').replace(/\D/g, '');
-  if (!d) return '';
-  if (!d.startsWith('55')) d = '55' + d;
-
-  const ddi = d.slice(0, 2);   // 55
-  const ddd = d.slice(2, 4);   // 2 dígitos
-  let rest  = d.slice(4);      // restante
-
-  if (rest.length === 9 && rest[0] === '9') {
-    rest = rest.slice(1);      // remove o 9 “extra” de celular
-  }
-  return ddi + ddd + rest;
+  let d = String(raw||'').replace(/\D/g,'');
+  if(!d) return '';
+  if(!d.startsWith('55')) d = '55' + d;
+  d = d.replace(/(?<=^55\d{2})9/, '');
+  return d;
 }
 
 async function findContatoNaOrdem(remetente){
@@ -579,13 +572,12 @@ btnPriorityBuscar.onclick = async () => {
   priorityErro.classList.add('hidden');
 
   const nrm = normalizarTelefone(priorityTelefone.value);
-
-  if (nrm.length !== 12) {
-    priorityErro.textContent = 'Informe DDI (55) + DDD (2) + número (8).';
+  if(nrm.length < 11){
+    priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).';
     priorityErro.classList.remove('hidden');
     return;
   }
-
+  
   priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`;
   priorityInfo.classList.remove('hidden');
 
