@@ -97,8 +97,17 @@
       <div class="flex flex-col items-end gap-2">
         <!-- Toggle Online/Offline -->
         <button id="btnToggleOnline" class="px-3 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50" disabled>Ficar online</button>
-        <button id="btnPegarProxima" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50" disabled>Pegar próxima</button>
-        <!-- NOVO: Pedir prioridade -->
+        <!-- Pegar proxima -->
+        <button id="btnPegarProxima"
+                class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                disabled>
+          <svg id="pegarSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          <span id="pegarLabel">Pegar próxima</span>
+        </button>
+        <!-- Pedir prioridade -->
         <button id="btnPrioridade" class="px-3 py-2 text-sm rounded-md text-white disabled:opacity-50" disabled>Pedir prioridade</button>
         <!-- Logout -->
         <button id="btnLogout" class="px-3 py-1 text-xs bg-gray-100 rounded-md hover:bg-gray-200">Logout</button>
@@ -206,10 +215,10 @@ const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
 
 /** ====== Mapeamento carteira -> phone_id ====== */
 const phoneIdMap = {
-  "732661079928516": "ConnectZap",
+  "828473960349364": "ConnectZap",
   "805610009301153": "Banco PAN",
   "727586317113885": "Recovery PJ",
-  "802977069563598": "Recovery PF",
+  "864779140046932": "Recovery PF",
   "821562937700669": "Mercado Pago Cobrança",
   "779797401888141": "DivZero",
   "829210283602406": "Arc4U",
@@ -498,8 +507,17 @@ btnToggleOnline.onclick = async () => {
 
 /** ====== Distribuição local ====== */
 btnPegarProxima.onclick = async () => {
-  if(!agente.online){ alert("Você está offline. Clique em “Ficar online”."); return; }
-  try{
+  if (!agente.online) { alert("Você está offline. Clique em “Ficar online”."); return; }
+
+  const spinner = document.getElementById('pegarSpinner');
+  const label = document.getElementById('pegarLabel');
+
+  // liga loading
+  btnPegarProxima.disabled = true;
+  spinner.classList.remove('hidden');
+  label.textContent = 'Buscando…';
+
+  try {
     const r = await fetch(`${CONV_API}/api/tickets/claim`, {
       method: "POST",
       headers: {"Content-Type":"application/json"},
@@ -508,20 +526,33 @@ btnPegarProxima.onclick = async () => {
         carteira: agente.carteira
       })
     });
-    const j = await r.json();
-    if(!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
+
+    const j = await r.json().catch(()=>({ok:false, erro:'Falha na resposta'}));
+
+    if (!r.ok || !j.ok) {
+      alert(j.erro || "Sem conversas disponíveis.");
+      return;
+    }
 
     // evita duplicar localmente
-    if(!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)){
+    if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) {
       tickets.unshift(j.ticket);
       saveTickets();
     }
     renderTickets();
     abrirTicket(j.ticket);
-  }catch(e){
+
+  } catch (e) {
     alert("Falha ao pegar próxima.");
+  } finally {
+    // desliga loading
+    spinner.classList.add('hidden');
+    label.textContent = 'Pegar próxima';
+    // reabilita o botão apenas se o agente continuar online
+    btnPegarProxima.disabled = !agente.online;
   }
 };
+
 
 // ====== NOVO: Pedir prioridade ======
 btnPrioridade.onclick = () => {
@@ -555,12 +586,26 @@ document.addEventListener('keydown', (e)=>{
 
 // normalização igual ao backend (mantém DDI 55 e remove '9' após DDI+DDD)
 function normalizarTelefone(raw){
-  let d = String(raw||'').replace(/\D/g,'');
-  if(!d) return '';
-  if(!d.startsWith('55')) d = '55' + d;
-  d = d.replace(/(?<=^55\d{2})9/, '');
+  let d = String(raw || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (!d.startsWith('55')) d = '55' + d;
+
+  // depois de 55 + DDD (2 dígitos), olha o restante
+  const m = d.match(/^55(\d{2})(\d{8,9})(.*)$/);
+  if (m) {
+    const ddd = m[1];
+    let numero = m[2];   // 8 ou 9 dígitos
+    const tail = m[3] || '';
+
+    // se tiver 9 dígitos e começar com 9, remove só o primeiro 9
+    if (numero.length === 9 && numero.startsWith('9')) {
+      numero = numero.slice(1);
+      d = '55' + ddd + numero + tail;
+    }
+  }
   return d;
 }
+
 
 async function findContatoNaOrdem(remetente){
   // tenta no cache de contatos desta carteira primeiro
