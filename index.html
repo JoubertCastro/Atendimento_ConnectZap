@@ -18,7 +18,7 @@
     border-radius:18px;
     word-break:break-word;
     overflow-wrap:anywhere;                     /* evita estouro com links/PDF */
-    white-space:normal;                         /* remove pre-wrap que “esticava” */
+    white-space:normal;                         
     box-shadow:0 1px 2px rgba(0,0,0,.10);
     transition:background .18s ease;
   }
@@ -96,9 +96,26 @@
       </div>
       <div class="flex flex-col items-end gap-2">
         <!-- Toggle Online/Offline -->
-        <button id="btnToggleOnline" class="px-3 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50" disabled>Ficar online</button>
-        <button id="btnPegarProxima" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50" disabled>Pegar próxima</button>
-        <!-- NOVO: Pedir prioridade -->
+        <button id="btnToggleOnline"
+                class="px-3 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+                disabled>
+          <svg id="toggleSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          <span id="toggleLabel">Ficar online</span>
+        </button>
+        <!-- Pegar proxima -->
+        <button id="btnPegarProxima"
+                class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                disabled>
+          <svg id="pegarSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          <span id="pegarLabel">Pegar próxima</span>
+        </button>
+        <!-- Pedir prioridade -->
         <button id="btnPrioridade" class="px-3 py-2 text-sm rounded-md text-white disabled:opacity-50" disabled>Pedir prioridade</button>
         <!-- Logout -->
         <button id="btnLogout" class="px-3 py-1 text-xs bg-gray-100 rounded-md hover:bg-gray-200">Logout</button>
@@ -232,7 +249,7 @@ let userTyping = false;
 let respostaMsgId = null;
 
 /** ====== Constantes de documento ====== */
-const DOC_PREVIEW_MAX = 2 * 1024 * 1024; // 2MB -> abre preview embutido para PDFs
+const DOC_PREVIEW_MAX = 2 * 1024 * 1024; // 
 
 const elAgenteNome = document.getElementById("agenteNome");
 const elAgenteCarteira = document.getElementById("agenteCarteira");
@@ -330,7 +347,7 @@ function setStatus(online){
   // Pegar próxima
   btnPegarProxima.disabled = !online;
 
-  // Prioridade (muda cor também)
+  // Prioridade
   btnPrioridade.disabled = !online;
   if(online){
     btnPrioridade.classList.remove('bg-gray-200','text-gray-500','hover:bg-gray-200','cursor-not-allowed');
@@ -341,18 +358,20 @@ function setStatus(online){
   }
 
   // Toggle Online
+  const toggleLabel = document.getElementById("toggleLabel");
   btnToggleOnline.disabled = false;
+
   if(agente.online){
-    btnToggleOnline.textContent = "Ficar offline";
-    btnToggleOnline.classList.remove("bg-green-600","hover:bg-green-700");
+    toggleLabel.textContent = "Ficar offline";
+    btnToggleOnline.classList.remove("bg-green-600","hover:bg-green-700","text-white");
     btnToggleOnline.classList.add("bg-gray-100");
-    btnToggleOnline.classList.remove("text-white");
   }else{
-    btnToggleOnline.textContent = "Ficar online";
+    toggleLabel.textContent = "Ficar online";
     btnToggleOnline.classList.add("bg-green-600","text-white","hover:bg-green-700");
     btnToggleOnline.classList.remove("bg-gray-100");
   }
 }
+
 function bytesToHuman(n){
   if(!n && n !== 0) return "";
   const u=["B","KB","MB","GB","TB"];
@@ -454,11 +473,22 @@ async function refreshOrdemCarteira(){
 /** ====== Toggle Online/Offline ====== */
 btnToggleOnline.onclick = async () => {
   if(!agente.carteira || !agente.codigo) return;
+
+  const toggleSpinner = document.getElementById('toggleSpinner');
+  const toggleLabel = document.getElementById('toggleLabel');
+
   elMsgAviso.classList.add("hidden"); elMsgAviso.textContent = "";
 
-  if(!agente.online){
-    // -> Ficar online
-    try{
+  // estado alvo
+  const indoOnline = !agente.online;
+
+  // liga loading
+  btnToggleOnline.disabled = true;
+  toggleSpinner.classList.remove('hidden');
+  toggleLabel.textContent = indoOnline ? 'Entrando…' : 'Saindo…';
+
+  try{
+    if(indoOnline){
       const r = await fetch(`${FILA_API}/fila/online`, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
@@ -471,13 +501,7 @@ btnToggleOnline.onclick = async () => {
       if(!j.ok) throw new Error(j.erro||"Erro ao entrar online");
       setStatus(true);
       await refreshOrdemCarteira();
-    }catch(e){
-      elMsgAviso.classList.remove("hidden");
-      elMsgAviso.textContent = (e?.message||"Falha ao entrar online");
-    }
-  }else{
-    // -> Ficar offline
-    try{
+    }else{
       const r = await fetch(`${FILA_API}/fila/offline`, {
         method:"DELETE",
         headers:{"Content-Type":"application/json"},
@@ -489,17 +513,31 @@ btnToggleOnline.onclick = async () => {
       const j = await r.json();
       if(!j.ok) throw new Error(j.erro||"Erro ao ficar offline");
       setStatus(false);
-    }catch(e){
-      elMsgAviso.classList.remove("hidden");
-      elMsgAviso.textContent = (e?.message||"Falha ao ficar offline");
     }
+  }catch(e){
+    elMsgAviso.classList.remove("hidden");
+    elMsgAviso.textContent = (e?.message||"Falha ao alterar status");
+  }finally{
+    // desliga loading e restaura label conforme estado atual
+    toggleSpinner.classList.add('hidden');
+    toggleLabel.textContent = agente.online ? 'Ficar offline' : 'Ficar online';
+    btnToggleOnline.disabled = false;
   }
 };
 
 /** ====== Distribuição local ====== */
 btnPegarProxima.onclick = async () => {
-  if(!agente.online){ alert("Você está offline. Clique em “Ficar online”."); return; }
-  try{
+  if (!agente.online) { alert("Você está offline. Clique em “Ficar online”."); return; }
+
+  const spinner = document.getElementById('pegarSpinner');
+  const label = document.getElementById('pegarLabel');
+
+  // liga loading
+  btnPegarProxima.disabled = true;
+  spinner.classList.remove('hidden');
+  label.textContent = 'Buscando…';
+
+  try {
     const r = await fetch(`${CONV_API}/api/tickets/claim`, {
       method: "POST",
       headers: {"Content-Type":"application/json"},
@@ -508,20 +546,33 @@ btnPegarProxima.onclick = async () => {
         carteira: agente.carteira
       })
     });
-    const j = await r.json();
-    if(!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
+
+    const j = await r.json().catch(()=>({ok:false, erro:'Falha na resposta'}));
+
+    if (!r.ok || !j.ok) {
+      alert(j.erro || "Sem conversas disponíveis.");
+      return;
+    }
 
     // evita duplicar localmente
-    if(!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)){
+    if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) {
       tickets.unshift(j.ticket);
       saveTickets();
     }
     renderTickets();
     abrirTicket(j.ticket);
-  }catch(e){
+
+  } catch (e) {
     alert("Falha ao pegar próxima.");
+  } finally {
+    // desliga loading
+    spinner.classList.add('hidden');
+    label.textContent = 'Pegar próxima';
+    // reabilita o botão apenas se o agente continuar online
+    btnPegarProxima.disabled = !agente.online;
   }
 };
+
 
 // ====== NOVO: Pedir prioridade ======
 btnPrioridade.onclick = () => {
