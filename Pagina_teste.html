@@ -29,8 +29,8 @@
     --font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     --font-size: 14px;
 
-    /* Opacidade do fundo do chat */
-    --chat-wallpaper-opacity: .0;
+    /* Opacidade do fundo do chat (0 a 1) */
+    --chat-wallpaper-opacity: 0;
   }
 
   *{ outline-color: var(--ring); }
@@ -81,7 +81,8 @@
 
   /* Fundo do chat sem wallpaper/gradiente externos */
   .chat-wrap{ background: var(--bg); }
-  .chat-overlay{ position:absolute; inset:0; background:rgba(255,255,255,calc(1 - var(--chat-wallpaper-opacity))); pointer-events:none; }
+  /* AGORA: opacidade direta, 1 = totalmente opaco na cor do tema */
+  .chat-overlay{ position:absolute; inset:0; background:var(--bg); opacity:var(--chat-wallpaper-opacity); pointer-events:none; }
 
   .btn{ border-radius:var(--btn-radius); }
   .btn-primary{ background:var(--primary); color:#fff; } .btn-primary:hover{ filter:brightness(.95); }
@@ -119,7 +120,7 @@
         <button id="btnToggleOnline" class="btn px-3 py-2 text-sm bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2" disabled>
           <svg id="toggleSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a 4 4 0 00-4 4H4z"></path>
+            <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v4a 4 4 0 00-4 4H4z"></path>
           </svg>
           <span id="toggleLabel">Ficar online</span>
         </button>
@@ -472,7 +473,7 @@ function defaultTheme(){
     primary:"#3b82f6", accent:"#22c55e", sidebar:"#ffffff", contentBg:"#ffffff", bg:"#f3f4f6", text:"#0f172a",
     outG1:"#dcf8c6", outG2:"#b8f0a4", inBg:"#ffffff", inBorder:"#e2e8f0",
     bubbleRadius:18, btnRadius:10, cardRadius:16,
-    wallOp:0, /* Opacidade do fundo */
+    wallOp:0,
     fontSize:"14px"
   };
 }
@@ -526,7 +527,7 @@ const presets={
   sunset:{ primary:"#f97316",accent:"#ef4444",sidebar:"#fff7ed",contentBg:"#fff7ed",bg:"#fff1f2",text:"#111827",
     outG1:"#fed7aa",outG2:"#fda4af",inBg:"#ffffff",inBorder:"#fecaca",bubbleRadius:20,btnRadius:12,cardRadius:20,wallOp:.06,fontSize:"14px" },
   dark:{ primary:"#374151",accent:"#16a34a",sidebar:"#0f172a",contentBg:"#0b1220",bg:"#0a0f1a",text:"#e5e7eb",
-    outG1:"#111827",outG2:"#1f2937",inBg:"#0e1726",inBorder:"#1f2937",bubbleRadius:16,btnRadius:10,cardRadius:16,wallOp:0,fontSize:"14px" },
+    outG1:"#111827",outG2:"#1f2937",inBg:"#0e1726",inBorder:"#1f2937",bubbleRadius:16,btnRadius:10,cardRadius:16,wallOp:1,fontSize:"14px" },
   minimal:{ primary:"#111827",accent:"#64748b",sidebar:"#ffffff",contentBg:"#ffffff",bg:"#f8fafc",text:"#0f172a",
     outG1:"#f3f4f6",outG2:"#e5e7eb",inBg:"#ffffff",inBorder:"#e5e7eb",bubbleRadius:14,btnRadius:8,cardRadius:16,wallOp:0,fontSize:"15px" },
   funky:{ primary:"#a78bfa",accent:"#ec4899",sidebar:"#faf5ff",contentBg:"#fff0f7",bg:"#fafafa",text:"#111827",
@@ -779,7 +780,7 @@ btnLiberar.onclick=async()=>{
     tickets=tickets.filter(t=>!(t.remetente===selecionado.remetente && t.phone_id===selecionado.phone_id));
     saveTickets(); renderTickets(); limparChat();
 
-    // ---- AJUSTE: encerrar chat e polling ao liberar ----
+    // encerrar seleção/polling
     selecionado = null;
     if (pollingMensagens) { clearInterval(pollingMensagens); pollingMensagens = null; }
 
@@ -817,7 +818,6 @@ async function concluirAtendimento(motivo){
     saveTickets(); renderTickets(); limparChat();
     elTitulo.textContent="Selecione um ticket"; elSubInfo.textContent=""; btnLiberar.disabled=true; btnConcluir.disabled=true;
 
-    // Já havia selecionado=null; agora também garantimos parar o polling
     selecionado=null;
     if (pollingMensagens) { clearInterval(pollingMensagens); pollingMensagens = null; }
 
