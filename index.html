@@ -10,15 +10,15 @@
 
   /* ========= Balões (iguais ao Supervisor) ========= */
   .msg{
-    display:inline-block;                       /* encolhe ao conteúdo */
+    display:inline-block;
     max-width:min(70%, 560px);
-    padding:10px 14px 18px;                     /* espaço pro relógio */
+    padding:10px 14px 18px;
     margin:6px 0;
     position:relative;
     border-radius:18px;
     word-break:break-word;
-    overflow-wrap:anywhere;                     /* evita estouro com links/PDF */
-    white-space:normal;                         
+    overflow-wrap:anywhere;
+    white-space:normal;
     box-shadow:0 1px 2px rgba(0,0,0,.10);
     transition:background .18s ease;
   }
@@ -75,7 +75,7 @@
 
   /* ====== Cartão de mensagem de sistema ====== */
   .msg.system{background:#f8fafc; border:1px dashed #cbd5e1; align-self:center; max-width:80%}
-  .msg.system::after{ display:none; } /* sem cauda para system */
+  .msg.system::after{ display:none; }
   .sys-title{font-weight:700; font-size:.9rem; display:flex; align-items:center; gap:.5rem}
   .sys-body{font-size:.92rem; color:#334155}
   .sys-meta{font-size:.75rem; color:#64748b}
@@ -93,7 +93,16 @@
         <div id="agenteNome" class="font-semibold truncate">—</div>
         <div class="text-xs text-gray-500">Carteira: <span id="agenteCarteira">—</span></div>
         <div class="text-xs text-gray-500">Status: <span id="agenteStatus"><span class="dot offline"></span>Offline</span></div>
+
+        <!-- NOVO: indicador de limite -->
+        <div class="mt-1 text-xs">
+          <span class="text-gray-500">Tickets:</span>
+          <span id="badgeAtivos" class="badge bg-emerald-500">0</span>
+          <span class="text-gray-500 mx-1">/</span>
+          <span id="badgeLimite" class="badge bg-gray-500">∞</span>
+        </div>
       </div>
+
       <div class="flex flex-col items-end gap-2">
         <!-- Toggle Online/Offline -->
         <button id="btnToggleOnline"
@@ -121,7 +130,10 @@
         <button id="btnLogout" class="px-3 py-1 text-xs bg-gray-100 rounded-md hover:bg-gray-200">Logout</button>
       </div>
     </div>
+
+    <!-- NOVO: área de aviso de limite -->
     <div id="msgAviso" class="mt-2 text-xs text-amber-600 hidden"></div>
+    <div id="msgLimite" class="mt-1 text-xs text-red-600 hidden"></div>
   </div>
 
   <div class="p-2 border-b">
@@ -202,7 +214,6 @@
     </div>
     <div class="p-4 border-t flex items-center justify-end gap-2">
       <button class="px-3 py-2 text-sm bg-gray-100 rounded hover:bg-gray-200" onclick="fecharPriorityModal()">Cancelar</button>
-      <!-- Botão com spinner -->
       <button id="btnPriorityBuscar" class="px-3 py-2 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center gap-2">
         <svg id="prioritySpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
@@ -218,7 +229,6 @@
 /** ====== Config de APIs ====== */
 const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/,'');
 const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/,'');
-// (Opcional) redirecionar após logout:
 const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
 
 /** ====== Mapeamento carteira -> phone_id ====== */
@@ -244,17 +254,22 @@ let lastTimestampMs = null;
 let lastDayRendered = null;
 let pollingContatos = null;
 let pollingMensagens = null;
-let isModalOpen = false;       // vale também para o modal de prioridade
+let isModalOpen = false;
 let userTyping = false;
 let respostaMsgId = null;
 
+/* NOVO: controle de limite */
+let limitPerAgent = 0;         // 0 = sem limite
+let ativosCount = 0;           // qtd de tickets em andamento do agente
+
 /** ====== Constantes de documento ====== */
-const DOC_PREVIEW_MAX = 2 * 1024 * 1024; // 
+const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
 
 const elAgenteNome = document.getElementById("agenteNome");
 const elAgenteCarteira = document.getElementById("agenteCarteira");
 const elAgenteStatus = document.getElementById("agenteStatus");
 const elMsgAviso = document.getElementById("msgAviso");
+const elMsgLimite = document.getElementById("msgLimite");
 const elListaTickets = document.getElementById("listaTickets");
 const elTitulo = document.getElementById("tituloConversa");
 const elSubInfo = document.getElementById("subInfo");
@@ -269,6 +284,9 @@ const menuConcluir = document.getElementById("menuConcluir");
 const digitando = document.getElementById("digitando");
 const btnLogout = document.getElementById("btnLogout");
 const btnToggleOnline = document.getElementById("btnToggleOnline");
+
+const badgeAtivos = document.getElementById("badgeAtivos");
+const badgeLimite = document.getElementById("badgeLimite");
 
 // Modal prioridade elements
 const priorityModal = document.getElementById('priorityModal');
@@ -295,7 +313,6 @@ function renderMenuConcluir() {
       ${m}
     </button>
   `).join("");
-  // handler de clique em cada motivo
   menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => {
     btn.onclick = async () => {
       const motivo = btn.getAttribute("data-motivo");
@@ -308,7 +325,6 @@ function renderMenuConcluir() {
 function abrirMenuConcluir() {
   if (!selecionado || btnConcluir.disabled) return;
   menuConcluir.classList.remove("hidden");
-  // clique-fora para fechar
   document.addEventListener("click", clickForaMenuConcluir, { capture: true });
 }
 function fecharMenuConcluir() {
@@ -319,22 +335,17 @@ function clickForaMenuConcluir(e) {
   const within = menuConcluir.contains(e.target) || btnConcluir.contains(e.target);
   if (!within) fecharMenuConcluir();
 }
-
 btnConcluir.onclick = () => {
   if (menuConcluir.classList.contains("hidden")) abrirMenuConcluir();
   else fecharMenuConcluir();
 };
-
-// chama no boot
 renderMenuConcluir();
 
 /** ====== Util ====== */
 function qsParam(name){ return new URLSearchParams(location.search).get(name); }
 function escapeHtml(s){
   if(!s) return "";
-  return s.replace(/[&<>"']/g, ch => ({
-    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
-  })[ch]);
+  return s.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 function gerarCor(nome){ let h=0; for(const c of (nome||"U")) h=c.charCodeAt(0)+((h<<5)-h); return `hsl(${h%360},70%,60%)`; }
 function keyLocal(){ return `cz:tickets:${agente.codigo}:${agente.carteira}`; }
@@ -344,12 +355,11 @@ function setStatus(online){
   elAgenteStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
   agente.online = !!online;
 
-  // Pegar próxima
-  btnPegarProxima.disabled = !online;
+  btnPegarProxima.disabled = !online || (limitPerAgent>0 && ativosCount>=limitPerAgent);
+  btnPrioridade.disabled   = !online || (limitPerAgent>0 && ativosCount>=limitPerAgent);
 
-  // Prioridade
-  btnPrioridade.disabled = !online;
-  if(online){
+  // estilo do Prioridade
+  if(!btnPrioridade.disabled){
     btnPrioridade.classList.remove('bg-gray-200','text-gray-500','hover:bg-gray-200','cursor-not-allowed');
     btnPrioridade.classList.add('bg-purple-600','text-white','hover:bg-purple-700');
   }else{
@@ -357,7 +367,6 @@ function setStatus(online){
     btnPrioridade.classList.add('bg-gray-200','text-gray-500','hover:bg-gray-200','cursor-not-allowed');
   }
 
-  // Toggle Online
   const toggleLabel = document.getElementById("toggleLabel");
   btnToggleOnline.disabled = false;
 
@@ -380,7 +389,7 @@ function bytesToHuman(n){
   return `${s.toFixed(s>=10||i===0?0:1)} ${u[i]}`;
 }
 
-/* Heurística robusta de direção (igual ao Supervisor) */
+/* Heurística de direção */
 function isIncoming(m){
   const s = (m.status || "").toLowerCase();
   if (typeof m.from_me === "boolean") return !m.from_me;
@@ -390,7 +399,7 @@ function isIncoming(m){
   return s === "in";
 }
 
-/** ====== Boot ====== */
+/** ====== BOOT ====== */
 async function boot(){
   agente.codigo  = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
   agente.origem  = localStorage.getItem("agente_origem") || qsParam("origem") || null;
@@ -414,23 +423,26 @@ async function boot(){
 
     await verificarOnline();
 
+    // minhas conversas (para contagem inicial)
     try{
       const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
       const r2 = await fetch(url);
       if (r2.ok) {
         tickets = await r2.json();
-        saveTickets(); // opcional, mantém no storage
+        saveTickets();
       }
-    }catch(_){ /* ignore */ }
+    }catch(_){}
 
     renderTickets();
 
-    // polling de ordem (se quiser manter para UI/preview)
     if(pollingContatos) clearInterval(pollingContatos);
     pollingContatos = setInterval(refreshOrdemCarteira, 5000);
     await refreshOrdemCarteira();
 
-    if(!tickets.length) btnPegarProxima.disabled = !agente.online;
+    // NOVO: carrega limite e atualiza badge
+    await refreshAtivosELimite();
+
+    if(!tickets.length) btnPegarProxima.disabled = !agente.online || (limitPerAgent>0 && ativosCount>=limitPerAgent);
   }catch(e){
     elMsgAviso.classList.remove("hidden");
     elMsgAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
@@ -470,6 +482,52 @@ async function refreshOrdemCarteira(){
   }catch(e){ console.error("Falha ao atualizar ordem", e); }
 }
 
+/** ====== NOVO: Ativos & Limite ====== */
+async function refreshAtivosELimite(){
+  // ativos = minhas conversas atuais
+  try{
+    const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
+    const r = await fetch(url);
+    const rows = r.ok ? await r.json() : [];
+    ativosCount = Array.isArray(rows) ? rows.length : 0;
+  }catch{ ativosCount = tickets.length; }
+
+  // limite por carteira
+  try{
+    const j = await fetch(`${CONV_API}/api/supervisao/tickets-limit?carteira=${encodeURIComponent(agente.carteira)}`).then(r=>r.json());
+    limitPerAgent = Number(j.limit_per_agent || 0);
+  }catch{ limitPerAgent = 0; }
+
+  renderAtivosLimiteUI();
+}
+
+function renderAtivosLimiteUI(){
+  badgeAtivos.textContent = String(ativosCount);
+  badgeLimite.textContent = limitPerAgent > 0 ? String(limitPerAgent) : "∞";
+
+  const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+
+  // msg de limite
+  if(atingiu){
+    elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua ou libere um atendimento para continuar. Duvidas, fale com seu supervisor`;
+    elMsgLimite.classList.remove("hidden");
+  }else{
+    elMsgLimite.classList.add("hidden"); elMsgLimite.textContent = "";
+  }
+
+  // aplicar no estado dos botões (respeitando se está online)
+  btnPegarProxima.disabled = !agente.online || atingiu;
+  btnPrioridade.disabled   = !agente.online || atingiu;
+
+  if(!btnPrioridade.disabled){
+    btnPrioridade.classList.remove('bg-gray-200','text-gray-500','hover:bg-gray-200','cursor-not-allowed');
+    btnPrioridade.classList.add('bg-purple-600','text-white','hover:bg-purple-700');
+  }else{
+    btnPrioridade.classList.remove('bg-purple-600','text-white','hover:bg-purple-700');
+    btnPrioridade.classList.add('bg-gray-200','text-gray-500','hover:bg-gray-200','cursor-not-allowed');
+  }
+}
+
 /** ====== Toggle Online/Offline ====== */
 btnToggleOnline.onclick = async () => {
   if(!agente.carteira || !agente.codigo) return;
@@ -479,10 +537,8 @@ btnToggleOnline.onclick = async () => {
 
   elMsgAviso.classList.add("hidden"); elMsgAviso.textContent = "";
 
-  // estado alvo
   const indoOnline = !agente.online;
 
-  // liga loading
   btnToggleOnline.disabled = true;
   toggleSpinner.classList.remove('hidden');
   toggleLabel.textContent = indoOnline ? 'Entrando…' : 'Saindo…';
@@ -492,23 +548,18 @@ btnToggleOnline.onclick = async () => {
       const r = await fetch(`${FILA_API}/fila/online`, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          codigo_do_agente: parseInt(agente.codigo,10),
-          carteira: agente.carteira
-        })
+        body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo,10), carteira: agente.carteira })
       });
       const j = await r.json();
       if(!j.ok) throw new Error(j.erro||"Erro ao entrar online");
       setStatus(true);
       await refreshOrdemCarteira();
+      await refreshAtivosELimite();
     }else{
       const r = await fetch(`${FILA_API}/fila/offline`, {
         method:"DELETE",
         headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          codigo_do_agente: parseInt(agente.codigo,10),
-          carteira: agente.carteira
-        })
+        body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo,10), carteira: agente.carteira })
       });
       const j = await r.json();
       if(!j.ok) throw new Error(j.erro||"Erro ao ficar offline");
@@ -518,7 +569,6 @@ btnToggleOnline.onclick = async () => {
     elMsgAviso.classList.remove("hidden");
     elMsgAviso.textContent = (e?.message||"Falha ao alterar status");
   }finally{
-    // desliga loading e restaura label conforme estado atual
     toggleSpinner.classList.add('hidden');
     toggleLabel.textContent = agente.online ? 'Ficar offline' : 'Ficar online';
     btnToggleOnline.disabled = false;
@@ -529,10 +579,17 @@ btnToggleOnline.onclick = async () => {
 btnPegarProxima.onclick = async () => {
   if (!agente.online) { alert("Você está offline. Clique em “Ficar online”."); return; }
 
+  // checagem local do limite (UX mais rápida)
+  if (limitPerAgent > 0 && ativosCount >= limitPerAgent) {
+    elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de pegar outro.`;
+    elMsgLimite.classList.remove('hidden');
+    renderAtivosLimiteUI();
+    return;
+  }
+
   const spinner = document.getElementById('pegarSpinner');
   const label = document.getElementById('pegarLabel');
 
-  // liga loading
   btnPegarProxima.disabled = true;
   spinner.classList.remove('hidden');
   label.textContent = 'Buscando…';
@@ -549,12 +606,22 @@ btnPegarProxima.onclick = async () => {
 
     const j = await r.json().catch(()=>({ok:false, erro:'Falha na resposta'}));
 
+    // Tratar limite atingido pelo backend
+    if (r.status === 409 && j && (j.limit_per_agent !== undefined)) {
+      limitPerAgent = Number(j.limit_per_agent || 0);
+      ativosCount   = Number(j.ativos || ativosCount);
+      elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`;
+      elMsgLimite.classList.remove('hidden');
+      renderAtivosLimiteUI();
+      return;
+    }
+
     if (!r.ok || !j.ok) {
       alert(j.erro || "Sem conversas disponíveis.");
       return;
     }
 
-    // evita duplicar localmente
+    // sucesso
     if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) {
       tickets.unshift(j.ticket);
       saveTickets();
@@ -562,21 +629,28 @@ btnPegarProxima.onclick = async () => {
     renderTickets();
     abrirTicket(j.ticket);
 
+    // atualiza contagem (ganhou 1)
+    ativosCount++;
+    renderAtivosLimiteUI();
+
   } catch (e) {
     alert("Falha ao pegar próxima.");
   } finally {
-    // desliga loading
     spinner.classList.add('hidden');
     label.textContent = 'Pegar próxima';
-    // reabilita o botão apenas se o agente continuar online
-    btnPegarProxima.disabled = !agente.online;
+    btnPegarProxima.disabled = !agente.online || (limitPerAgent>0 && ativosCount>=limitPerAgent);
   }
 };
 
 
-// ====== NOVO: Pedir prioridade ======
+// ====== NOVO: Pedir prioridade (respeitando limite) ======
 btnPrioridade.onclick = () => {
   if(!agente.online){ alert('Você está offline. Clique em “Ficar online”.'); return; }
+  if(limitPerAgent>0 && ativosCount>=limitPerAgent){
+    elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de solicitar prioridade.`;
+    elMsgLimite.classList.remove('hidden');
+    return;
+  }
   abrirPriorityModal();
 };
 
@@ -593,45 +667,31 @@ function fecharPriorityModal(){
   priorityModal.classList.add('hidden');
 }
 
-// Enter para buscar dentro do input
 priorityTelefone.addEventListener('keydown', (e)=>{
   if(e.key === 'Enter'){ e.preventDefault(); btnPriorityBuscar.click(); }
 });
-// Esc fecha modal
 document.addEventListener('keydown', (e)=>{
   if(!priorityModal.classList.contains('hidden') && e.key === 'Escape'){
     fecharPriorityModal();
   }
 });
 
-// normalização igual ao backend (mantém DDI 55 e remove '9' após DDI+DDD)
 function normalizarTelefone(raw){
   let d = String(raw || '').replace(/\D/g, '');
   if (!d) return '';
   if (!d.startsWith('55')) d = '55' + d;
-
-  // depois de 55 + DDD (2 dígitos), olha o restante
   const m = d.match(/^55(\d{2})(\d{8,9})(.*)$/);
   if (m) {
-    const ddd = m[1];
-    let numero = m[2];   // 8 ou 9 dígitos
-    const tail = m[3] || '';
-
-    // se tiver 9 dígitos e começar com 9, remove só o primeiro 9
-    if (numero.length === 9 && numero.startsWith('9')) {
-      numero = numero.slice(1);
-      d = '55' + ddd + numero + tail;
-    }
+    const ddd = m[1]; let numero = m[2]; const tail = m[3] || '';
+    if (numero.length === 9 && numero.startsWith('9')) numero = numero.slice(1);
+    d = '55' + ddd + numero + tail;
   }
   return d;
 }
 
-
 async function findContatoNaOrdem(remetente){
-  // tenta no cache de contatos desta carteira primeiro
   let c = (ordemCache||[]).find(x => String(x.remetente) === String(remetente));
   if(c) return c;
-  // fallback: refetch contatos
   try{
     const r = await fetch(`${CONV_API}/api/conversas/contatos`);
     const all = await r.json();
@@ -645,22 +705,26 @@ btnPriorityBuscar.onclick = async () => {
   priorityInfo.classList.add('hidden');
   priorityErro.classList.add('hidden');
 
+  // bloqueio no limite (UX)
+  if(limitPerAgent>0 && ativosCount>=limitPerAgent){
+    priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de solicitar prioridade.`;
+    priorityErro.classList.remove('hidden');
+    return;
+  }
+
   const nrm = normalizarTelefone(priorityTelefone.value);
   if(nrm.length < 11){
     priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).';
     priorityErro.classList.remove('hidden');
     return;
   }
-  
+
   priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`;
   priorityInfo.classList.remove('hidden');
 
   const phoneIdCarteira = carteiraToPhoneId[agente.carteira];
-
-  // (opcional) tenta achar no cache/refetch — apenas para UX
   await findContatoNaOrdem(nrm);
 
-  // chama o backend com prioridade (ele decide: sucesso / já em atendimento / 404)
   btnPriorityBuscar.disabled = true;
   prioritySpinner.classList.remove('hidden');
   priorityBtnLabel.textContent = 'Solicitando…';
@@ -677,9 +741,18 @@ btnPriorityBuscar.onclick = async () => {
     });
     const data = await r.json().catch(()=>({ok:false, erro:'Falha na resposta'}));
 
+    // limite atingido no backend
+    if (r.status === 409 && data && (data.limit_per_agent !== undefined)) {
+      limitPerAgent = Number(data.limit_per_agent || 0);
+      ativosCount   = Number(data.ativos || ativosCount);
+      priorityErro.textContent = data.erro || `Limite de ${limitPerAgent} atingido.`;
+      priorityErro.classList.remove('hidden');
+      await refreshAtivosELimite();
+      return;
+    }
+
     if(r.ok && data && data.ok && data.ticket){
       priorityInfo.innerHTML = `<span class="text-emerald-700 font-medium">Prioridade concedida.</span> Abrindo o ticket…`;
-      priorityInfo.classList.remove('hidden');
 
       if(!tickets.find(t => t.remetente === data.ticket.remetente && t.phone_id === data.ticket.phone_id)){
         tickets.unshift(data.ticket);
@@ -688,6 +761,10 @@ btnPriorityBuscar.onclick = async () => {
       }
       fecharPriorityModal();
       abrirTicket(data.ticket);
+
+      // atualiza contagem
+      ativosCount++;
+      renderAtivosLimiteUI();
       return;
     }
 
@@ -737,6 +814,11 @@ btnLiberar.onclick = async () => {
     tickets = tickets.filter(t => !(t.remetente===selecionado.remetente && t.phone_id===selecionado.phone_id));
     saveTickets(); renderTickets(); limparChat();
     elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
+
+    // liberou -> diminui 1 e atualiza UI
+    if(ativosCount>0) ativosCount--;
+    renderAtivosLimiteUI();
+
   }catch(e){ alert("Erro ao liberar."); }
 };
 
@@ -766,6 +848,49 @@ btnLogout.onclick = async () => {
   if(LOGOUT_REDIRECT){ window.location.href = LOGOUT_REDIRECT; }
   else { window.location.reload(); }
 };
+
+/** ====== Concluir ====== */
+async function concluirAtendimento(motivo) {
+  if (!selecionado) return;
+  try {
+    btnConcluir.disabled = true;
+
+    const r = await fetch(`${CONV_API}/api/tickets/concluir`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        codigo_do_agente: parseInt(agente.codigo, 10),
+        remetente: selecionado.remetente,
+        phone_id: selecionado.phone_id,
+        motivo
+      })
+    });
+    const j = await r.json();
+    if (!r.ok || !j.ok) {
+      alert(j.erro || "Não foi possível concluir.");
+      btnConcluir.disabled = false;
+      return;
+    }
+
+    // remove da lista e limpa UI
+    tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
+    saveTickets();
+    renderTickets();
+    limparChat();
+    elTitulo.textContent = "Selecione um ticket";
+    elSubInfo.textContent = "";
+    btnLiberar.disabled = true;
+    btnConcluir.disabled = true;
+    selecionado = null;
+
+    // concluiu -> diminui 1 e atualiza UI
+    if(ativosCount>0) ativosCount--;
+    renderAtivosLimiteUI();
+  } catch (e) {
+    alert("Erro ao concluir.");
+    btnConcluir.disabled = false;
+  }
+}
 
 /** ====== Lista de tickets ====== */
 function renderTickets(filtro=""){
@@ -815,46 +940,6 @@ async function abrirTicket(t){
   }, 5000);
 }
 
-async function concluirAtendimento(motivo) {
-  if (!selecionado) return;
-  try {
-    btnConcluir.disabled = true;
-
-    const r = await fetch(`${CONV_API}/api/tickets/concluir`, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        codigo_do_agente: parseInt(agente.codigo, 10),
-        remetente: selecionado.remetente,
-        phone_id: selecionado.phone_id,
-        motivo
-      })
-    });
-    const j = await r.json();
-    if (!r.ok || !j.ok) {
-      alert(j.erro || "Não foi possível concluir.");
-      btnConcluir.disabled = false;
-      return;
-    }
-
-    // remove da lista e limpa UI
-    tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
-    saveTickets();
-    renderTickets();
-    limparChat();
-    elTitulo.textContent = "Selecione um ticket";
-    elSubInfo.textContent = "";
-    btnLiberar.disabled = true;
-    btnConcluir.disabled = true;
-    selecionado = null;
-  } catch (e) {
-    alert("Erro ao concluir.");
-    btnConcluir.disabled = false;
-  }
-}
-
-
-/** ====== Chat ====== */
 textarea.addEventListener("input", () => {
   textarea.style.height = "auto";
   textarea.style.height = textarea.scrollHeight + "px";
@@ -917,7 +1002,6 @@ function renderMsg(m, incremental){
     else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
 
   }else if(m.tipo==="document" || m.mensagem_final==="[document]"){
-    // Documento recebido
     div.innerHTML = `<div class="text-gray-600 italic">[documento recebido]</div>
       <button class="btn-doc text-blue-600 underline mt-1">📎 Ver documento</button>
       <span class="hora">${hora}</span>`;
@@ -926,7 +1010,6 @@ function renderMsg(m, incremental){
     else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
 
   }else if(typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")){
-    // Nosso envio de PDF vira um cartão com link
     const lines = m.mensagem_final.split("\n");
     const filename = (lines[0]||"").replace("📎 PDF:","").trim() || "Arquivo";
     const link = (lines[1]||"").replace("🔗","").trim();
@@ -954,7 +1037,6 @@ function renderMsg(m, incremental){
     }
 
   }else if(m.tipo==="system" || m.mensagem_final==="[system]"){
-    /* Evento de sistema */
     div.className = "msg system";
     div.innerHTML = `
       <div class="sys-title"><span>ℹ️ Evento do sistema</span> <span class="sys-pill">carregando…</span></div>
@@ -1007,7 +1089,6 @@ function renderMsg(m, incremental){
     div.innerHTML = `<div>${escapeHtml(m.mensagem_final||"")}</div><span class="hora">${hora}</span>`;
   }
 
-  // Botão responder apenas para mensagens do cliente (não para system)
   if(incoming && !(m.tipo==="system" || m.mensagem_final==="[system]")){
     const btn = document.createElement("button");
     btn.className = "btn-responder"; btn.title="Responder"; btn.innerHTML="↩";
@@ -1058,11 +1139,9 @@ async function carregarDocumento(div, btn, msg_id){
     const mime = j.mime_type || "application/octet-stream";
     const size = j.size_bytes ?? null;
 
-    // container para preview/links
     const box = document.createElement("div");
     box.className = "mt-2 space-y-1";
 
-    // Se for PDF pequeno, mostra preview
     if(mime.startsWith("application/pdf") && j.data_uri && (size === null || size <= DOC_PREVIEW_MAX)){
       const preview = document.createElement("embed");
       preview.src = j.data_uri;
@@ -1078,7 +1157,6 @@ async function carregarDocumento(div, btn, msg_id){
                         <a href="${link}" target="_blank" class="text-blue-600 underline">Abrir/baixar</a>`;
       box.appendChild(meta);
     }else{
-      // Outros tipos ou arquivo grande: só linkar para download
       const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
       const row = document.createElement("div");
       row.className = "flex items-start gap-2";
@@ -1168,6 +1246,9 @@ function limparChat(){ chat.innerHTML = '<p id="loading" class="text-center text
 /** ====== Init ====== */
 document.getElementById("buscaTicket").addEventListener("input", e => filtrarTickets(e.target.value));
 boot();
+
+/* NOVO: refresh periódico do badge de limite/ativos */
+setInterval(refreshAtivosELimite, 15000);
 </script>
 </body>
 </html>
