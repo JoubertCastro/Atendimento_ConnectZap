@@ -89,7 +89,7 @@
 
   /* Fundo do chat sem wallpaper/gradiente externos */
   .chat-wrap{ background: var(--bg); }
-  .chat-overlay{ position:absolute; inset:0; background:rgba(var(--overlay-rgb),calc(1 - var(--chat-wallpaper-opacity))); pointer-events:none; }
+  .chat-overlay{ position:absolute; inset:0; background:rgba(var(--overlay-rgb),var(--chat-wallpaper-opacity)); pointer-events:none; }
 
   .btn{ border-radius:var(--btn-radius); }
   .btn-primary{ background:var(--primary); color:#fff; } .btn-primary:hover{ filter:brightness(.95); }
@@ -564,7 +564,7 @@ const presets={
     surfaceBorder:"#1f2937",ghostBg:"#1f2937",selectedBg:"#0b2a3b",
     outG1:"#1e293b",outG2:"#374151",outText:"#e5e7eb",
     inBg:"#0f172a",inBorder:"#1f2937",
-    bubbleRadius:18,btnRadius:10,cardRadius:16,wallOp:0,overlayRgb:"0,0,0",timestamp:"#9ca3af",fontSize:"14px" },
+    bubbleRadius:18,btnRadius:10,cardRadius:16,wallOp:1,overlayRgb:"0,0,0",timestamp:"#9ca3af",fontSize:"14px" },
   minimal:{ primary:"#111827",accent:"#64748b",sidebar:"#ffffff",contentBg:"#ffffff",bg:"#f8fafc",text:"#0f172a",
     surfaceBorder:"#e5e7eb",ghostBg:"#f3f4f6",selectedBg:"#eef2ff",
     outG1:"#f3f4f6",outG2:"#e5e7eb",outText:"#0f172a",
