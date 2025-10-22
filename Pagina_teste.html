@@ -16,19 +16,12 @@
     --muted:#6b7280;
     --ring:rgba(59,130,246,.35);
 
-    /* Bordas/superfícies */
-    --surface-border:#e5e7eb;
-    --ghost-bg:#f3f4f6;
-    --selected-bg:#f0f9ff;
-
     /* Balões */
     --bubble-out-g1:#dcf8c6;
     --bubble-out-g2:#b8f0a4;
-    --bubble-out-text:#111827;
     --bubble-in-bg:#fff;
     --bubble-in-border:#e2e8f0;
     --bubble-radius:18px;
-    --timestamp-color:#4b5563;
 
     --btn-radius:10px;
     --card-radius:16px;
@@ -38,14 +31,13 @@
 
     /* Opacidade do fundo do chat */
     --chat-wallpaper-opacity: .0;
-    --overlay-rgb:255,255,255; /* no dark vira 0,0,0 para "escurecer" */
   }
 
   *{ outline-color: var(--ring); }
   html{ font-size: var(--font-size); }
   body{ font-family: var(--font-family); color: var(--text); background: var(--bg); }
 
-  .card{background:var(--content-bg);border:1px solid var(--surface-border);border-radius:var(--card-radius)}
+  .card{background:var(--content-bg);border:1px solid #e5e7eb;border-radius:var(--card-radius)}
 
   .msg{
     display:inline-block; max-width:min(70%, 560px);
@@ -58,9 +50,9 @@
   @media (max-width:768px){ .msg{ max-width:86%; } }
 
   .msg.enviada{ align-self:flex-end;
-    background:linear-gradient(120deg, var(--bubble-out-g1), var(--bubble-out-g2)); color:var(--bubble-out-text); }
+    background:linear-gradient(120deg, var(--bubble-out-g1), var(--bubble-out-g2)); color:#111827; }
   .msg.recebida{ align-self:flex-start; background:var(--bubble-in-bg); border:1px solid var(--bubble-in-border); }
-  .msg .hora{ position:absolute; right:8px; bottom:4px; font-size:11px; color:var(--timestamp-color); }
+  .msg .hora{ position:absolute; right:8px; bottom:4px; font-size:11px; color:#4b5563; }
 
   .msg.enviada::after, .msg.recebida::after{
     content:""; position:absolute; bottom:0; width:14px; height:14px; clip-path:polygon(0 0, 100% 0, 0 100%);
@@ -68,14 +60,14 @@
   .msg.enviada::after{ right:-7px; background:linear-gradient(120deg, var(--bubble-out-g1), var(--bubble-out-g2)); }
   .msg.recebida::after{ left:-7px; background:var(--bubble-in-bg); border-left:1px solid var(--bubble-in-border); border-bottom:1px solid var(--bubble-in-border); }
 
-  .msg .btn-responder{ position:absolute; top:6px; right:6px; font-size:14px; color:#9ca3af; opacity:0; transition:opacity .2s; }
+  .msg .btn-responder{ position:absolute; top:6px; right:6px; font-size:14px; color:#4b5563; opacity:0; transition:opacity .2s; }
   .msg.recebida:hover .btn-responder{ opacity:1; }
 
-  .msg img.thumb{ max-width:280px; height:auto; border-radius:12px; border:1px solid var(--surface-border); cursor:pointer; }
+  .msg img.thumb{ max-width:280px; height:auto; border-radius:12px; border:1px solid #e5e7eb; cursor:pointer; }
 
   .dia{text-align:center;margin:12px 0;font-size:12px;color:#888}
 
-  .ticket-selected{background:var(--selected-bg) !important}
+  .ticket-selected{background:#f0f9ff !important}
   .badge{background:var(--accent);color:#fff;font-size:10px;font-weight:700;border-radius:9999px;padding:2px 6px;min-width:18px;text-align:center}
   .dot{width:10px;height:10px;border-radius:9999px;display:inline-block;margin-right:6px}
   .dot.online{background:#16a34a}.dot.offline{background:#9ca3af}
@@ -89,20 +81,20 @@
 
   /* Fundo do chat sem wallpaper/gradiente externos */
   .chat-wrap{ background: var(--bg); }
-  .chat-overlay{ position:absolute; inset:0; background:rgba(var(--overlay-rgb),var(--chat-wallpaper-opacity)); pointer-events:none; }
+  .chat-overlay{ position:absolute; inset:0; background:rgba(255,255,255,calc(1 - var(--chat-wallpaper-opacity))); pointer-events:none; }
 
   .btn{ border-radius:var(--btn-radius); }
   .btn-primary{ background:var(--primary); color:#fff; } .btn-primary:hover{ filter:brightness(.95); }
-  .btn-ghost{ background:var(--ghost-bg); }
-  .kbd{border:1px solid var(--surface-border);border-bottom-width:2px;border-radius:8px;padding:.05rem .35rem}
+  .btn-ghost{ background:#f3f4f6; }
+  .kbd{border:1px solid #e5e7eb;border-bottom-width:2px;border-radius:8px;padding:.05rem .35rem}
 
-  .drawer{ position:fixed; top:0; right:0; width:min(430px, 96%); height:100%; background:var(--content-bg); border-left:1px solid var(--surface-border); box-shadow:-12px 0 24px rgba(0,0,0,.08); transform:translateX(100%); transition:transform .25s ease; z-index:60; }
+  .drawer{ position:fixed; top:0; right:0; width:min(430px, 96%); height:100%; background:#fff; border-left:1px solid #e5e7eb; box-shadow:-12px 0 24px rgba(0,0,0,.08); transform:translateX(100%); transition:transform .25s ease; z-index:60; }
   .drawer.open{ transform:translateX(0); }
-  .preset{ border:1px solid var(--surface-border); border-radius:12px; padding:.5rem; cursor:pointer; }
+  .preset{ border:1px solid #e5e7eb; border-radius:12px; padding:.5rem; cursor:pointer; }
   .preset:hover{ box-shadow:0 2px 10px rgba(0,0,0,.06); }
 
-  .topbar{ background:var(--content-bg); border-color:var(--surface-border); }
-  .sidebar{ background:var(--sidebar-bg); border-color:var(--surface-border); }
+  .topbar{ background:var(--content-bg); }
+  .sidebar{ background:var(--sidebar-bg); }
 </style>
 </head>
 <body class="h-screen flex" style="background:var(--bg)">
@@ -127,14 +119,14 @@
         <button id="btnToggleOnline" class="btn px-3 py-2 text-sm bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2" disabled>
           <svg id="toggleSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a 4 4 0 00-4 4H4z"></path>
           </svg>
           <span id="toggleLabel">Ficar online</span>
         </button>
         <button id="btnPegarProxima" class="btn px-3 py-2 text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2" disabled>
           <svg id="pegarSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v4a 4 4 0 00-4 4H4z"></path>
           </svg>
           <span id="pegarLabel">Pegar próxima</span>
         </button>
@@ -266,7 +258,7 @@
             <div class="mt-1 text-xs">Sunset</div>
           </div>
           <div class="preset" data-preset="dark">
-            <div class="h-8 rounded" style="background:linear-gradient(90deg,#0b1220,#1f2937)"></div>
+            <div class="h-8 rounded" style="background:linear-gradient(90deg,#0b1220,#374151)"></div>
             <div class="mt-1 text-xs">Dark</div>
           </div>
           <div class="preset" data-preset="minimal">
@@ -477,15 +469,10 @@ function isIncoming(m){ const s=(m.status||"").toLowerCase(); if(typeof m.from_m
 function themeKey(){ return `cz:theme:${agente.codigo||'anon'}`; }
 function defaultTheme(){
   return {
-    primary:"#3b82f6", accent:"#22c55e",
-    sidebar:"#ffffff", contentBg:"#ffffff", bg:"#f3f4f6", text:"#0f172a",
-    surfaceBorder:"#e5e7eb", ghostBg:"#f3f4f6", selectedBg:"#f0f9ff",
-    outG1:"#dcf8c6", outG2:"#b8f0a4", outText:"#111827",
-    inBg:"#ffffff", inBorder:"#e2e8f0",
+    primary:"#3b82f6", accent:"#22c55e", sidebar:"#ffffff", contentBg:"#ffffff", bg:"#f3f4f6", text:"#0f172a",
+    outG1:"#dcf8c6", outG2:"#b8f0a4", inBg:"#ffffff", inBorder:"#e2e8f0",
     bubbleRadius:18, btnRadius:10, cardRadius:16,
     wallOp:0, /* Opacidade do fundo */
-    overlayRgb:"255,255,255",
-    timestamp:"#4b5563",
     fontSize:"14px"
   };
 }
@@ -497,13 +484,8 @@ function applyTheme(t){
   r.setProperty('--content-bg',t.contentBg);
   r.setProperty('--bg',t.bg);
   r.setProperty('--text',t.text);
-  r.setProperty('--surface-border',t.surfaceBorder||'#e5e7eb');
-  r.setProperty('--ghost-bg',t.ghostBg||'#f3f4f6');
-  r.setProperty('--selected-bg',t.selectedBg||'#f0f9ff');
-
   r.setProperty('--bubble-out-g1',t.outG1);
   r.setProperty('--bubble-out-g2',t.outG2);
-  r.setProperty('--bubble-out-text',t.outText||'#111827');
   r.setProperty('--bubble-in-bg',t.inBg);
   r.setProperty('--bubble-in-border',t.inBorder);
   r.setProperty('--bubble-radius',t.bubbleRadius+'px');
@@ -511,8 +493,6 @@ function applyTheme(t){
   r.setProperty('--card-radius',t.cardRadius+'px');
   r.setProperty('--font-size',t.fontSize);
   r.setProperty('--chat-wallpaper-opacity',t.wallOp);
-  r.setProperty('--overlay-rgb',t.overlayRgb||'255,255,255');
-  r.setProperty('--timestamp-color',t.timestamp||'#4b5563');
 
   inputs.tPrimary.value=t.primary; inputs.tAccent.value=t.accent; inputs.tSidebar.value=t.sidebar;
   inputs.tContentBg.value=t.contentBg; inputs.tBg.value=t.bg; inputs.tText.value=t.text;
@@ -522,17 +502,10 @@ function applyTheme(t){
 }
 function readThemeFromInputs(){
   return {
-    primary:inputs.tPrimary.value, accent:inputs.tAccent.value,
-    sidebar:inputs.tSidebar.value, contentBg:inputs.tContentBg.value,
-    bg:inputs.tBg.value, text:inputs.tText.value,
-    surfaceBorder:getComputedStyle(document.documentElement).getPropertyValue('--surface-border').trim()||'#e5e7eb',
-    ghostBg:getComputedStyle(document.documentElement).getPropertyValue('--ghost-bg').trim()||'#f3f4f6',
-    selectedBg:getComputedStyle(document.documentElement).getPropertyValue('--selected-bg').trim()||'#f0f9ff',
-    outG1:inputs.tOutG1.value, outG2:inputs.tOutG2.value, outText:getComputedStyle(document.documentElement).getPropertyValue('--bubble-out-text').trim()||'#111827',
-    inBg:inputs.tInBg.value, inBorder:inputs.tInBorder.value,
+    primary:inputs.tPrimary.value, accent:inputs.tAccent.value, sidebar:inputs.tSidebar.value,
+    contentBg:inputs.tContentBg.value, bg:inputs.tBg.value, text:inputs.tText.value,
+    outG1:inputs.tOutG1.value, outG2:inputs.tOutG2.value, inBg:inputs.tInBg.value, inBorder:inputs.tInBorder.value,
     bubbleRadius:Number(inputs.tRadius.value), wallOp:Number(inputs.tBgOp.value),
-    overlayRgb:getComputedStyle(document.documentElement).getPropertyValue('--overlay-rgb').trim()||'255,255,255',
-    timestamp:getComputedStyle(document.documentElement).getPropertyValue('--timestamp-color').trim()||'#4b5563',
     fontSize:inputs.tFontSize.value, btnRadius:Number(inputs.tBtnRadius.value), cardRadius:Number(inputs.tCardRadius.value)
   };
 }
@@ -547,32 +520,17 @@ function randomTheme(){
 }
 const presets={
   corporate:{ primary:"#2563eb",accent:"#22c55e",sidebar:"#ffffff",contentBg:"#ffffff",bg:"#f3f4f6",text:"#0f172a",
-    surfaceBorder:"#e5e7eb",ghostBg:"#f3f4f6",selectedBg:"#f0f9ff",
-    outG1:"#e0f2fe",outG2:"#bfdbfe",outText:"#0f172a",
-    inBg:"#ffffff",inBorder:"#e2e8f0",bubbleRadius:18,btnRadius:10,cardRadius:16,wallOp:0,overlayRgb:"255,255,255",timestamp:"#4b5563",fontSize:"14px" },
+    outG1:"#e0f2fe",outG2:"#bfdbfe",inBg:"#ffffff",inBorder:"#e2e8f0",bubbleRadius:18,btnRadius:10,cardRadius:16,wallOp:0,fontSize:"14px" },
   ocean:{ primary:"#06b6d4",accent:"#10b981",sidebar:"#f0fdff",contentBg:"#ecfeff",bg:"#f0fdfa",text:"#0b1320",
-    surfaceBorder:"#cbd5e1",ghostBg:"#e6fffb",selectedBg:"#e0fbff",
-    outG1:"#cffafe",outG2:"#a7f3d0",outText:"#0b1320",
-    inBg:"#ffffff",inBorder:"#cbd5e1",bubbleRadius:18,btnRadius:12,cardRadius:18,wallOp:.05,overlayRgb:"255,255,255",timestamp:"#475569",fontSize:"14px" },
+    outG1:"#cffafe",outG2:"#a7f3d0",inBg:"#ffffff",inBorder:"#cbd5e1",bubbleRadius:18,btnRadius:12,cardRadius:18,wallOp:.05,fontSize:"14px" },
   sunset:{ primary:"#f97316",accent:"#ef4444",sidebar:"#fff7ed",contentBg:"#fff7ed",bg:"#fff1f2",text:"#111827",
-    surfaceBorder:"#fecaca",ghostBg:"#fff4ea",selectedBg:"#fff7ed",
-    outG1:"#fed7aa",outG2:"#fda4af",outText:"#111827",
-    inBg:"#ffffff",inBorder:"#fecaca",bubbleRadius:20,btnRadius:12,cardRadius:20,wallOp:.06,overlayRgb:"255,255,255",timestamp:"#52525b",fontSize:"14px" },
-  /* Dark refinado */
-  dark:{ primary:"#60a5fa",accent:"#22c55e",
-    sidebar:"#0f172a",contentBg:"#111827",bg:"#0b1220",text:"#e5e7eb",
-    surfaceBorder:"#1f2937",ghostBg:"#1f2937",selectedBg:"#0b2a3b",
-    outG1:"#1e293b",outG2:"#374151",outText:"#e5e7eb",
-    inBg:"#0f172a",inBorder:"#1f2937",
-    bubbleRadius:18,btnRadius:10,cardRadius:16,wallOp:1,overlayRgb:"0,0,0",timestamp:"#9ca3af",fontSize:"14px" },
+    outG1:"#fed7aa",outG2:"#fda4af",inBg:"#ffffff",inBorder:"#fecaca",bubbleRadius:20,btnRadius:12,cardRadius:20,wallOp:.06,fontSize:"14px" },
+  dark:{ primary:"#374151",accent:"#16a34a",sidebar:"#0f172a",contentBg:"#0b1220",bg:"#0a0f1a",text:"#e5e7eb",
+    outG1:"#111827",outG2:"#1f2937",inBg:"#0e1726",inBorder:"#1f2937",bubbleRadius:16,btnRadius:10,cardRadius:16,wallOp:0,fontSize:"14px" },
   minimal:{ primary:"#111827",accent:"#64748b",sidebar:"#ffffff",contentBg:"#ffffff",bg:"#f8fafc",text:"#0f172a",
-    surfaceBorder:"#e5e7eb",ghostBg:"#f3f4f6",selectedBg:"#eef2ff",
-    outG1:"#f3f4f6",outG2:"#e5e7eb",outText:"#0f172a",
-    inBg:"#ffffff",inBorder:"#e5e7eb",bubbleRadius:14,btnRadius:8,cardRadius:16,wallOp:0,overlayRgb:"255,255,255",timestamp:"#64748b",fontSize:"15px" },
+    outG1:"#f3f4f6",outG2:"#e5e7eb",inBg:"#ffffff",inBorder:"#e5e7eb",bubbleRadius:14,btnRadius:8,cardRadius:16,wallOp:0,fontSize:"15px" },
   funky:{ primary:"#a78bfa",accent:"#ec4899",sidebar:"#faf5ff",contentBg:"#fff0f7",bg:"#fafafa",text:"#111827",
-    surfaceBorder:"#f5d0fe",ghostBg:"#f5f3ff",selectedBg:"#fce7f3",
-    outG1:"#e9d5ff",outG2:"#fecdd3",outText:"#111827",
-    inBg:"#ffffff",inBorder:"#f5d0fe",bubbleRadius:22,btnRadius:14,cardRadius:22,wallOp:.08,overlayRgb:"255,255,255",timestamp:"#6b7280",fontSize:"14px" },
+    outG1:"#e9d5ff",outG2:"#fecdd3",inBg:"#ffffff",inBorder:"#f5d0fe",bubbleRadius:22,btnRadius:14,cardRadius:22,wallOp:.08,fontSize:"14px" },
 };
 document.querySelectorAll('.preset').forEach(el=>{
   el.addEventListener('click', ()=>{
@@ -737,7 +695,7 @@ btnToggleOnline.onclick=async()=>{
 btnPegarProxima.onclick=async()=>{
   if(!agente.online){ alert("Você está offline. Clique em “Ficar online”."); return; }
   if(limitPerAgent>0 && ativosCount>=limitPerAgent){
-    elMsgLimite.textContent=`Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de pegar outro.`; elMsgLimite.classList.remove('hidden'); renderAtivosELimiteUI(); return;
+    elMsgLimite.textContent=`Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de pegar outro.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return;
   }
   const spinner=document.getElementById('pegarSpinner'); const label=document.getElementById('pegarLabel');
   btnPegarProxima.disabled=true; spinner.classList.remove('hidden'); label.textContent='Buscando…';
@@ -746,10 +704,10 @@ btnPegarProxima.onclick=async()=>{
       body:JSON.stringify({codigo_do_agente:parseInt(agente.codigo,10),carteira:agente.carteira})});
     const j=await r.json().catch(()=>({ok:false,erro:'Falha na resposta'}));
     if(r.status===409 && j && (j.limit_per_agent!==undefined)){ limitPerAgent=Number(j.limit_per_agent||0); ativosCount=Number(j.ativos||ativosCount);
-      elMsgLimite.textContent=j.erro||`Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosELimiteUI(); return; }
+      elMsgLimite.textContent=j.erro||`Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return; }
     if(!r.ok||!j.ok){ alert(j.erro||"Sem conversas disponíveis."); return; }
     if(!tickets.find(t=>t.remetente===j.ticket.remetente && t.phone_id===j.ticket.phone_id)){ tickets.unshift(j.ticket); saveTickets(); }
-    renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosELimiteUI();
+    renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosLimiteUI();
   }catch(e){ alert("Falha ao pegar próxima."); }
   finally{ spinner.classList.add('hidden'); label.textContent='Pegar próxima';
     btnPegarProxima.disabled=!agente.online || (limitPerAgent>0 && ativosCount>=limitPerAgent); }
@@ -801,7 +759,7 @@ btnPriorityBuscar.onclick=async()=>{
       priorityInfo.innerHTML=`<span class="text-emerald-700 font-medium">Prioridade concedida.</span> Abrindo o ticket…`;
       if(!tickets.find(t=>t.remetente===data.ticket.remetente && t.phone_id===data.ticket.phone_id)){ tickets.unshift(data.ticket); saveTickets(); renderTickets(); }
       fecharPriorityModal(); abrirTicket(data.ticket);
-      ativosCount++; renderAtivosELimiteUI(); return;
+      ativosCount++; renderAtivosLimiteUI(); return;
     }
     if(data && (data.assigned_to||data.atendimento)){ const owner=data.assigned_to||data.atendimento;
       priorityErro.innerHTML=`Outro agente já está atendendo: <strong>${escapeHtml(owner.nome||'—')}</strong> (#${escapeHtml(String(owner.codigo||'—'))}).`; priorityErro.classList.remove('hidden'); return; }
@@ -820,8 +778,14 @@ btnLiberar.onclick=async()=>{
     if(!r.ok||!j.ok){ alert(j.erro||"Não foi possível liberar."); return; }
     tickets=tickets.filter(t=>!(t.remetente===selecionado.remetente && t.phone_id===selecionado.phone_id));
     saveTickets(); renderTickets(); limparChat();
-    elTitulo.textContent="Selecione um ticket"; elSubInfo.textContent=""; btnLiberar.disabled=true; btnConcluir.disabled=true; fecharMenuConcluir();
-    if(ativosCount>0) ativosCount--; renderAtivosELimiteUI();
+
+    // ---- AJUSTE: encerrar chat e polling ao liberar ----
+    selecionado = null;
+    if (pollingMensagens) { clearInterval(pollingMensagens); pollingMensagens = null; }
+
+    elTitulo.textContent="Selecione um ticket"; elSubInfo.textContent="";
+    btnLiberar.disabled=true; btnConcluir.disabled=true; fecharMenuConcluir();
+    if(ativosCount>0) ativosCount--; renderAtivosLimiteUI();
   }catch(e){ alert("Erro ao liberar."); }
 };
 
@@ -851,8 +815,13 @@ async function concluirAtendimento(motivo){
     if(!r.ok||!j.ok){ alert(j.erro||"Não foi possível concluir."); btnConcluir.disabled=false; return; }
     tickets=tickets.filter(t=>!(t.remetente===selecionado.remetente && t.phone_id===selecionado.phone_id));
     saveTickets(); renderTickets(); limparChat();
-    elTitulo.textContent="Selecione um ticket"; elSubInfo.textContent=""; btnLiberar.disabled=true; btnConcluir.disabled=true; selecionado=null;
-    if(ativosCount>0) ativosCount--; renderAtivosELimiteUI();
+    elTitulo.textContent="Selecione um ticket"; elSubInfo.textContent=""; btnLiberar.disabled=true; btnConcluir.disabled=true;
+
+    // Já havia selecionado=null; agora também garantimos parar o polling
+    selecionado=null;
+    if (pollingMensagens) { clearInterval(pollingMensagens); pollingMensagens = null; }
+
+    if(ativosCount>0) ativosCount--; renderAtivosLimiteUI();
   }catch(e){ alert("Erro ao concluir."); btnConcluir.disabled=false; }
 }
 
@@ -863,7 +832,6 @@ function renderTickets(filtro=""){
     const hora=t.data_hora?new Date(t.data_hora).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}):"";
     const hay=`${nome} ${t.remetente}`.toLowerCase(); if(q && !hay.includes(q)) return;
     const li=document.createElement("li"); li.className="flex items-center p-3 hover:bg-gray-100 cursor-pointer border-b"; li.onclick=()=>abrirTicket(t);
-    li.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--surface-border');
     li.innerHTML=`<div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">
         ${(nome||"U").charAt(0).toUpperCase()}</div>
       <div class="flex-1 min-w-0"><div class="font-semibold truncate">${escapeHtml(nome)}</div>
@@ -996,7 +964,6 @@ async function carregarDocumento(div,btn,msg_id){
     const box=document.createElement("div"); box.className="mt-2 space-y-1";
     if(mime.startsWith("application/pdf") && j.data_uri && (size===null || size<=DOC_PREVIEW_MAX)){
       const preview=document.createElement("embed"); preview.src=j.data_uri; preview.type=mime; preview.className="w-[260px] h-[200px] rounded border"; box.appendChild(preview);
-      preview.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--surface-border');
       const meta=document.createElement("div"); meta.className="text-xs text-slate-600";
       const link=`${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
       meta.innerHTML=`<div class="font-semibold truncate">${escapeHtml(filename)}</div><div>${size?bytesToHuman(size):""}</div>
