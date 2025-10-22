@@ -1053,6 +1053,29 @@ function limparChat(){ chat.innerHTML='<p id="loading" class="text-center text-g
 
 document.getElementById("buscaTicket").addEventListener("input", e=>filtrarTickets(e.target.value));
 boot(); setInterval(refreshAtivosELimite,15000);
+async function enviarPDF(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  if(!selecionado) { alert("Abra um ticket antes de enviar PDF."); return; }
+  if(file.type!=="application/pdf"){ alert("Somente arquivos PDF são permitidos."); return; }
+  try{
+    const res = await fetch(`${CONV_API}/api/upload/pdf`, {
+      method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({filename:file.name})
+    });
+    const j = await res.json();
+    if(!j.ok){ alert("Erro ao gerar URL: "+j.erro); return; }
+    await fetch(j.upload_url, { method:"PUT", headers:{"Content-Type":"application/pdf"}, body:file });
+
+    const send = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ phone_id: selecionado.phone_id, file_url: j.file_url, original_filename: file.name })
+    });
+    const sj = await send.json();
+    if(sj.ok) await carregarMensagens(true); else alert("Erro ao enviar PDF: "+(sj.erro||JSON.stringify(sj)));
+  }catch(e){ alert("Erro ao enviar PDF"); }
+  finally{ event.target.value=""; }
+}
+
 </script>
 </body>
 </html>
