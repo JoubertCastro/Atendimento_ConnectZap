@@ -112,6 +112,39 @@
 
   /* Links genéricos */
   a{ color: var(--link); }
+
+  /* ===== THEME-AWARE SIDEBAR / INPUTS / HOVERS / SCROLLBAR ===== */
+  :root{
+    --hover: #f1f5f9;
+    --hover-strong:#e2e8f0;
+    --input-bg:#ffffff;
+    --input-fg:var(--text);
+    --scrollbar:#cbd5e1;
+  }
+  /* map common utility grays to theme vars (soft override) */
+  .text-gray-500{ color: var(--muted) !important; }
+  .text-gray-600{ color: color-mix(in srgb, var(--text) 80%, transparent) !important; }
+  .text-gray-400{ color: color-mix(in srgb, var(--muted) 80%, var(--bg)) !important; }
+  .bg-gray-50{ background: color-mix(in srgb, var(--content-bg) 90%, var(--bg)) !important; }
+  .hover\:bg-gray-100:hover{ background: var(--hover) !important; }
+
+  /* Theme-friendly hover helper */
+  .hover-soft:hover{ background: var(--hover) !important; }
+  .hover-strong:hover{ background: var(--hover-strong) !important; }
+
+  /* Inputs themed */
+  input[type="text"], input[type="search"], input[type="color"], input[type="file"], textarea, select{
+    background: var(--input-bg);
+    color: var(--input-fg);
+    border-color: var(--border) !important;
+  }
+  input::placeholder, textarea::placeholder{ color: color-mix(in srgb, var(--muted) 85%, var(--bg)); }
+  /* Sidebar list item borders and hover */
+  #listaTickets li{ border-color: var(--border) !important; }
+  /* Scrollbar (webkit) */
+  *::-webkit-scrollbar{ width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb{ background: var(--scrollbar); border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+  *::-webkit-scrollbar-track{ background: transparent; }
 </style>
 </head>
 <body class="h-screen flex" style="background:var(--bg)">
@@ -159,7 +192,7 @@
   </div>
 
   <div class="p-2 border-b topbar">
-    <input id="buscaTicket" class="w-full p-2 border rounded-md text-sm" placeholder="🔍 Buscar nas minhas conversas" oninput="filtrarTickets(this.value)"/>
+    <input id="buscaTicket" class="w-full p-2 border rounded-md text-sm" style="background:var(--input-bg);color:var(--input-fg)" placeholder="🔍 Buscar nas minhas conversas" oninput="filtrarTickets(this.value)"/>
   </div>
 
   <ul id="listaTickets" class="flex-1 overflow-y-auto"></ul>
@@ -523,7 +556,13 @@ function applyTheme(t){
   r.setProperty('--font-size',t.fontSize);
   r.setProperty('--chat-wallpaper-opacity',t.wallOp);
 
-  inputs.tPrimary.value=t.primary; inputs.tAccent.value=t.accent; inputs.tSidebar.value=t.sidebar;
+  
+  r.setProperty('--hover', t.hover || 'var(--ghost-bg)');
+  r.setProperty('--hover-strong', t.hoverStrong || 'var(--ghost-bg)');
+  r.setProperty('--input-bg', t.inputBg || t.contentBg || '#ffffff');
+  r.setProperty('--input-fg', t.inputFg || t.text || '#0f172a');
+  r.setProperty('--scrollbar', t.scrollbar || '#cbd5e1');
+inputs.tPrimary.value=t.primary; inputs.tAccent.value=t.accent; inputs.tSidebar.value=t.sidebar;
   inputs.tContentBg.value=t.contentBg; inputs.tBg.value=t.bg; inputs.tText.value=t.text;
   inputs.tOutG1.value=t.outG1; inputs.tOutG2.value=t.outG2; inputs.tInBg.value=t.inBg; inputs.tInBorder.value=t.inBorder;
   inputs.tRadius.value=t.bubbleRadius; inputs.tBgOp.value=t.wallOp; inputs.tFontSize.value=t.fontSize;
@@ -558,7 +597,7 @@ const presets={
     outG1:"#fed7aa",outG2:"#fda4af",inBg:"#ffffff",inBorder:"#fecaca",bubbleRadius:20,btnRadius:12,cardRadius:20,wallOp:.06,fontSize:"14px",
     muted:"#6b7280",border:"#f3d4cf",link:"#f97316",ghostBg:"#fff3e8" },
   dark:{ 
-    primary:"#60a5fa",           // botões/links
+    primary:"#60a5fa",
     accent:"#22c55e",
     sidebar:"#0b1220",
     contentBg:"#0b1220",
@@ -568,17 +607,21 @@ const presets={
     border:"#1f2937",
     link:"#93c5fd",
     ghostBg:"#111827",
-
     outG1:"#1f2937",
     outG2:"#0f172a",
     outFg:"#e5e7eb",
     inBg:"#0e1726",
     inBorder:"#1f2937",
     inFg:"#e5e7eb",
-
     bubbleRadius:16, btnRadius:10, cardRadius:16,
-    wallOp:1,         // 100% opaco
-    fontSize:"14px"
+    wallOp:1,
+    fontSize:"14px",
+    /* new sidebar-aware helpers */
+    hover:"#111827",
+    hoverStrong:"#0f172a",
+    inputBg:"#0e1726",
+    inputFg:"#e5e7eb",
+    scrollbar:"#334155"
   },
   minimal:{ primary:"#111827",accent:"#64748b",sidebar:"#ffffff",contentBg:"#ffffff",bg:"#f8fafc",text:"#0f172a",
     outG1:"#f3f4f6",outG2:"#e5e7eb",inBg:"#ffffff",inBorder:"#e5e7eb",bubbleRadius:14,btnRadius:8,cardRadius:16,wallOp:0,fontSize:"15px",
@@ -875,7 +918,7 @@ function renderTickets(filtro=""){
     const nome=t.nome_exibicao||t.remetente; const ultima=t.mensagem_final?t.mensagem_final.slice(0,70):"";
     const hora=t.data_hora?new Date(t.data_hora).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}):"";
     const hay=`${nome} ${t.remetente}`.toLowerCase(); if(q && !hay.includes(q)) return;
-    const li=document.createElement("li"); li.className="flex items-center p-3 hover:bg-gray-100 cursor-pointer border-b"; li.onclick=()=>abrirTicket(t);
+    const li=document.createElement("li"); li.className="flex items-center p-3 hover-soft cursor-pointer border-b"; li.onclick=()=>abrirTicket(t);
     li.innerHTML=`<div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">
         ${(nome||"U").charAt(0).toUpperCase()}</div>
       <div class="flex-1 min-w-0"><div class="font-semibold truncate">${escapeHtml(nome)}</div>
