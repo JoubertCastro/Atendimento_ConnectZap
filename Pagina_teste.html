@@ -13,14 +13,20 @@
     --sidebar-bg:#ffffff;
     --content-bg:#ffffff;
     --text:#0f172a;
-    --muted:#6b7280;
+
+    --muted:#6b7280;        /* texto secundário */
+    --border:#e5e7eb;       /* cor de borda padrão */
+    --link:#2563eb;         /* links */
+    --ghost-bg:#f3f4f6;     /* fundo de botões ghost */
     --ring:rgba(59,130,246,.35);
 
     /* Balões */
     --bubble-out-g1:#dcf8c6;
     --bubble-out-g2:#b8f0a4;
+    --bubble-out-fg:#111827;  /* texto balão enviado */
     --bubble-in-bg:#fff;
     --bubble-in-border:#e2e8f0;
+    --bubble-in-fg:#0f172a;   /* texto balão recebido */
     --bubble-radius:18px;
 
     --btn-radius:10px;
@@ -37,7 +43,7 @@
   html{ font-size: var(--font-size); }
   body{ font-family: var(--font-family); color: var(--text); background: var(--bg); }
 
-  .card{background:var(--content-bg);border:1px solid #e5e7eb;border-radius:var(--card-radius)}
+  .card{background:var(--content-bg);border:1px solid var(--border);border-radius:var(--card-radius)}
 
   .msg{
     display:inline-block; max-width:min(70%, 560px);
@@ -49,10 +55,18 @@
   }
   @media (max-width:768px){ .msg{ max-width:86%; } }
 
-  .msg.enviada{ align-self:flex-end;
-    background:linear-gradient(120deg, var(--bubble-out-g1), var(--bubble-out-g2)); color:#111827; }
-  .msg.recebida{ align-self:flex-start; background:var(--bubble-in-bg); border:1px solid var(--bubble-in-border); }
-  .msg .hora{ position:absolute; right:8px; bottom:4px; font-size:11px; color:#4b5563; }
+  .msg.enviada{
+    align-self:flex-end;
+    background:linear-gradient(120deg, var(--bubble-out-g1), var(--bubble-out-g2));
+    color:var(--bubble-out-fg);
+  }
+  .msg.recebida{
+    align-self:flex-start;
+    background:var(--bubble-in-bg);
+    border:1px solid var(--bubble-in-border);
+    color:var(--bubble-in-fg);
+  }
+  .msg .hora{ position:absolute; right:8px; bottom:4px; font-size:11px; color:var(--muted); }
 
   .msg.enviada::after, .msg.recebida::after{
     content:""; position:absolute; bottom:0; width:14px; height:14px; clip-path:polygon(0 0, 100% 0, 0 100%);
@@ -60,42 +74,44 @@
   .msg.enviada::after{ right:-7px; background:linear-gradient(120deg, var(--bubble-out-g1), var(--bubble-out-g2)); }
   .msg.recebida::after{ left:-7px; background:var(--bubble-in-bg); border-left:1px solid var(--bubble-in-border); border-bottom:1px solid var(--bubble-in-border); }
 
-  .msg .btn-responder{ position:absolute; top:6px; right:6px; font-size:14px; color:#4b5563; opacity:0; transition:opacity .2s; }
+  .msg .btn-responder{ position:absolute; top:6px; right:6px; font-size:14px; color:var(--muted); opacity:0; transition:opacity .2s; }
   .msg.recebida:hover .btn-responder{ opacity:1; }
 
-  .msg img.thumb{ max-width:280px; height:auto; border-radius:12px; border:1px solid #e5e7eb; cursor:pointer; }
+  .msg img.thumb{ max-width:280px; height:auto; border-radius:12px; border:1px solid var(--border); cursor:pointer; }
 
-  .dia{text-align:center;margin:12px 0;font-size:12px;color:#888}
+  .dia{text-align:center;margin:12px 0;font-size:12px;color:var(--muted)}
 
   .ticket-selected{background:#f0f9ff !important}
   .badge{background:var(--accent);color:#fff;font-size:10px;font-weight:700;border-radius:9999px;padding:2px 6px;min-width:18px;text-align:center}
   .dot{width:10px;height:10px;border-radius:9999px;display:inline-block;margin-right:6px}
   .dot.online{background:#16a34a}.dot.offline{background:#9ca3af}
 
-  .msg.system{background:#f8fafc; border:1px dashed #cbd5e1; align-self:center; max-width:80%}
+  .msg.system{background:#f8fafc; border:1px dashed var(--border); align-self:center; max-width:80%}
   .msg.system::after{ display:none; }
   .sys-title{font-weight:700; font-size:.9rem; display:flex; align-items:center; gap:.5rem}
-  .sys-body{font-size:.92rem; color:#334155}
-  .sys-meta{font-size:.75rem; color:#64748b}
+  .sys-body{font-size:.92rem; color:var(--text)}
+  .sys-meta{font-size:.75rem; color:var(--muted)}
   .sys-pill{display:inline-block; font-size:.7rem; font-weight:700; padding:.1rem .4rem; border-radius:9999px; background:#eef2ff; color:#3730a3}
 
-  /* Fundo do chat sem wallpaper/gradiente externos */
+  /* Fundo do chat */
   .chat-wrap{ background: var(--bg); }
-  /* AGORA: opacidade direta, 1 = totalmente opaco na cor do tema */
   .chat-overlay{ position:absolute; inset:0; background:var(--bg); opacity:var(--chat-wallpaper-opacity); pointer-events:none; }
 
   .btn{ border-radius:var(--btn-radius); }
   .btn-primary{ background:var(--primary); color:#fff; } .btn-primary:hover{ filter:brightness(.95); }
-  .btn-ghost{ background:#f3f4f6; }
-  .kbd{border:1px solid #e5e7eb;border-bottom-width:2px;border-radius:8px;padding:.05rem .35rem}
+  .btn-ghost{ background:var(--ghost-bg); }
+  .kbd{border:1px solid var(--border);border-bottom-width:2px;border-radius:8px;padding:.05rem .35rem}
 
-  .drawer{ position:fixed; top:0; right:0; width:min(430px, 96%); height:100%; background:#fff; border-left:1px solid #e5e7eb; box-shadow:-12px 0 24px rgba(0,0,0,.08); transform:translateX(100%); transition:transform .25s ease; z-index:60; }
+  .drawer{ position:fixed; top:0; right:0; width:min(430px, 96%); height:100%; background:var(--content-bg); border-left:1px solid var(--border); box-shadow:-12px 0 24px rgba(0,0,0,.08); transform:translateX(100%); transition:transform .25s ease; z-index:60; }
   .drawer.open{ transform:translateX(0); }
-  .preset{ border:1px solid #e5e7eb; border-radius:12px; padding:.5rem; cursor:pointer; }
+  .preset{ border:1px solid var(--border); border-radius:12px; padding:.5rem; cursor:pointer; }
   .preset:hover{ box-shadow:0 2px 10px rgba(0,0,0,.06); }
 
-  .topbar{ background:var(--content-bg); }
-  .sidebar{ background:var(--sidebar-bg); }
+  .topbar{ background:var(--content-bg); border-color:var(--border); }
+  .sidebar{ background:var(--sidebar-bg); border-color:var(--border); }
+
+  /* Links genéricos */
+  a{ color: var(--link); }
 </style>
 </head>
 <body class="h-screen flex" style="background:var(--bg)">
@@ -120,7 +136,7 @@
         <button id="btnToggleOnline" class="btn px-3 py-2 text-sm bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2" disabled>
           <svg id="toggleSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v4a 4 4 0 00-4 4H4z"></path>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
           </svg>
           <span id="toggleLabel">Ficar online</span>
         </button>
@@ -470,8 +486,11 @@ function isIncoming(m){ const s=(m.status||"").toLowerCase(); if(typeof m.from_m
 function themeKey(){ return `cz:theme:${agente.codigo||'anon'}`; }
 function defaultTheme(){
   return {
-    primary:"#3b82f6", accent:"#22c55e", sidebar:"#ffffff", contentBg:"#ffffff", bg:"#f3f4f6", text:"#0f172a",
-    outG1:"#dcf8c6", outG2:"#b8f0a4", inBg:"#ffffff", inBorder:"#e2e8f0",
+    primary:"#3b82f6", accent:"#22c55e",
+    sidebar:"#ffffff", contentBg:"#ffffff", bg:"#f3f4f6",
+    text:"#0f172a", muted:"#6b7280", border:"#e5e7eb", link:"#2563eb", ghostBg:"#f3f4f6",
+    outG1:"#dcf8c6", outG2:"#b8f0a4", outFg:"#111827",
+    inBg:"#ffffff", inBorder:"#e2e8f0", inFg:"#0f172a",
     bubbleRadius:18, btnRadius:10, cardRadius:16,
     wallOp:0,
     fontSize:"14px"
@@ -485,10 +504,19 @@ function applyTheme(t){
   r.setProperty('--content-bg',t.contentBg);
   r.setProperty('--bg',t.bg);
   r.setProperty('--text',t.text);
+
+  r.setProperty('--muted',t.muted||'#6b7280');
+  r.setProperty('--border',t.border||'#e5e7eb');
+  r.setProperty('--link',t.link||t.primary||'#2563eb');
+  r.setProperty('--ghost-bg',t.ghostBg||'#f3f4f6');
+
   r.setProperty('--bubble-out-g1',t.outG1);
   r.setProperty('--bubble-out-g2',t.outG2);
+  r.setProperty('--bubble-out-fg',t.outFg||'#111827');
   r.setProperty('--bubble-in-bg',t.inBg);
   r.setProperty('--bubble-in-border',t.inBorder);
+  r.setProperty('--bubble-in-fg',t.inFg||'#0f172a');
+
   r.setProperty('--bubble-radius',t.bubbleRadius+'px');
   r.setProperty('--btn-radius',t.btnRadius+'px');
   r.setProperty('--card-radius',t.cardRadius+'px');
@@ -521,17 +549,43 @@ function randomTheme(){
 }
 const presets={
   corporate:{ primary:"#2563eb",accent:"#22c55e",sidebar:"#ffffff",contentBg:"#ffffff",bg:"#f3f4f6",text:"#0f172a",
-    outG1:"#e0f2fe",outG2:"#bfdbfe",inBg:"#ffffff",inBorder:"#e2e8f0",bubbleRadius:18,btnRadius:10,cardRadius:16,wallOp:0,fontSize:"14px" },
+    outG1:"#e0f2fe",outG2:"#bfdbfe",inBg:"#ffffff",inBorder:"#e2e8f0",bubbleRadius:18,btnRadius:10,cardRadius:16,wallOp:0,fontSize:"14px",
+    muted:"#6b7280",border:"#e5e7eb",link:"#2563eb",ghostBg:"#f3f4f6" },
   ocean:{ primary:"#06b6d4",accent:"#10b981",sidebar:"#f0fdff",contentBg:"#ecfeff",bg:"#f0fdfa",text:"#0b1320",
-    outG1:"#cffafe",outG2:"#a7f3d0",inBg:"#ffffff",inBorder:"#cbd5e1",bubbleRadius:18,btnRadius:12,cardRadius:18,wallOp:.05,fontSize:"14px" },
+    outG1:"#cffafe",outG2:"#a7f3d0",inBg:"#ffffff",inBorder:"#cbd5e1",bubbleRadius:18,btnRadius:12,cardRadius:18,wallOp:.05,fontSize:"14px",
+    muted:"#475569",border:"#cbd5e1",link:"#0891b2",ghostBg:"#e2f2f3" },
   sunset:{ primary:"#f97316",accent:"#ef4444",sidebar:"#fff7ed",contentBg:"#fff7ed",bg:"#fff1f2",text:"#111827",
-    outG1:"#fed7aa",outG2:"#fda4af",inBg:"#ffffff",inBorder:"#fecaca",bubbleRadius:20,btnRadius:12,cardRadius:20,wallOp:.06,fontSize:"14px" },
-  dark:{ primary:"#374151",accent:"#16a34a",sidebar:"#0f172a",contentBg:"#0b1220",bg:"#0a0f1a",text:"#e5e7eb",
-    outG1:"#111827",outG2:"#1f2937",inBg:"#0e1726",inBorder:"#1f2937",bubbleRadius:16,btnRadius:10,cardRadius:16,wallOp:1,fontSize:"14px" },
+    outG1:"#fed7aa",outG2:"#fda4af",inBg:"#ffffff",inBorder:"#fecaca",bubbleRadius:20,btnRadius:12,cardRadius:20,wallOp:.06,fontSize:"14px",
+    muted:"#6b7280",border:"#f3d4cf",link:"#f97316",ghostBg:"#fff3e8" },
+  dark:{ 
+    primary:"#60a5fa",           // botões/links
+    accent:"#22c55e",
+    sidebar:"#0b1220",
+    contentBg:"#0b1220",
+    bg:"#0a0f1a",
+    text:"#e5e7eb",
+    muted:"#94a3b8",
+    border:"#1f2937",
+    link:"#93c5fd",
+    ghostBg:"#111827",
+
+    outG1:"#1f2937",
+    outG2:"#0f172a",
+    outFg:"#e5e7eb",
+    inBg:"#0e1726",
+    inBorder:"#1f2937",
+    inFg:"#e5e7eb",
+
+    bubbleRadius:16, btnRadius:10, cardRadius:16,
+    wallOp:1,         // 100% opaco
+    fontSize:"14px"
+  },
   minimal:{ primary:"#111827",accent:"#64748b",sidebar:"#ffffff",contentBg:"#ffffff",bg:"#f8fafc",text:"#0f172a",
-    outG1:"#f3f4f6",outG2:"#e5e7eb",inBg:"#ffffff",inBorder:"#e5e7eb",bubbleRadius:14,btnRadius:8,cardRadius:16,wallOp:0,fontSize:"15px" },
+    outG1:"#f3f4f6",outG2:"#e5e7eb",inBg:"#ffffff",inBorder:"#e5e7eb",bubbleRadius:14,btnRadius:8,cardRadius:16,wallOp:0,fontSize:"15px",
+    muted:"#6b7280",border:"#e5e7eb",link:"#111827",ghostBg:"#f3f4f6" },
   funky:{ primary:"#a78bfa",accent:"#ec4899",sidebar:"#faf5ff",contentBg:"#fff0f7",bg:"#fafafa",text:"#111827",
-    outG1:"#e9d5ff",outG2:"#fecdd3",inBg:"#ffffff",inBorder:"#f5d0fe",bubbleRadius:22,btnRadius:14,cardRadius:22,wallOp:.08,fontSize:"14px" },
+    outG1:"#e9d5ff",outG2:"#fecdd3",inBg:"#ffffff",inBorder:"#f5d0fe",bubbleRadius:22,btnRadius:14,cardRadius:22,wallOp:.08,fontSize:"14px",
+    muted:"#6b7280",border:"#e9d5ff",link:"#a78bfa",ghostBg:"#f5f3ff" },
 };
 document.querySelectorAll('.preset').forEach(el=>{
   el.addEventListener('click', ()=>{
@@ -779,13 +833,7 @@ btnLiberar.onclick=async()=>{
     if(!r.ok||!j.ok){ alert(j.erro||"Não foi possível liberar."); return; }
     tickets=tickets.filter(t=>!(t.remetente===selecionado.remetente && t.phone_id===selecionado.phone_id));
     saveTickets(); renderTickets(); limparChat();
-
-    // encerrar seleção/polling
-    selecionado = null;
-    if (pollingMensagens) { clearInterval(pollingMensagens); pollingMensagens = null; }
-
-    elTitulo.textContent="Selecione um ticket"; elSubInfo.textContent="";
-    btnLiberar.disabled=true; btnConcluir.disabled=true; fecharMenuConcluir();
+    elTitulo.textContent="Selecione um ticket"; elSubInfo.textContent=""; btnLiberar.disabled=true; btnConcluir.disabled=true; fecharMenuConcluir();
     if(ativosCount>0) ativosCount--; renderAtivosLimiteUI();
   }catch(e){ alert("Erro ao liberar."); }
 };
@@ -816,11 +864,7 @@ async function concluirAtendimento(motivo){
     if(!r.ok||!j.ok){ alert(j.erro||"Não foi possível concluir."); btnConcluir.disabled=false; return; }
     tickets=tickets.filter(t=>!(t.remetente===selecionado.remetente && t.phone_id===selecionado.phone_id));
     saveTickets(); renderTickets(); limparChat();
-    elTitulo.textContent="Selecione um ticket"; elSubInfo.textContent=""; btnLiberar.disabled=true; btnConcluir.disabled=true;
-
-    selecionado=null;
-    if (pollingMensagens) { clearInterval(pollingMensagens); pollingMensagens = null; }
-
+    elTitulo.textContent="Selecione um ticket"; elSubInfo.textContent=""; btnLiberar.disabled=true; btnConcluir.disabled=true; selecionado=null;
     if(ativosCount>0) ativosCount--; renderAtivosLimiteUI();
   }catch(e){ alert("Erro ao concluir."); btnConcluir.disabled=false; }
 }
