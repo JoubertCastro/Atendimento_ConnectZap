@@ -718,8 +718,11 @@
                           "829210283602406": "Arc4U",
                           "713021321904495": "Serasa",
                           "803535039503723": "Mercado Pago Vendas" };
-    const carteiraToPhoneId = Object.fromEntries(Object.entries(phoneIdMap).map(([id, nome]) => [nome, id]));
-
+    const carteiraToPhoneId = Object.entries(phoneIdMap).reduce((acc, [id, nome]) => {
+      acc[nome] = acc[nome] || [];
+      acc[nome].push(id);
+      return acc;
+    }, {});
     /** Estado */
     let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
     let tickets = []; let selecionado = null; let renderedKeys = new Set(); let lastTimestampMs = null; let lastDayRendered = null;
@@ -1037,11 +1040,11 @@
     }
 
     async function refreshOrdemCarteira() {
-      const phoneId = carteiraToPhoneId[agente.carteira]; if (!phoneId) return;
+      const phoneIds = carteiraToPhoneIds[agente.carteira] || []; if (!phoneId) return;
       try {
         const res = await fetch(`${CONV_API}/api/conversas/contatos`);
         const contatos = await res.json();
-        const filtrados = (contatos || []).filter(c => c.phone_id === phoneId);
+        const filtrados = (contatos || []).filter(c => phoneIds.includes(c.phone_id));
         filtrados.sort((a, b) => { const ai = a.status === 'in', bi = b.status === 'in'; if (ai !== bi) return bi - ai; return new Date(b.data_hora) - new Date(a.data_hora); });
         ordemCache = filtrados;
       } catch (e) { console.error("Falha ao atualizar ordem", e); }
@@ -1149,7 +1152,7 @@
       let c = (ordemCache || []).find(x => String(x.remetente) === String(remetente)); if (c) return c;
       try {
         const r = await fetch(`${CONV_API}/api/conversas/contatos`); const all = await r.json();
-        const phoneId = carteiraToPhoneId[agente.carteira];
+        const phoneIds = carteiraToPhoneIds[agente.carteira] || [];
         c = (all || []).find(x => x.phone_id === phoneId && String(x.remetente) === String(remetente)); return c || null;
       } catch { return null; }
     }
@@ -1161,7 +1164,10 @@
       const phoneIdCarteira = carteiraToPhoneId[agente.carteira]; await findContatoNaOrdem(nrm);
       btnPriorityBuscar.disabled = true; prioritySpinner.classList.remove('hidden'); priorityBtnLabel.textContent = 'Solicitando…';
       try {
-        const body = { codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira, remetente: nrm, phone_id: phoneIdCarteira, prioridade: true };
+        const body = { codigo_do_agente: parseInt(agente.codigo, 10), 
+                      carteira: agente.carteira, 
+                      remetente: nrm, 
+                      prioridade: true };
         const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const data = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
         if (r.status === 409 && data && (data.limit_per_agent !== undefined)) {
