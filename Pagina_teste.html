@@ -151,6 +151,23 @@
       cursor: pointer;
     }
 
+    /* ===== Player de áudio dentro do balão (ajuste do tamanho) ===== */
+    .msg audio {
+      width: 260px; /* ajuste como preferir */
+      display: block;
+    }
+
+    @media (min-width: 640px) {
+      .msg audio {
+        width: 320px; /* maior no desktop */
+      }
+    }
+
+    /* (opcional) melhora o clique nos controles no Chrome/WebKit */
+    .msg audio::-webkit-media-controls-panel {
+      padding: 6px 8px;
+    }
+
     .dia {
       text-align: center;
       margin: 12px 0;
@@ -1348,14 +1365,25 @@
         else throw new Error(j.erro || "Resposta inválida");
       } catch { alert("Erro ao carregar imagem"); btn.disabled = false; btn.textContent = "👁 Ver imagem"; }
     }
+
     async function carregarAudio(div, btn, msg_id) {
       btn.disabled = true; btn.textContent = "⏳ Carregando…";
       try {
         const r = await fetch(`${CONV_API}/api/conversas/audio/${encodeURIComponent(msg_id)}`); const j = await r.json();
-        if (j.ok && j.data_uri) { const audio = document.createElement("audio"); audio.src = j.data_uri; audio.controls = true; audio.className = "mt-2 w-full max-w-xs"; div.insertBefore(audio, btn); btn.remove(); }
-        else throw new Error(j.erro || "Resposta inválida");
+        if (j.ok && j.data_uri) {
+          const audio = document.createElement("audio");
+          audio.src = j.data_uri;
+          audio.controls = true;
+          audio.preload = "metadata";   // <- mostra duração/controles completos
+          audio.className = "mt-2";     // <- largura vem do CSS (.msg audio)
+          div.insertBefore(audio, btn);
+          btn.remove();
+        } else {
+          throw new Error(j.erro || "Resposta inválida");
+        }
       } catch { alert("Erro ao carregar áudio"); btn.disabled = false; btn.textContent = "▶ Reproduzir áudio"; }
     }
+
     async function carregarDocumento(div, btn, msg_id) {
       btn.disabled = true; btn.textContent = "⏳ Carregando…";
       try {
@@ -1383,8 +1411,8 @@
     }
 
     function responderMensagem(msgId, conteudo) {
-      respostaMsgId = msgId || null; document.getElementById("respostaTexto").innerText = (conteudo || "").slice(0, 50);
-      document.getElementById("respostaPreview").classList.remove("hidden"); textarea.focus();
+      respostaMsgId = msgId || null; document.getElementById("respostaPreview").classList.remove("hidden"); document.getElementById("respostaTexto").innerText = (conteudo || "").slice(0, 50);
+      textarea.focus();
     }
     function cancelarResposta() { respostaMsgId = null; document.getElementById("respostaPreview").classList.add("hidden"); document.getElementById("respostaTexto").innerText = ""; }
 
