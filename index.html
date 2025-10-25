@@ -151,6 +151,23 @@
       cursor: pointer;
     }
 
+    /* ===== Player de áudio dentro do balão (ajuste do tamanho) ===== */
+    .msg audio {
+      width: 260px; /* ajuste como preferir */
+      display: block;
+    }
+
+    @media (min-width: 640px) {
+      .msg audio {
+        width: 320px; /* maior no desktop */
+      }
+    }
+
+    /* (opcional) melhora o clique nos controles no Chrome/WebKit */
+    .msg audio::-webkit-media-controls-panel {
+      padding: 6px 8px;
+    }
+
     .dia {
       text-align: center;
       margin: 12px 0;
@@ -1348,14 +1365,25 @@
         else throw new Error(j.erro || "Resposta inválida");
       } catch { alert("Erro ao carregar imagem"); btn.disabled = false; btn.textContent = "👁 Ver imagem"; }
     }
+
     async function carregarAudio(div, btn, msg_id) {
       btn.disabled = true; btn.textContent = "⏳ Carregando…";
       try {
         const r = await fetch(`${CONV_API}/api/conversas/audio/${encodeURIComponent(msg_id)}`); const j = await r.json();
-        if (j.ok && j.data_uri) { const audio = document.createElement("audio"); audio.src = j.data_uri; audio.controls = true; audio.className = "mt-2 w-full max-w-xs"; div.insertBefore(audio, btn); btn.remove(); }
-        else throw new Error(j.erro || "Resposta inválida");
+        if (j.ok && j.data_uri) {
+          const audio = document.createElement("audio");
+          audio.src = j.data_uri;
+          audio.controls = true;
+          audio.preload = "metadata";   // <- mostra duração/controles completos
+          audio.className = "mt-2";     // <- largura vem do CSS (.msg audio)
+          div.insertBefore(audio, btn);
+          btn.remove();
+        } else {
+          throw new Error(j.erro || "Resposta inválida");
+        }
       } catch { alert("Erro ao carregar áudio"); btn.disabled = false; btn.textContent = "▶ Reproduzir áudio"; }
     }
+
     async function carregarDocumento(div, btn, msg_id) {
       btn.disabled = true; btn.textContent = "⏳ Carregando…";
       try {
@@ -1383,8 +1411,8 @@
     }
 
     function responderMensagem(msgId, conteudo) {
-      respostaMsgId = msgId || null; document.getElementById("respostaTexto").innerText = (conteudo || "").slice(0, 50);
-      document.getElementById("respostaPreview").classList.remove("hidden"); textarea.focus();
+      respostaMsgId = msgId || null; document.getElementById("respostaPreview").classList.remove("hidden"); document.getElementById("respostaTexto").innerText = (conteudo || "").slice(0, 50);
+      textarea.focus();
     }
     function cancelarResposta() { respostaMsgId = null; document.getElementById("respostaPreview").classList.add("hidden"); document.getElementById("respostaTexto").innerText = ""; }
 
@@ -1417,21 +1445,48 @@
       if (file.type !== "application/pdf") { alert("Somente arquivos PDF são permitidos."); return; }
       try {
         const res = await fetch(`${CONV_API}/api/upload/pdf`, {
-          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ filename: file.name })
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: file.name })
         });
         const j = await res.json();
-        if (!j.ok) { alert("Erro ao gerar URL: " + j.erro); return; }
-        await fetch(j.upload_url, { method: "PUT", headers: { "Content-Type": "application/pdf" }, body: file });
+        if (!j.ok) {
+          console.error("Presign falhou:", j);
+          alert("Erro ao gerar URL: " + j.erro);
+          return;
+        }
+        const putResp = await fetch(j.upload_url, {
+          method: "PUT",
+          headers: { "Content-Type": "application/pdf" },
+          body: file
+        });
 
+        if (!putResp.ok) {
+          const txt = await putResp.text().catch(() => "");
+          console.error("S3 PUT falhou", putResp.status, txt);
+          alert(`Falha no upload (S3): HTTP ${putResp.status}\n${txt.slice(0,300)}`);
+          return;
+        }
         const send = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ phone_id: selecionado.phone_id, file_url: j.file_url, original_filename: file.name })
         });
-        const sj = await send.json();
-        if (sj.ok) await carregarMensagens(true); else alert("Erro ao enviar PDF: " + (sj.erro || JSON.stringify(sj)));
-      } catch (e) { alert("Erro ao enviar PDF"); }
-      finally { event.target.value = ""; }
+        const sj = await send.json().catch(()=>({ok:false, erro:"resposta inválida"}));
+        if (sj.ok) {
+          await carregarMensagens(true);
+        } else {
+          console.error("Erro ao enviar PDF para WhatsApp:", sj);
+          alert("Erro ao enviar PDF (API META): " + (sj.erro || JSON.stringify(sj)));
+        }
+      } catch (e) {
+        console.error("Erro geral ao enviar PDF:", e);
+        alert("Erro ao enviar PDF (rede).");
+      } finally {
+        event.target.value = "";
+      }
     }
+
 
   </script>
 </body>
