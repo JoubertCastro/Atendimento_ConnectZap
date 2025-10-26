@@ -36,7 +36,7 @@
       --input-bg: #ffffff;
       --input-fg: var(--text);
       --scrollbar: #cbd5e1;
-      --ticket-selected-bg: #f0f9ff;
+      --ticket-selected-bg: #f0f9ff
     }
 
     * {
@@ -167,7 +167,7 @@
     }
 
     .ticket-selected {
-      background: var(--ticket-selected-bg) !important;
+      background: var(--ticket-selected-bg) !important
     }
 
     .badge {
@@ -320,11 +320,11 @@
     }
 
     .text-gray-600 {
-      color: color-mix(in srgb, var(--text) 70%, var(--content-bg)) !important;
+      color: color-mix(in srgb, var(--text) 70%, var(--content-bg)) !important
     }
 
     .text-gray-400 {
-      color: color-mix(in srgb, var(--muted) 65%, var(--content-bg)) !important;
+      color: color-mix(in srgb, var(--muted) 65%, var(--content-bg)) !important
     }
 
     .bg-gray-50 {
@@ -518,7 +518,7 @@
           <svg id="prioritySpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
             </circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v4a 4 4 0 00-4 4H4z"></path>
           </svg>
           <span id="priorityBtnLabel">Buscar e solicitar</span>
         </button>
@@ -533,9 +533,8 @@
         <h3 class="font-semibold">🎨 Seu tema</h3>
         <div class="flex items-center gap-2">
           <button id="btnThemeExport" class="btn btn-ghost px-2 py-1 text-xs">Salvar no meu computador</button>
-          <label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">
-            Importar um tema salvo <input id="importTheme" type="file" accept="application/json" class="hidden">
-          </label>
+          <label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">Importar um tema salvo <input id="importTheme"
+              type="file" accept="application/json" class="hidden"></label>
           <button id="btnThemeClose" class="btn btn-ghost px-2 py-1 text-xs" aria-label="Fechar">✖</button>
         </div>
       </div>
@@ -580,50 +579,38 @@
 
           <!-- Cores principais -->
           <div class="grid grid-cols-2 gap-3">
-            <label class="block"><span class="text-xs text-gray-600">Botão PDF</span>
-              <input id="tPrimary" type="color" class="w-full h-10 border rounded" value="#3b82f6">
-            </label>
-            <label class="block"><span class="text-xs text-gray-600">Botão Concluir</span>
-              <input id="tAccent" type="color" class="w-full h-10 border rounded" value="#22c55e">
-            </label>
-            <label class="block"><span class="text-xs text-gray-600">Barra lateral</span>
-              <input id="tSidebar" type="color" class="w-full h-10 border rounded" value="#ffffff">
-            </label>
-            <label class="block"><span class="text-xs text-gray-600">Cabeçalho</span>
-              <input id="tContentBg" type="color" class="w-full h-10 border rounded" value="#ffffff">
-            </label>
-            <label class="block"><span class="text-xs text-gray-600">Cor de fundo</span>
-              <input id="tBg" type="color" class="w-full h-10 border rounded" value="#f3f4f6">
-            </label>
-            <label class="block"><span class="text-xs text-gray-600">Texto</span>
-              <input id="tText" type="color" class="w-full h-10 border rounded" value="#0f172a">
-            </label>
+            <label class="block"><span class="text-xs text-gray-600">Botão PDF</span><input id="tPrimary" type="color"
+                class="w-full h-10 border rounded" value="#3b82f6"></label>
+            <label class="block"><span class="text-xs text-gray-600">Botão Concluir</span><input id="tAccent"
+                type="color" class="w-full h-10 border rounded" value="#22c55e"></label>
+            <label class="block"><span class="text-xs text-gray-600">Barra lateral</span><input id="tSidebar"
+                type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
+            <label class="block"><span class="text-xs text-gray-600">Cabeçalho</span><input id="tContentBg" type="color"
+                class="w-full h-10 border rounded" value="#ffffff"></label>
+            <label class="block"><span class="text-xs text-gray-600">Cor de fundo</span><input id="tBg" type="color"
+                class="w-full h-10 border rounded" value="#f3f4f6"></label>
+            <label class="block"><span class="text-xs text-gray-600">Texto</span><input id="tText" type="color"
+                class="w-full h-10 border rounded" value="#0f172a"></label>
           </div>
 
           <!-- Balões -->
           <div class="grid grid-cols-2 gap-3 mt-3">
-            <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 1</span>
-              <input id="tOutG1" type="color" class="w-full h-10 border rounded" value="#dcf8c6">
-            </label>
-            <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 2</span>
-              <input id="tOutG2" type="color" class="w-full h-10 border rounded" value="#b8f0a4">
-            </label>
-            <label class="block"><span class="text-xs text-gray-600">Cliente mensagem cor</span>
-              <input id="tInBg" type="color" class="w-full h-10 border rounded" value="#ffffff">
-            </label>
-            <label class="block"><span class="text-xs text-gray-600">Cliente mensagem bordas</span>
-              <input id="tInBorder" type="color" class="w-full h-10 border rounded" value="#e2e8f0">
-            </label>
-            <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos balões</span>
-              <input id="tRadius" type="range" min="8" max="28" value="18" class="w-full">
-            </label>
+            <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 1</span><input id="tOutG1"
+                type="color" class="w-full h-10 border rounded" value="#dcf8c6"></label>
+            <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 2</span><input id="tOutG2"
+                type="color" class="w-full h-10 border rounded" value="#b8f0a4"></label>
+            <label class="block"><span class="text-xs text-gray-600">Cliente mensagem cor</span><input id="tInBg"
+                type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
+            <label class="block"><span class="text-xs text-gray-600">Cliente mensagem bordas</span><input id="tInBorder"
+                type="color" class="w-full h-10 border rounded" value="#e2e8f0"></label>
+            <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos balões</span><input
+                id="tRadius" type="range" min="8" max="28" value="18" class="w-full"></label>
           </div>
 
           <!-- Fundo -->
           <div class="grid grid-cols-1 gap-3 mt-3">
-            <label class="block"><span class="text-xs text-gray-600">Opacidade do fundo</span>
-              <input id="tBgOp" type="range" min="0" max="1" step="0.05" value="0">
-            </label>
+            <label class="block"><span class="text-xs text-gray-600">Opacidade do fundo</span><input id="tBgOp"
+                type="range" min="0" max="1" step="0.05" value="0"></label>
           </div>
 
           <!-- Tipografia/UI -->
@@ -636,12 +623,10 @@
                 <option value="16px">16px</option>
               </select>
             </label>
-            <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos botões</span>
-              <input id="tBtnRadius" type="range" min="6" max="16" value="10" class="w-full">
-            </label>
-            <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos cards de aviso</span>
-              <input id="tCardRadius" type="range" min="10" max="24" value="16" class="w-full">
-            </label>
+            <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos botões</span><input
+                id="tBtnRadius" type="range" min="6" max="16" value="10" class="w-full"></label>
+            <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos cards de aviso</span><input
+                id="tCardRadius" type="range" min="10" max="24" value="16" class="w-full"></label>
           </div>
 
           <div class="flex items-center justify-between mt-4">
@@ -676,8 +661,15 @@
       "779797401888141": "DivZero",
       "829210283602406": "Arc4U",
       "713021321904495": "Serasa",
-      "803535039503723": "Mercado Pago Vendas" };
-    const carteiraToPhoneId = Object.fromEntries(Object.entries(phoneIdMap).map(([id, nome]) => [nome, id]));
+      "803535039503723": "Mercado Pago Vendas"
+    };
+
+    // carteira -> [phone_ids]
+    const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => {
+      const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean);
+      acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts]));
+      return acc;
+    }, {});
 
     /** Estado */
     let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
@@ -783,7 +775,9 @@
     // ===== Helpers de contador persistente =====
     function storageKeys() { return { unread: `cz:unreadCount:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}`, lastTs: `cz:lastContatoTs:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}` }; }
     function loadUnread() { try { const { unread, lastTs } = storageKeys(); unreadCountByKey = JSON.parse(localStorage.getItem(unread) || "{}"); lastContatoTsByKey = JSON.parse(localStorage.getItem(lastTs) || "{}"); } catch { unreadCountByKey = {}; lastContatoTsByKey = {}; } }
-    function persistUnread() { try { const { unread, lastTs } = storageKeys(); localStorage.setItem(unread, JSON.stringify(unreadCountByKey)); localStorage.setItem(lastTs, JSON.stringify(lastContatoTsByKey)); } catch { } }
+    function persistUnread() {
+      try { const { unread, lastTs } = storageKeys(); localStorage.setItem(unread, JSON.stringify(unreadCountByKey)); localStorage.setItem(lastTs, JSON.stringify(lastContatoTsByKey)); } catch { }
+    }
     function keyFrom(remetente, phone_id) { return `${remetente}|${phone_id || ''}`; }
     function schedulePolls() {
       if (pollingContatos) clearInterval(pollingContatos);
@@ -823,8 +817,8 @@
       r.setProperty('--bubble-radius', t.bubbleRadius + 'px'); r.setProperty('--btn-radius', t.btnRadius + 'px'); r.setProperty('--card-radius', t.cardRadius + 'px');
       r.setProperty('--font-size', t.fontSize); r.setProperty('--chat-wallpaper-opacity', t.wallOp);
       r.setProperty('--hover', t.hover || 'var(--ghost-bg)'); r.setProperty('--hover-strong', t.hoverStrong || 'var(--ghost-bg)');
-      r.setProperty('--input-bg', t.inputBg || t.contentBg || '#ffffff'); r.setProperty('--input-fg', t.inputFg || t.text || '#0f172a'); r.setProperty('--scrollbar', t.scrollbar || '#cbd5e1');
-      r.setProperty('--primary', t.primary); r.setProperty('--accent', t.accent);
+      r.setProperty('--input-bg', t.inputBg || t.contentBg || '#ffffff'); r.setProperty('--input-fg', t.inputFg || t.text || '#0f172a');
+      r.setProperty('--scrollbar', t.scrollbar || '#cbd5e1'); r.setProperty('--primary', t.primary); r.setProperty('--accent', t.accent);
       // sincroniza inputs
       inputs.tPrimary.value = t.primary; inputs.tAccent.value = t.accent; inputs.tSidebar.value = t.sidebar;
       inputs.tContentBg.value = t.contentBg; inputs.tBg.value = t.bg; inputs.tText.value = t.text;
@@ -852,36 +846,12 @@
       };
     }
     const presets = {
-      corporate: {
-        primary: "#2563eb", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a",
-        outG1: "#e0f2fe", outG2: "#bfdbfe", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px",
-        muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6"
-      },
-      ocean: {
-        primary: "#06b6d4", accent: "#10b981", sidebar: "#f0fdff", contentBg: "#ecfeff", bg: "#f0fdfa", text: "#0b1320",
-        outG1: "#cffafe", outG2: "#a7f3d0", inBg: "#ffffff", inBorder: "#cbd5e1", bubbleRadius: 18, btnRadius: 12, cardRadius: 18, wallOp: .05, fontSize: "14px",
-        muted: "#475569", border: "#cbd5e1", link: "#0891b2", ghostBg: "#e2f2f3"
-      },
-      sunset: {
-        primary: "#f97316", accent: "#ef4444", sidebar: "#fff7ed", contentBg: "#fff7ed", bg: "#fff1f2", text: "#111827",
-        outG1: "#fed7aa", outG2: "#fda4af", inBg: "#ffffff", inBorder: "#fecaca", bubbleRadius: 20, btnRadius: 12, cardRadius: 20, wallOp: .06, fontSize: "14px",
-        muted: "#6b7280", border: "#f3d4cf", link: "#f97316", ghostBg: "#fff3e8"
-      },
-      dark: {
-        primary: "#60a5fa", accent: "#22c55e", sidebar: "#0b1220", contentBg: "#0b1220", bg: "#0a0f1a", text: "#e5e7eb", muted: "#94a3b8", border: "#1f2937", link: "#93c5fd", ghostBg: "#111827",
-        outG1: "#1f2937", outG2: "#0f172a", outFg: "#e5e7eb", inBg: "#0e1726", inBorder: "#1f2937", inFg: "#e5e7eb", bubbleRadius: 16, btnRadius: 10, cardRadius: 16,
-        wallOp: 1, fontSize: "14px", hover: "#111827", hoverStrong: "#0f172a", inputBg: "#0e1726", inputFg: "#e5e7eb", scrollbar: "#334155", ticketSelectedBg: "#111827"
-      },
-      minimal: {
-        primary: "#111827", accent: "#64748b", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#0f172a",
-        outG1: "#f3f4f6", outG2: "#e5e7eb", inBg: "#ffffff", inBorder: "#e5e7eb", bubbleRadius: 14, btnRadius: 8, cardRadius: 16, wallOp: 0, fontSize: "15px",
-        muted: "#6b7280", border: "#e5e7eb", link: "#111827", ghostBg: "#f3f4f6"
-      },
-      funky: {
-        primary: "#a78bfa", accent: "#ec4899", sidebar: "#faf5ff", contentBg: "#fff0f7", bg: "#fafafa", text: "#111827",
-        outG1: "#e9d5ff", outG2: "#fecdd3", inBg: "#ffffff", inBorder: "#f5d0fe", bubbleRadius: 22, btnRadius: 14, cardRadius: 22, wallOp: .08, fontSize: "14px",
-        muted: "#6b7280", border: "#e9d5ff", link: "#a78bfa", ghostBg: "#f5f3ff"
-      },
+      corporate: { primary: "#2563eb", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", outG1: "#e0f2fe", outG2: "#bfdbfe", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6" },
+      ocean: { primary: "#06b6d4", accent: "#10b981", sidebar: "#f0fdff", contentBg: "#ecfeff", bg: "#f0fdfa", text: "#0b1320", outG1: "#cffafe", outG2: "#a7f3d0", inBg: "#ffffff", inBorder: "#cbd5e1", bubbleRadius: 18, btnRadius: 12, cardRadius: 18, wallOp: .05, fontSize: "14px", muted: "#475569", border: "#cbd5e1", link: "#0891b2", ghostBg: "#e2f2f3" },
+      sunset: { primary: "#f97316", accent: "#ef4444", sidebar: "#fff7ed", contentBg: "#fff7ed", bg: "#fff1f2", text: "#111827", outG1: "#fed7aa", outG2: "#fda4af", inBg: "#ffffff", inBorder: "#fecaca", bubbleRadius: 20, btnRadius: 12, cardRadius: 20, wallOp: .06, fontSize: "14px", muted: "#6b7280", border: "#f3d4cf", link: "#f97316", ghostBg: "#fff3e8" },
+      dark: { primary: "#60a5fa", accent: "#22c55e", sidebar: "#0b1220", contentBg: "#0b1220", bg: "#0a0f1a", text: "#e5e7eb", muted: "#94a3b8", border: "#1f2937", link: "#93c5fd", ghostBg: "#111827", outG1: "#1f2937", outG2: "#0f172a", outFg: "#e5e7eb", inBg: "#0e1726", inBorder: "#1f2937", inFg: "#e5e7eb", bubbleRadius: 16, btnRadius: 10, cardRadius: 16, wallOp: 1, fontSize: "14px", hover: "#111827", hoverStrong: "#0f172a", inputBg: "#0e1726", inputFg: "#e5e7eb", scrollbar: "#334155", ticketSelectedBg: "#111827" },
+      minimal: { primary: "#111827", accent: "#64748b", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#0f172a", outG1: "#f3f4f6", outG2: "#e5e7eb", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 14, btnRadius: 8, cardRadius: 16, wallOp: 0, fontSize: "15px", muted: "#6b7280", border: "#e5e7eb", link: "#111827", ghostBg: "#f3f4f6" },
+      funky: { primary: "#a78bfa", accent: "#ec4899", sidebar: "#faf5ff", contentBg: "#fff0f7", bg: "#fafafa", text: "#111827", outG1: "#e9d5ff", outG2: "#fecdd3", inBg: "#ffffff", inBorder: "#f5d0fe", bubbleRadius: 22, btnRadius: 14, cardRadius: 22, wallOp: .08, fontSize: "14px", muted: "#6b7280", border: "#e9d5ff", link: "#a78bfa", ghostBg: "#f5f3ff" },
     };
 
     // === Seleção de presets: APLICA e SALVA ===
@@ -996,14 +966,21 @@
     }
 
     async function refreshOrdemCarteira() {
-      const phoneId = carteiraToPhoneId[agente.carteira]; if (!phoneId) return;
+      const phoneIds = (carteiraToPhoneIds[agente.carteira] || []).map(String);
+      if (!phoneIds.length) return;
       try {
         const res = await fetch(`${CONV_API}/api/conversas/contatos`);
         const contatos = await res.json();
-        const filtrados = (contatos || []).filter(c => c.phone_id === phoneId);
-        filtrados.sort((a, b) => { const ai = a.status === 'in', bi = b.status === 'in'; if (ai !== bi) return bi - ai; return new Date(b.data_hora) - new Date(a.data_hora); });
+        const filtrados = (contatos || []).filter(c => phoneIds.includes(String(c.phone_id)));
+        // ordem: recebidas primeiro, depois por data
+        filtrados.sort((a, b) => {
+          const ai = a.status === 'in', bi = b.status === 'in';
+          if (ai !== bi) return bi - ai;
+          return new Date(b.data_hora) - new Date(a.data_hora);
+        });
         ordemCache = filtrados;
 
+        // atualizar unread + última mensagem por ticket
         const ticketByKey = new Map((tickets || []).map(t => [keyFrom(t.remetente, t.phone_id), t]));
         filtrados.forEach(c => {
           const k = keyFrom(c.remetente, c.phone_id);
@@ -1069,7 +1046,7 @@
     btnPegarProxima.onclick = async () => {
       if (!agente.online) { alert("Você está offline. Clique em “Ficar online”."); return; }
       if (limitPerAgent > 0 && ativosCount >= limitPerAgent) {
-        elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de pegar outro.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return;
+        elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de pegar outro.`; elMsgLimite.classList.remove('hidden'); renderAtivosELimiteUI(); return;
       }
       const spinner = document.getElementById('pegarSpinner'); const label = document.getElementById('pegarLabel');
       btnPegarProxima.disabled = true; spinner.classList.remove('hidden'); label.textContent = 'Buscando…';
@@ -1081,7 +1058,7 @@
         const j = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
         if (r.status === 409 && j && (j.limit_per_agent !== undefined)) {
           limitPerAgent = Number(j.limit_per_agent || 0); ativosCount = Number(j.ativos || ativosCount);
-          elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return;
+          elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosELimiteUI(); return;
         }
         if (!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
         if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) { tickets.unshift(j.ticket); saveTickets(); }
@@ -1120,42 +1097,127 @@
       return d;
     }
     async function findContatoNaOrdem(remetente) {
-      let c = (ordemCache || []).find(x => String(x.remetente) === String(remetente)); if (c) return c;
+      let c = (ordemCache || []).find(x => String(x.remetente) === String(remetente));
+      if (c) return c;
       try {
         const r = await fetch(`${CONV_API}/api/conversas/contatos`); const all = await r.json();
-        const phoneId = carteiraToPhoneId[agente.carteira];
-        c = (all || []).find(x => x.phone_id === phoneId && String(x.remetente) === String(remetente)); return c || null;
+        const phoneIds = (carteiraToPhoneIds[agente.carteira] || []).map(String);
+        c = (all || []).find(x => phoneIds.includes(String(x.phone_id)) && String(x.remetente) === String(remetente));
+        return c || null;
       } catch { return null; }
     }
+
+    // <<< prioridade helpers (corrigidos)
+    function phoneIdsForCarteira() {
+      return (carteiraToPhoneIds[agente.carteira] || []).map(String);
+    }
+    function dedupe(arr) {
+      return Array.from(new Set(arr.filter(Boolean)));
+    }
+    async function preferPhoneIdDoContato(remetente) {
+      const hit = (ordemCache || []).find(x => String(x.remetente) === String(remetente));
+      if (hit && hit.phone_id) return String(hit.phone_id);
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/contatos`);
+        const all = await r.json();
+        const ids = phoneIdsForCarteira();
+        const c = (all || []).find(x => ids.includes(String(x.phone_id)) && String(x.remetente) === String(remetente));
+        return c ? String(c.phone_id) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    /**
+     * Tenta claim com:
+     *  1) todos os IDs de uma vez (phone_id: [id1, id2, ...])
+     *  2) fallback: um por vez (phone_id: [id])
+     *  3) fallback final: sem phone_id (backend decide)
+     */
+    async function tentarClaimComIds(remetente, ids) {
+      const candidatos = [];
+      if (ids && ids.length) {
+        candidatos.push(ids);                 // todos de uma vez
+        ids.forEach(id => candidatos.push([id])); // um a um
+      } else {
+        candidatos.push([]);                  // sem phone_id
+      }
+
+      for (const arr of candidatos) {
+        const body = {
+          codigo_do_agente: parseInt(agente.codigo, 10),
+          carteira: agente.carteira,
+          remetente,
+          ...(arr.length ? { phone_id: arr } : {}),
+          prioridade: true
+        };
+
+        const r = await fetch(`${CONV_API}/api/tickets/claim`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
+
+        // 404 => não achou para esse(s) phone_id — tenta o próximo candidato
+        if (r.status === 404) continue;
+
+        // 200/409/outros => devolve para quem chamou decidir
+        return data;
+      }
+      return { ok: false, erro: 'Contato não está na fila desta carteira.' };
+    }
+    // >>> fim prioridade helpers
+
     btnPriorityBuscar.onclick = async () => {
       priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden');
-      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de solicitar prioridade.`; priorityErro.classList.remove('hidden'); return; }
-      const nrm = normalizarTelefone(priorityTelefone.value); if (nrm.length < 11) { priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).'; priorityErro.classList.remove('hidden'); return; }
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) {
+        priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de solicitar prioridade.`;
+        priorityErro.classList.remove('hidden'); return;
+      }
+
+      const nrm = normalizarTelefone(priorityTelefone.value);
+      if (nrm.length < 11) { priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).'; priorityErro.classList.remove('hidden'); return; }
+
       priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`; priorityInfo.classList.remove('hidden');
-      const phoneIdCarteira = carteiraToPhoneId[agente.carteira]; await findContatoNaOrdem(nrm);
+
+      // monta ordem de tentativa: preferido do contato primeiro, depois IDs da carteira
+      const preferido = await preferPhoneIdDoContato(nrm);
+      const ordemIds = dedupe([preferido, ...phoneIdsForCarteira()]);
+
       btnPriorityBuscar.disabled = true; prioritySpinner.classList.remove('hidden'); priorityBtnLabel.textContent = 'Solicitando…';
       try {
-        const body = { codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira, remetente: nrm, phone_id: phoneIdCarteira, prioridade: true };
-        const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        const data = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
-        if (r.status === 409 && data && (data.limit_per_agent !== undefined)) {
-          limitPerAgent = Number(data.limit_per_agent || 0); ativosCount = Number(data.ativos || ativosCount);
-          priorityErro.textContent = data.erro || `Limite de ${limitPerAgent} atingido.`; priorityErro.classList.remove('hidden'); await refreshAtivosELimite(); return;
+        const data = await tentarClaimComIds(nrm, ordemIds);
+
+        if (data && data.limit_per_agent !== undefined) {
+          limitPerAgent = Number(data.limit_per_agent || 0);
+          ativosCount = Number(data.ativos || ativosCount);
+          priorityErro.textContent = data.erro || `Limite de ${limitPerAgent} atingido.`;
+          priorityErro.classList.remove('hidden');
+          await refreshAtivosELimite();
+          return;
         }
-        if (r.ok && data && data.ok && data.ticket) {
+
+        if (data && data.ok && data.ticket) {
           priorityInfo.innerHTML = `<span class="text-emerald-700 font-medium">Prioridade concedida.</span> Abrindo o ticket…`;
           if (!tickets.find(t => t.remetente === data.ticket.remetente && t.phone_id === data.ticket.phone_id)) { tickets.unshift(data.ticket); saveTickets(); renderTickets(); }
           fecharPriorityModal(); abrirTicket(data.ticket);
           ativosCount++; renderAtivosLimiteUI(); return;
         }
+
         if (data && (data.assigned_to || data.atendimento)) {
           const owner = data.assigned_to || data.atendimento;
-          priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome || '—')}</strong> (#${escapeHtml(String(owner.codigo || '—'))}).`; priorityErro.classList.remove('hidden'); return;
+          priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome || '—')}</strong> (#${escapeHtml(String(owner.codigo || '—'))}).`;
+          priorityErro.classList.remove('hidden'); return;
         }
-        if (r.status === 404) { priorityErro.textContent = 'Contato não está na fila desta carteira.'; priorityErro.classList.remove('hidden'); return; }
-        const msg = (data && (data.erro || data.message)) || 'Não foi possível conceder prioridade.'; priorityErro.textContent = msg; priorityErro.classList.remove('hidden');
-      } catch (e) { priorityErro.textContent = 'Falha ao solicitar prioridade.'; priorityErro.classList.remove('hidden'); }
-      finally { btnPriorityBuscar.disabled = false; prioritySpinner.classList.add('hidden'); priorityBtnLabel.textContent = 'Buscar e solicitar'; }
+
+        priorityErro.textContent = (data && (data.erro || data.message)) || 'Não foi possível conceder prioridade.';
+        priorityErro.classList.remove('hidden');
+      } catch (e) {
+        priorityErro.textContent = 'Falha ao solicitar prioridade.'; priorityErro.classList.remove('hidden');
+      } finally {
+        btnPriorityBuscar.disabled = false; prioritySpinner.classList.add('hidden'); priorityBtnLabel.textContent = 'Buscar e solicitar';
+      }
     };
 
     btnLiberar.onclick = async () => {
