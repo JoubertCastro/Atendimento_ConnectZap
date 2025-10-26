@@ -664,7 +664,7 @@
       "803535039503723": "Mercado Pago Vendas"
     };
 
-    // >>> novo: carteira -> [phone_ids]
+    // carteira -> [phone_ids]
     const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => {
       const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean);
       acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts]));
@@ -1107,7 +1107,7 @@
       } catch { return null; }
     }
 
-    // <<< prioridade helpers
+    // <<< prioridade helpers (corrigidos)
     function phoneIdsForCarteira() {
       return (carteiraToPhoneIds[agente.carteira] || []).map(String);
     }
@@ -1127,25 +1127,43 @@
         return null;
       }
     }
+
+    /**
+     * Tenta claim com:
+     *  1) todos os IDs de uma vez (phone_id: [id1, id2, ...])
+     *  2) fallback: um por vez (phone_id: [id])
+     *  3) fallback final: sem phone_id (backend decide)
+     */
     async function tentarClaimComIds(remetente, ids) {
-      const tentativas = ids.length ? ids : [null];
-      for (const pid of tentativas) {
+      const candidatos = [];
+      if (ids && ids.length) {
+        candidatos.push(ids);                 // todos de uma vez
+        ids.forEach(id => candidatos.push([id])); // um a um
+      } else {
+        candidatos.push([]);                  // sem phone_id
+      }
+
+      for (const arr of candidatos) {
         const body = {
           codigo_do_agente: parseInt(agente.codigo, 10),
           carteira: agente.carteira,
-          remetente: nrm,
-          ...(ids.length > 0 ? { phone_id: ids } : {}),
+          remetente,
+          ...(arr.length ? { phone_id: arr } : {}),
           prioridade: true
         };
+
         const r = await fetch(`${CONV_API}/api/tickets/claim`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
         });
         const data = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
-        if (r.status === 409) return data;      // limite/ocupado: devolve pra quem chamou
-        if (r.status === 404) continue;         // tenta o próximo phone_id
-        return data;                             // qualquer outro status retorna
+
+        // 404 => não achou para esse(s) phone_id — tenta o próximo candidato
+        if (r.status === 404) continue;
+
+        // 200/409/outros => devolve para quem chamou decidir
+        return data;
       }
       return { ok: false, erro: 'Contato não está na fila desta carteira.' };
     }
@@ -1153,19 +1171,19 @@
 
     btnPriorityBuscar.onclick = async () => {
       priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden');
-      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de solicitar prioridade.`; priorityErro.classList.remove('hidden'); return; }
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) {
+        priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de solicitar prioridade.`;
+        priorityErro.classList.remove('hidden'); return;
+      }
 
       const nrm = normalizarTelefone(priorityTelefone.value);
       if (nrm.length < 11) { priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).'; priorityErro.classList.remove('hidden'); return; }
 
       priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`; priorityInfo.classList.remove('hidden');
 
-      // tenta descobrir o phone_id preferido do contato e monta ordem de tentativa
+      // monta ordem de tentativa: preferido do contato primeiro, depois IDs da carteira
       const preferido = await preferPhoneIdDoContato(nrm);
       const ordemIds = dedupe([preferido, ...phoneIdsForCarteira()]);
-
-      const phoneIdsCarteira = (carteiraToPhoneIds[agente.carteira] || []).map(String);
-      const ids = preferido ? Array.from(new Set([preferido, ...phoneIdsCarteira])) : phoneIdsCarteira;
 
       btnPriorityBuscar.disabled = true; prioritySpinner.classList.remove('hidden'); priorityBtnLabel.textContent = 'Solicitando…';
       try {
@@ -1189,7 +1207,8 @@
 
         if (data && (data.assigned_to || data.atendimento)) {
           const owner = data.assigned_to || data.atendimento;
-          priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome || '—')}</strong> (#${escapeHtml(String(owner.codigo || '—'))}).`; priorityErro.classList.remove('hidden'); return;
+          priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome || '—')}</strong> (#${escapeHtml(String(owner.codigo || '—'))}).`;
+          priorityErro.classList.remove('hidden'); return;
         }
 
         priorityErro.textContent = (data && (data.erro || data.message)) || 'Não foi possível conceder prioridade.';
