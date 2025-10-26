@@ -664,9 +664,8 @@
 
     /** Carteiras */
     const phoneIdMap = { "828473960349364": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
-    const carteiraToPhoneId = Object.fromEntries(Object.entries(phoneIdMap).map(([id, nome]) => [nome, id]));
-
-    /** Estado */
+    const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [id, nome]) => { (acc[nome] ||= []).push(id); return acc; }, {});
+/** Estado */
     let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
     let tickets = []; let selecionado = null; let renderedKeys = new Set(); let lastTimestampMs = null; let lastDayRendered = null;
     let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
@@ -983,11 +982,11 @@
     }
 
     async function refreshOrdemCarteira() {
-      const phoneId = carteiraToPhoneId[agente.carteira]; if (!phoneId) return;
+      const phoneIds = (carteiraToPhoneIds[agente.carteira] || []).map(String); if (!phoneIds.length) return;
       try {
         const res = await fetch(`${CONV_API}/api/conversas/contatos`);
         const contatos = await res.json();
-        const filtrados = (contatos || []).filter(c => c.phone_id === phoneId);
+        const filtrados = (contatos || []).filter(c => phoneIds.includes(String(c.phone_id)));
         filtrados.sort((a, b) => { const ai = a.status === 'in', bi = b.status === 'in'; if (ai !== bi) return bi - ai; return new Date(b.data_hora) - new Date(a.data_hora); });
         ordemCache = filtrados;
 
@@ -1119,10 +1118,10 @@
       if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de solicitar prioridade.`; priorityErro.classList.remove('hidden'); return; }
       const nrm = normalizarTelefone(priorityTelefone.value); if (nrm.length < 11) { priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).'; priorityErro.classList.remove('hidden'); return; }
       priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`; priorityInfo.classList.remove('hidden');
-      const phoneIdCarteira = carteiraToPhoneId[agente.carteira]; await findContatoNaOrdem(nrm);
+      const phoneIdsCarteira = carteiraToPhoneIds[agente.carteira] || []; await findContatoNaOrdem(nrm);
       btnPriorityBuscar.disabled = true; prioritySpinner.classList.remove('hidden'); priorityBtnLabel.textContent = 'Solicitando…';
       try {
-        const body = { codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira, remetente: nrm, phone_id: phoneIdCarteira, prioridade: true };
+        const body = { codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira, remetente: nrm, ...(phoneIdsCarteira.length===1 ? { phone_id: phoneIdsCarteira[0] } : {}), prioridade: true };
         const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const data = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
         if (r.status === 409 && data && (data.limit_per_agent !== undefined)) {
