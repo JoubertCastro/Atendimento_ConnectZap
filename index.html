@@ -153,13 +153,15 @@
 
     /* ===== Player de áudio dentro do balão (ajuste do tamanho) ===== */
     .msg audio {
-      width: 260px; /* ajuste como preferir */
+      width: 260px;
+      /* ajuste como preferir */
       display: block;
     }
 
     @media (min-width: 640px) {
       .msg audio {
-        width: 320px; /* maior no desktop */
+        width: 320px;
+        /* maior no desktop */
       }
     }
 
@@ -707,17 +709,19 @@
     const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
 
     /** Carteiras */
-    const phoneIdMap = { "828473960349364": "ConnectZap",
-                          "805610009301153": "Banco PAN",
-                          "727586317113885": "Recovery PJ",
-                          "864779140046932": "Recovery PF",
-                          "802977069563598": "Recovery PF",
-                          "873637622491517": "Mercado Pago Cobrança",
-                          "821562937700669": "Mercado Pago Cobrança",
-                          "779797401888141": "DivZero",
-                          "829210283602406": "Arc4U",
-                          "713021321904495": "Serasa",
-                          "803535039503723": "Mercado Pago Vendas" };
+    const phoneIdMap = {
+      "828473960349364": "ConnectZap",
+      "805610009301153": "Banco PAN",
+      "727586317113885": "Recovery PJ",
+      "864779140046932": "Recovery PF",
+      "802977069563598": "Recovery PF",
+      "873637622491517": "Mercado Pago Cobrança",
+      "821562937700669": "Mercado Pago Cobrança",
+      "779797401888141": "DivZero",
+      "829210283602406": "Arc4U",
+      "713021321904495": "Serasa",
+      "803535039503723": "Mercado Pago Vendas"
+    };
     const carteiraToPhoneId = Object.fromEntries(Object.entries(phoneIdMap).map(([id, nome]) => [nome, id]));
 
     /** Estado */
@@ -725,6 +729,7 @@
     let tickets = []; let selecionado = null; let renderedKeys = new Set(); let lastTimestampMs = null; let lastDayRendered = null;
     let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
     let limitPerAgent = 0; let ativosCount = 0;
+    let novasMensagens = {}; let ultimoStatusContatos = {};
 
     /** Consts */
     const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
@@ -1044,6 +1049,22 @@
         const filtrados = (contatos || []).filter(c => c.phone_id === phoneId);
         filtrados.sort((a, b) => { const ai = a.status === 'in', bi = b.status === 'in'; if (ai !== bi) return bi - ai; return new Date(b.data_hora) - new Date(a.data_hora); });
         ordemCache = filtrados;
+        // atualizar contadores de novas mensagens apenas para tickets do agente
+        try {
+          const ticketKeys = new Set((tickets || []).map(t => `${t.remetente}|${t.phone_id || ''}`));
+          filtrados.forEach(c => {
+            const key = `${c.remetente}|${c.phone_id || ''}`;
+            if (!ticketKeys.has(key)) return;
+            if (ultimoStatusContatos[key] && ultimoStatusContatos[key] !== c.data_hora) {
+              if (!(selecionado && selecionado.remetente === c.remetente && selecionado.phone_id === c.phone_id)) {
+                novasMensagens[key] = (novasMensagens[key] || 0) + 1;
+              }
+            }
+            ultimoStatusContatos[key] = c.data_hora;
+          });
+          // re-render lista para refletir badges
+          renderTickets();
+        } catch (_) { }
       } catch (e) { console.error("Falha ao atualizar ordem", e); }
     }
 
@@ -1194,6 +1215,7 @@
         const j = await r.json();
         if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível liberar."); return; }
         tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
+        try { delete novasMensagens[`${selecionado.remetente}|${selecionado.phone_id || ''}`]; delete ultimoStatusContatos[`${selecionado.remetente}|${selecionado.phone_id || ''}`]; } catch { }
         saveTickets(); renderTickets(); limparChat();
         elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
         if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
@@ -1229,6 +1251,7 @@
         const j = await r.json();
         if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível concluir."); btnConcluir.disabled = false; return; }
         tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
+        try { delete novasMensagens[`${selecionado.remetente}|${selecionado.phone_id || ''}`]; delete ultimoStatusContatos[`${selecionado.remetente}|${selecionado.phone_id || ''}`]; } catch { }
         saveTickets(); renderTickets(); limparChat();
         elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
         if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
@@ -1241,12 +1264,15 @@
         const nome = t.nome_exibicao || t.remetente; const ultima = t.mensagem_final ? t.mensagem_final.slice(0, 70) : "";
         const hora = t.data_hora ? new Date(t.data_hora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
         const hay = `${nome} ${t.remetente}`.toLowerCase(); if (q && !hay.includes(q)) return;
-        const li = document.createElement("li"); li.className = "flex items-center p-3 hover-soft cursor-pointer border-b"; li.onclick = () => abrirTicket(t);
+        const li = document.createElement("li"); li.className = "relative flex items-center p-3 hover-soft cursor-pointer border-b"; li.onclick = () => abrirTicket(t);
+        const key = `${t.remetente}|${t.phone_id || ''}`;
+        const unread = novasMensagens[key] || 0;
+        const badge = unread > 0 ? `<span class="badge absolute right-2 top-2">${unread}</span>` : "";
         li.innerHTML = `<div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">
         ${(nome || "U").charAt(0).toUpperCase()}</div>
       <div class="flex-1 min-w-0"><div class="font-semibold truncate">${escapeHtml(nome)}</div>
         <div class="text-sm text-gray-600 truncate">${escapeHtml(ultima)}</div></div>
-      <div class="text-xs text-gray-400 pl-2">${hora}</div>`;
+      <div class="text-xs text-gray-400 pl-2">${hora}</div>${badge}`;
         if (selecionado && selecionado.remetente === t.remetente) li.classList.add("ticket-selected");
         elListaTickets.appendChild(li);
       });
@@ -1254,16 +1280,22 @@
     function filtrarTickets(v) { renderTickets(v); }
 
     async function abrirTicket(t) {
-      selecionado = t; renderTickets();
+      selecionado = t;
+      // zera contador de novas mensagens para este ticket
+      try { novasMensagens[`${t.remetente}|${t.phone_id || ''}`] = 0; } catch { }
+      renderTickets();
       elTitulo.textContent = t.nome_exibicao ? `${t.nome_exibicao} (${t.remetente})` : t.remetente;
       elSubInfo.textContent = `conta: ${phoneIdMap[t.phone_id] || t.phone_id}`;
       textarea.disabled = false; textarea.focus(); btnEnviar.disabled = true; btnLiberar.disabled = false; btnConcluir.disabled = false;
 
+      // reinicia controller de mensagens só na troca de ticket
+      if (msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+      msgsCtrl = new AbortController();
+
       lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); chat.innerHTML = "";
       await carregarMensagens(false);
 
-      if (pollingMensagens) clearInterval(pollingMensagens);
-      pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true); }, 5000);
+      startMensagensPoll();
     }
 
     textarea.addEventListener("input", () => {
@@ -1275,17 +1307,29 @@
       if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!btnEnviar.disabled) enviarMensagem(); }
     });
 
+    // mensagens polling com AbortController (para não acumular requests quando troca de aba/ALT+TAB)
+    let msgsCtrl = null;
+    function startMensagensPoll() {
+      if (pollingMensagens) clearInterval(pollingMensagens);
+      pollingMensagens = setInterval(() => {
+        if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true);
+      }, 5000);
+    }
+
     async function carregarMensagens(incremental = true) {
       if (!selecionado) return;
       let url = `${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`;
       if (selecionado.phone_id) url += `?phone_id=${encodeURIComponent(selecionado.phone_id)}`;
       try {
-        const r = await fetch(url); if (!r.ok) throw new Error("Erro histórico");
+        // usa msgsCtrl.signal para poder abortar quando trocar de ticket
+        const r = await fetch(url, { signal: msgsCtrl?.signal }); if (!r.ok) throw new Error("Erro histórico");
         const msgs = await r.json(); msgs.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
         if (!incremental) { chat.innerHTML = ""; lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); }
         const isNearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 200;
         msgs.forEach(m => renderMsg(m, incremental)); if (isNearBottom) chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" });
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        if (String(e?.name) !== "AbortError") console.error(e);
+      }
     }
 
     function renderMsg(m, incremental) {
@@ -1320,8 +1364,8 @@
         const horaSpan = document.createElement("span"); horaSpan.className = "hora"; horaSpan.textContent = hora; div.appendChild(horaSpan);
         if (m.msg_id) {
           fetch(`${CONV_API}/api/conversas/emoji/${encodeURIComponent(m.msg_id)}`).then(r => r.json())
-          .then(j => { if (j.ok && j.emoji) emojiEl.textContent = j.emoji; else label.textContent = "emoji não carregado"; })
-          .catch(() => label.textContent = "falha ao carregar emoji");
+            .then(j => { if (j.ok && j.emoji) emojiEl.textContent = j.emoji; else label.textContent = "emoji não carregado"; })
+            .catch(() => label.textContent = "falha ao carregar emoji");
         }
       } else if (m.tipo === "system" || m.mensagem_final === "[system]") {
         div.className = "msg system";
@@ -1464,7 +1508,7 @@
         if (!putResp.ok) {
           const txt = await putResp.text().catch(() => "");
           console.error("S3 PUT falhou", putResp.status, txt);
-          alert(`Falha no upload (S3): HTTP ${putResp.status}\n${txt.slice(0,300)}`);
+          alert(`Falha no upload (S3): HTTP ${putResp.status}\n${txt.slice(0, 300)}`);
           return;
         }
         const send = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, {
@@ -1472,7 +1516,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ phone_id: selecionado.phone_id, file_url: j.file_url, original_filename: file.name })
         });
-        const sj = await send.json().catch(()=>({ok:false, erro:"resposta inválida"}));
+        const sj = await send.json().catch(() => ({ ok: false, erro: "resposta inválida" }));
         if (sj.ok) {
           await carregarMensagens(true);
         } else {
