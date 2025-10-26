@@ -161,7 +161,7 @@
     }
 
     .ticket-selected {
-      background: #f0f9ff !important
+      background: var(--ticket-selected-bg) !important;
     }
 
     .badge {
@@ -314,7 +314,8 @@
       --hover-strong: #e2e8f0;
       --input-bg: #ffffff;
       --input-fg: var(--text);
-      --scrollbar: #cbd5e1
+      --scrollbar: #cbd5e1;
+      --ticket-selected-bg: #f0f9ff;
     }
 
     .text-gray-500 {
@@ -322,11 +323,11 @@
     }
 
     .text-gray-600 {
-      color: color-mix(in srgb, var(--text) 80%, transparent) !important
+      color: color-mix(in srgb, var(--text) 70%, var(--content-bg)) !important;
     }
 
     .text-gray-400 {
-      color: color-mix(in srgb, var(--muted) 80%, var(--bg)) !important
+      color: color-mix(in srgb, var(--muted) 65%, var(--content-bg)) !important;
     }
 
     .bg-gray-50 {
@@ -778,6 +779,7 @@
     }
     function applyTheme(t) {
       const r = document.documentElement.style;
+      r.setProperty('--ticket-selected-bg', t.ticketSelectedBg || getComputedStyle(document.documentElement).getPropertyValue('--ticket-selected-bg') || '#f0f9ff');
       r.setProperty('--primary', t.primary); r.setProperty('--accent', t.accent);
       r.setProperty('--sidebar-bg', t.sidebar); r.setProperty('--content-bg', t.contentBg);
       r.setProperty('--bg', t.bg); r.setProperty('--text', t.text);
@@ -833,9 +835,9 @@
         muted: "#6b7280", border: "#f3d4cf", link: "#f97316", ghostBg: "#fff3e8"
       },
       dark: {
-        primary: "#60a5fa", accent: "#22c55e", sidebar: "#0b1220", contentBg: "#0b1220", bg: "#0a0f1a", text: "#e5e7eb",
-        muted: "#94a3b8", border: "#1f2937", link: "#93c5fd", ghostBg: "#111827", outG1: "#1f2937", outG2: "#0f172a", outFg: "#e5e7eb", inBg: "#0e1726", inBorder: "#1f2937", inFg: "#e5e7eb",
-        bubbleRadius: 16, btnRadius: 10, cardRadius: 16, wallOp: 1, fontSize: "14px", hover: "#111827", hoverStrong: "#0f172a", inputBg: "#0e1726", inputFg: "#e5e7eb", scrollbar: "#334155"
+        primary: "#60a5fa", accent: "#22c55e", sidebar: "#0b1220", contentBg: "#0b1220", bg: "#0a0f1a", text: "#e5e7eb", muted: "#94a3b8", border: "#1f2937", link: "#93c5fd", ghostBg: "#111827",
+        outG1: "#1f2937", outG2: "#0f172a", outFg: "#e5e7eb", inBg: "#0e1726", inBorder: "#1f2937", inFg: "#e5e7eb", bubbleRadius: 16, btnRadius: 10, cardRadius: 16,
+        wallOp: 1, fontSize: "14px", hover: "#111827", hoverStrong: "#0f172a", inputBg: "#0e1726", inputFg: "#e5e7eb", scrollbar: "#334155", ticketSelectedBg: "#111827"
       },
       minimal: {
         primary: "#111827", accent: "#64748b", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#0f172a",
