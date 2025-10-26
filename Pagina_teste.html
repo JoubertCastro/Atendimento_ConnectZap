@@ -16,24 +16,33 @@
       --text: #0f172a;
 
       --muted: #6b7280;
+      /* texto secundário */
       --border: #e5e7eb;
+      /* cor de borda padrão */
       --link: #2563eb;
+      /* links */
       --ghost-bg: #f3f4f6;
+      /* fundo de botões ghost */
       --ring: rgba(59, 130, 246, .35);
 
+      /* Balões */
       --bubble-out-g1: #dcf8c6;
       --bubble-out-g2: #b8f0a4;
       --bubble-out-fg: #111827;
+      /* texto balão enviado */
       --bubble-in-bg: #fff;
       --bubble-in-border: #e2e8f0;
       --bubble-in-fg: #0f172a;
-      --bubble-radius: 18;
+      /* texto balão recebido */
+      --bubble-radius: 18px;
 
       --btn-radius: 10px;
       --card-radius: 16px;
 
       --font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
       --font-size: 14px;
+
+      /* Opacidade do fundo do chat (0 a 1) */
       --chat-wallpaper-opacity: 0;
     }
 
@@ -142,17 +151,21 @@
       cursor: pointer;
     }
 
+    /* ===== Player de áudio dentro do balão (ajuste do tamanho) ===== */
     .msg audio {
       width: 260px;
+      /* ajuste como preferir */
       display: block;
     }
 
     @media (min-width: 640px) {
       .msg audio {
         width: 320px;
+        /* maior no desktop */
       }
     }
 
+    /* (opcional) melhora o clique nos controles no Chrome/WebKit */
     .msg audio::-webkit-media-controls-panel {
       padding: 6px 8px;
     }
@@ -234,6 +247,7 @@
       color: #3730a3
     }
 
+    /* Fundo do chat */
     .chat-wrap {
       background: var(--bg);
     }
@@ -309,10 +323,12 @@
       border-color: var(--border);
     }
 
+    /* Links genéricos */
     a {
       color: var(--link);
     }
 
+    /* ===== THEME-AWARE SIDEBAR / INPUTS / HOVERS / SCROLLBAR ===== */
     :root {
       --hover: #f1f5f9;
       --hover-strong: #e2e8f0;
@@ -321,6 +337,7 @@
       --scrollbar: #cbd5e1;
     }
 
+    /* map common utility grays to theme vars (soft override) */
     .text-gray-500 {
       color: var(--muted) !important;
     }
@@ -341,6 +358,7 @@
       background: var(--hover) !important;
     }
 
+    /* Theme-friendly hover helper */
     .hover-soft:hover {
       background: var(--hover) !important;
     }
@@ -349,6 +367,7 @@
       background: var(--hover-strong) !important;
     }
 
+    /* Inputs themed */
     input[type="text"],
     input[type="search"],
     input[type="color"],
@@ -365,10 +384,12 @@
       color: color-mix(in srgb, var(--muted) 85%, var(--bg));
     }
 
+    /* Sidebar list item borders and hover */
     #listaTickets li {
       border-color: var(--border) !important;
     }
 
+    /* Scrollbar (webkit) */
     *::-webkit-scrollbar {
       width: 10px;
       height: 10px;
@@ -383,18 +404,6 @@
 
     *::-webkit-scrollbar-track {
       background: transparent;
-    }
-
-    /* badge de novas na lista de tickets */
-    .badge-unread {
-      background: #ef4444;
-      color: #fff;
-      font-size: 10px;
-      font-weight: 700;
-      border-radius: 9999px;
-      padding: 2px 6px;
-      min-width: 18px;
-      text-align: center;
     }
   </style>
 </head>
@@ -411,16 +420,11 @@
           <div class="text-xs text-gray-500">Carteira: <span id="agenteCarteira">—</span></div>
           <div class="text-xs text-gray-500">Status: <span id="agenteStatus"><span
                 class="dot offline"></span>Offline</span></div>
-          <div class="mt-1 text-xs flex items-center gap-2 flex-wrap">
-            <div><span class="text-gray-500">Tickets:</span>
-              <span id="badgeAtivos" class="badge">0</span>
-              <span class="text-gray-500 mx-1">/</span>
-              <span id="badgeLimite" class="badge" style="background:#64748b">∞</span>
-            </div>
-            <div class="ml-0 md:ml-2">
-              <span class="text-gray-500">Novas:</span>
-              <span id="badgeNovasTotal" class="badge" style="background:#ef4444">0</span>
-            </div>
+          <div class="mt-1 text-xs">
+            <span class="text-gray-500">Tickets:</span>
+            <span id="badgeAtivos" class="badge">0</span>
+            <span class="text-gray-500 mx-1">/</span>
+            <span id="badgeLimite" class="badge" style="background:#64748b">∞</span>
           </div>
         </div>
         <div class="flex flex-col items-end gap-2">
@@ -725,19 +729,7 @@
     let tickets = []; let selecionado = null; let renderedKeys = new Set(); let lastTimestampMs = null; let lastDayRendered = null;
     let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
     let limitPerAgent = 0; let ativosCount = 0;
-
-    /** NOVO: controle de novas mensagens */
-    let unreadMap = {}; // key -> number (1+)
-    let lastReadMap = {}; // key -> last read ts (ms)
-    function ticketKey(remetente, phone_id) { return `${agente.codigo}:${agente.carteira}:${remetente}:${phone_id || ""}`; }
-    function unreadKeyLS() { return `cz:unread:${agente.codigo || 'anon'}:${agente.carteira || 'NA'}`; }
-    function lastreadKeyLS() { return `cz:lastread:${agente.codigo || 'anon'}:${agente.carteira || 'NA'}`; }
-    function loadUnread() { try { unreadMap = JSON.parse(localStorage.getItem(unreadKeyLS()) || "{}") || {}; } catch { unreadMap = {}; } }
-    function saveUnread() { try { localStorage.setItem(unreadKeyLS(), JSON.stringify(unreadMap)); } catch { } }
-    function loadLastRead() { try { lastReadMap = JSON.parse(localStorage.getItem(lastreadKeyLS()) || "{}") || {}; } catch { lastReadMap = {}; } }
-    function saveLastRead() { try { localStorage.setItem(lastreadKeyLS(), JSON.stringify(lastReadMap)); } catch { } }
-    function totalUnread() { return Object.values(unreadMap).reduce((s, n) => s + (n > 0 ? n : 0), 0); }
-    function setUnreadBadgeTotal() { document.getElementById("badgeNovasTotal").textContent = String(totalUnread()); }
+    let novasMensagens = {}; let ultimoStatusContatos = {};
 
     /** Consts */
     const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
@@ -858,12 +850,12 @@
       r.setProperty('--font-size', t.fontSize);
       r.setProperty('--chat-wallpaper-opacity', t.wallOp);
 
+
       r.setProperty('--hover', t.hover || 'var(--ghost-bg)');
       r.setProperty('--hover-strong', t.hoverStrong || 'var(--ghost-bg)');
       r.setProperty('--input-bg', t.inputBg || t.contentBg || '#ffffff');
       r.setProperty('--input-fg', t.inputFg || t.text || '#0f172a');
       r.setProperty('--scrollbar', t.scrollbar || '#cbd5e1');
-
       inputs.tPrimary.value = t.primary; inputs.tAccent.value = t.accent; inputs.tSidebar.value = t.sidebar;
       inputs.tContentBg.value = t.contentBg; inputs.tBg.value = t.bg; inputs.tText.value = t.text;
       inputs.tOutG1.value = t.outG1; inputs.tOutG2.value = t.outG2; inputs.tInBg.value = t.inBg; inputs.tInBorder.value = t.inBorder;
@@ -907,11 +899,31 @@
         muted: "#6b7280", border: "#f3d4cf", link: "#f97316", ghostBg: "#fff3e8"
       },
       dark: {
-        primary: "#60a5fa", accent: "#22c55e", sidebar: "#0b1220", contentBg: "#0b1220", bg: "#0a0f1a", text: "#e5e7eb",
-        muted: "#94a3b8", border: "#1f2937", link: "#93c5fd", ghostBg: "#111827",
-        outG1: "#1f2937", outG2: "#0f172a", outFg: "#e5e7eb", inBg: "#0e1726", inBorder: "#1f2937", inFg: "#e5e7eb",
-        bubbleRadius: 16, btnRadius: 10, cardRadius: 16, wallOp: 1, fontSize: "14px",
-        hover: "#111827", hoverStrong: "#0f172a", inputBg: "#0e1726", inputFg: "#e5e7eb", scrollbar: "#334155"
+        primary: "#60a5fa",
+        accent: "#22c55e",
+        sidebar: "#0b1220",
+        contentBg: "#0b1220",
+        bg: "#0a0f1a",
+        text: "#e5e7eb",
+        muted: "#94a3b8",
+        border: "#1f2937",
+        link: "#93c5fd",
+        ghostBg: "#111827",
+        outG1: "#1f2937",
+        outG2: "#0f172a",
+        outFg: "#e5e7eb",
+        inBg: "#0e1726",
+        inBorder: "#1f2937",
+        inFg: "#e5e7eb",
+        bubbleRadius: 16, btnRadius: 10, cardRadius: 16,
+        wallOp: 1,
+        fontSize: "14px",
+        /* new sidebar-aware helpers */
+        hover: "#111827",
+        hoverStrong: "#0f172a",
+        inputBg: "#0e1726",
+        inputFg: "#e5e7eb",
+        scrollbar: "#334155"
       },
       minimal: {
         primary: "#111827", accent: "#64748b", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#0f172a",
@@ -972,9 +984,6 @@
         localStorage.removeItem(anonKey);
         const nowT = loadTheme(); nowT && applyTheme(nowT);
       }
-
-      // carregar mapas de novas/última leitura
-      loadUnread(); loadLastRead(); setUnreadBadgeTotal();
 
       try {
         const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(agente.codigo)}`); const j = await r.json();
@@ -1039,23 +1048,23 @@
         const contatos = await res.json();
         const filtrados = (contatos || []).filter(c => c.phone_id === phoneId);
         filtrados.sort((a, b) => { const ai = a.status === 'in', bi = b.status === 'in'; if (ai !== bi) return bi - ai; return new Date(b.data_hora) - new Date(a.data_hora); });
-
-        // NOVO: atualizar unread baseado em última leitura x último evento do contato
-        loadLastRead(); // garante memória atual
-        let mudouUnread = false;
-        filtrados.forEach(c => {
-          const key = ticketKey(c.remetente, c.phone_id);
-          const lastTs = new Date(c.data_hora).getTime() || 0;
-          const lastReadTs = Number(lastReadMap[key] || 0);
-          // consideramos novas quando o último evento é "in" e é mais recente do que a última leitura
-          if (c.status === 'in' && lastTs > lastReadTs) {
-            // marcamos 1+ (sem abrir o histórico inteiro deste contato)
-            if (!unreadMap[key] || unreadMap[key] < 1) { unreadMap[key] = 1; mudouUnread = true; }
-          }
-        });
-        if (mudouUnread) { saveUnread(); setUnreadBadgeTotal(); renderTickets(); }
-
         ordemCache = filtrados;
+        // atualizar contadores de novas mensagens apenas para tickets do agente
+        try {
+          const ticketKeys = new Set((tickets || []).map(t => `${t.remetente}|${t.phone_id || ''}`));
+          filtrados.forEach(c => {
+            const key = `${c.remetente}|${c.phone_id || ''}`;
+            if (!ticketKeys.has(key)) return;
+            if (ultimoStatusContatos[key] && ultimoStatusContatos[key] !== c.data_hora) {
+              if (!(selecionado && selecionado.remetente === c.remetente && selecionado.phone_id === c.phone_id)) {
+                novasMensagens[key] = (novasMensagens[key] || 0) + 1;
+              }
+            }
+            ultimoStatusContatos[key] = c.data_hora;
+          });
+          // re-render lista para refletir badges
+          renderTickets();
+        } catch (_) { }
       } catch (e) { console.error("Falha ao atualizar ordem", e); }
     }
 
@@ -1073,7 +1082,6 @@
     function renderAtivosLimiteUI() {
       badgeAtivos.textContent = String(ativosCount);
       badgeLimite.textContent = limitPerAgent > 0 ? String(limitPerAgent) : "∞";
-      setUnreadBadgeTotal();
       const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
       if (atingiu) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua ou libere um atendimento para continuar. Duvidas, fale com seu supervisor`; elMsgLimite.classList.remove("hidden"); }
       else { elMsgLimite.classList.add("hidden"); elMsgLimite.textContent = ""; }
@@ -1127,8 +1135,6 @@
         }
         if (!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
         if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) { tickets.unshift(j.ticket); saveTickets(); }
-        // zera unread do ticket pego
-        const key = ticketKey(j.ticket.remetente, j.ticket.phone_id); unreadMap[key] = 0; saveUnread(); setUnreadBadgeTotal();
         renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosLimiteUI();
       } catch (e) { alert("Falha ao pegar próxima."); }
       finally {
@@ -1186,8 +1192,6 @@
         if (r.ok && data && data.ok && data.ticket) {
           priorityInfo.innerHTML = `<span class="text-emerald-700 font-medium">Prioridade concedida.</span> Abrindo o ticket…`;
           if (!tickets.find(t => t.remetente === data.ticket.remetente && t.phone_id === data.ticket.phone_id)) { tickets.unshift(data.ticket); saveTickets(); renderTickets(); }
-          // zera unread do ticket priorizado
-          const key = ticketKey(data.ticket.remetente, data.ticket.phone_id); unreadMap[key] = 0; saveUnread(); setUnreadBadgeTotal();
           fecharPriorityModal(); abrirTicket(data.ticket);
           ativosCount++; renderAtivosLimiteUI(); return;
         }
@@ -1211,9 +1215,7 @@
         const j = await r.json();
         if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível liberar."); return; }
         tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
-        // zera unread do contato liberado
-        const key = ticketKey(selecionado.remetente, selecionado.phone_id); unreadMap[key] = 0; saveUnread(); setUnreadBadgeTotal();
-
+        try { delete novasMensagens[`${selecionado.remetente}|${selecionado.phone_id || ''}`]; delete ultimoStatusContatos[`${selecionado.remetente}|${selecionado.phone_id || ''}`]; } catch { }
         saveTickets(); renderTickets(); limparChat();
         elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
         if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
@@ -1249,8 +1251,7 @@
         const j = await r.json();
         if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível concluir."); btnConcluir.disabled = false; return; }
         tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
-        // zera unread
-        const key = ticketKey(selecionado.remetente, selecionado.phone_id); unreadMap[key] = 0; saveUnread(); setUnreadBadgeTotal();
+        try { delete novasMensagens[`${selecionado.remetente}|${selecionado.phone_id || ''}`]; delete ultimoStatusContatos[`${selecionado.remetente}|${selecionado.phone_id || ''}`]; } catch { }
         saveTickets(); renderTickets(); limparChat();
         elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
         if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
@@ -1263,48 +1264,38 @@
         const nome = t.nome_exibicao || t.remetente; const ultima = t.mensagem_final ? t.mensagem_final.slice(0, 70) : "";
         const hora = t.data_hora ? new Date(t.data_hora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
         const hay = `${nome} ${t.remetente}`.toLowerCase(); if (q && !hay.includes(q)) return;
-        const key = ticketKey(t.remetente, t.phone_id);
-        const unread = Number(unreadMap[key] || 0);
-
-        const li = document.createElement("li");
-        li.className = "flex items-center p-3 hover-soft cursor-pointer border-b";
-        li.onclick = () => abrirTicket(t);
-
-        li.innerHTML = `
-          <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">
-            ${(nome || "U").charAt(0).toUpperCase()}
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold truncate">${escapeHtml(nome)}</div>
-            <div class="text-sm text-gray-600 truncate">${escapeHtml(ultima)}</div>
-          </div>
-          <div class="flex items-center gap-2 pl-2">
-            ${unread > 0 ? `<span class="badge-unread">${unread > 1 ? '1+' : '1'}</span>` : ''}
-            <div class="text-xs text-gray-400">${hora}</div>
-          </div>
-        `;
-        if (selecionado && selecionado.remetente === t.remetente && selecionado.phone_id === t.phone_id) li.classList.add("ticket-selected");
+        const li = document.createElement("li"); li.className = "relative flex items-center p-3 hover-soft cursor-pointer border-b"; li.onclick = () => abrirTicket(t);
+        const key = `${t.remetente}|${t.phone_id || ''}`;
+        const unread = novasMensagens[key] || 0;
+        const badge = unread > 0 ? `<span class="badge absolute right-2 top-2">${unread}</span>` : "";
+        li.innerHTML = `<div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">
+        ${(nome || "U").charAt(0).toUpperCase()}</div>
+      <div class="flex-1 min-w-0"><div class="font-semibold truncate">${escapeHtml(nome)}</div>
+        <div class="text-sm text-gray-600 truncate">${escapeHtml(ultima)}</div></div>
+      <div class="text-xs text-gray-400 pl-2">${hora}</div>${badge}`;
+        if (selecionado && selecionado.remetente === t.remetente) li.classList.add("ticket-selected");
         elListaTickets.appendChild(li);
       });
-      setUnreadBadgeTotal();
     }
     function filtrarTickets(v) { renderTickets(v); }
 
     async function abrirTicket(t) {
-      selecionado = t; renderTickets();
-      const key = ticketKey(t.remetente, t.phone_id);
-      // zera unread ao abrir
-      unreadMap[key] = 0; saveUnread(); setUnreadBadgeTotal();
-
+      selecionado = t;
+      // zera contador de novas mensagens para este ticket
+      try { novasMensagens[`${t.remetente}|${t.phone_id || ''}`] = 0; } catch { }
+      renderTickets();
       elTitulo.textContent = t.nome_exibicao ? `${t.nome_exibicao} (${t.remetente})` : t.remetente;
       elSubInfo.textContent = `conta: ${phoneIdMap[t.phone_id] || t.phone_id}`;
       textarea.disabled = false; textarea.focus(); btnEnviar.disabled = true; btnLiberar.disabled = false; btnConcluir.disabled = false;
 
+      // reinicia controller de mensagens só na troca de ticket
+      if (msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+      msgsCtrl = new AbortController();
+
       lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); chat.innerHTML = "";
       await carregarMensagens(false);
 
-      if (pollingMensagens) clearInterval(pollingMensagens);
-      pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true); }, 5000);
+      startMensagensPoll();
     }
 
     textarea.addEventListener("input", () => {
@@ -1316,27 +1307,29 @@
       if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!btnEnviar.disabled) enviarMensagem(); }
     });
 
+    // mensagens polling com AbortController (para não acumular requests quando troca de aba/ALT+TAB)
+    let msgsCtrl = null;
+    function startMensagensPoll() {
+      if (pollingMensagens) clearInterval(pollingMensagens);
+      pollingMensagens = setInterval(() => {
+        if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true);
+      }, 5000);
+    }
+
     async function carregarMensagens(incremental = true) {
       if (!selecionado) return;
       let url = `${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`;
       if (selecionado.phone_id) url += `?phone_id=${encodeURIComponent(selecionado.phone_id)}`;
       try {
-        const r = await fetch(url); if (!r.ok) throw new Error("Erro histórico");
+        // usa msgsCtrl.signal para poder abortar quando trocar de ticket
+        const r = await fetch(url, { signal: msgsCtrl?.signal }); if (!r.ok) throw new Error("Erro histórico");
         const msgs = await r.json(); msgs.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
         if (!incremental) { chat.innerHTML = ""; lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); }
         const isNearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 200;
-        msgs.forEach(m => renderMsg(m, incremental));
-
-        // marca última leitura no último ts renderizado
-        if (msgs.length) {
-          const last = new Date(msgs[msgs.length - 1].data_hora).getTime() || Date.now();
-          const key = ticketKey(selecionado.remetente, selecionado.phone_id);
-          lastReadMap[key] = last; saveLastRead();
-          unreadMap[key] = 0; saveUnread(); setUnreadBadgeTotal();
-        }
-
-        if (isNearBottom) chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" });
-      } catch (e) { console.error(e); }
+        msgs.forEach(m => renderMsg(m, incremental)); if (isNearBottom) chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" });
+      } catch (e) {
+        if (String(e?.name) !== "AbortError") console.error(e);
+      }
     }
 
     function renderMsg(m, incremental) {
@@ -1425,8 +1418,8 @@
           const audio = document.createElement("audio");
           audio.src = j.data_uri;
           audio.controls = true;
-          audio.preload = "metadata";
-          audio.className = "mt-2";
+          audio.preload = "metadata";   // <- mostra duração/controles completos
+          audio.className = "mt-2";     // <- largura vem do CSS (.msg audio)
           div.insertBefore(audio, btn);
           btn.remove();
         } else {
@@ -1489,7 +1482,6 @@
 
     document.getElementById("buscaTicket").addEventListener("input", e => filtrarTickets(e.target.value));
     boot(); setInterval(refreshAtivosELimite, 15000);
-
     async function enviarPDF(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1538,6 +1530,8 @@
         event.target.value = "";
       }
     }
+
+
   </script>
 </body>
 
