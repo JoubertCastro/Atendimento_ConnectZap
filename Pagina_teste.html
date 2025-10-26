@@ -1135,7 +1135,7 @@
           carteira: agente.carteira,
           remetente,
           prioridade: true,
-          ...(pid ? { phone_id: pid } : {})
+          ...(ids.length > 0 ? { phone_id: ids } : {})
         };
         const r = await fetch(`${CONV_API}/api/tickets/claim`, {
           method: 'POST',
