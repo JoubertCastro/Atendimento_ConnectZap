@@ -663,7 +663,7 @@
     const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
 
     /** Carteiras */
-    const phoneIdMap = { "828473960349364": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
+    const phoneIdMap = { "828473960349364": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932,802977069563598": "Recovery PF", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
     const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [id, nome]) => { (acc[nome] ||= []).push(id); return acc; }, {});
 /** Estado */
     let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
