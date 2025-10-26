@@ -1133,9 +1133,9 @@
         const body = {
           codigo_do_agente: parseInt(agente.codigo, 10),
           carteira: agente.carteira,
-          remetente,
-          prioridade: true,
-          ...(ids.length > 0 ? { phone_id: ids } : {})
+          remetente: nrm,
+          ...(ids.length > 0 ? { phone_id: ids } : {}),
+          prioridade: true
         };
         const r = await fetch(`${CONV_API}/api/tickets/claim`, {
           method: 'POST',
@@ -1163,6 +1163,9 @@
       // tenta descobrir o phone_id preferido do contato e monta ordem de tentativa
       const preferido = await preferPhoneIdDoContato(nrm);
       const ordemIds = dedupe([preferido, ...phoneIdsForCarteira()]);
+
+      const phoneIdsCarteira = (carteiraToPhoneIds[agente.carteira] || []).map(String);
+      const ids = preferido ? Array.from(new Set([preferido, ...phoneIdsCarteira])) : phoneIdsCarteira;
 
       btnPriorityBuscar.disabled = true; prioritySpinner.classList.remove('hidden'); priorityBtnLabel.textContent = 'Solicitando…';
       try {
