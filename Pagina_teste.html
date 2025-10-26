@@ -35,7 +35,7 @@
       --hover-strong: #e2e8f0;
       --input-bg: #ffffff;
       --input-fg: var(--text);
-      --scrollbar: #cbd5e1
+      --scrollbar: #cbd5e1;
     }
 
     * {
@@ -379,7 +379,6 @@
       background: transparent
     }
 
-    /* Toasts */
     #toastWrap {
       position: fixed;
       right: 12px;
@@ -414,7 +413,6 @@
 </head>
 
 <body class="h-screen flex" style="background:var(--bg)">
-
   <!-- Sidebar -->
   <aside class="sidebar w-1/3 lg:w-1/4 border-r flex flex-col">
     <div class="p-3 border-b topbar">
@@ -541,7 +539,7 @@
         <label class="block text-sm text-gray-600">Telefone do cliente</label>
         <input id="priorityTelefone" class="w-full p-2 border rounded-md"
           placeholder="Ex: 61999999999 ou 5561999999999" />
-        <p class="text-xs text-gray-500">Atenção: informe um telefone valido DDD + 8/9 Dígitos.</p>
+        <p class="text-xs text-gray-500">Atenção: informe um telefone válido DDI (55)+DDD+8/9 dígitos.</p>
         <div id="priorityInfo" class="text-sm text-gray-700 hidden"></div>
         <div id="priorityErro" class="text-sm text-red-600 hidden"></div>
       </div>
@@ -653,8 +651,9 @@
                 id="tCardRadius" type="range" min="10" max="24" value="16" class="w-full"></label>
           </div>
           <div class="flex items-center justify-between mt-4">
-            <div class="flex items-center gap-2"><button id="btnRandom" class="btn btn-ghost px-3 py-2">🎲
-                Surpreenda-me</button><button id="btnReset" class="btn btn-ghost px-3 py-2">↺ Voltar ao padrão</button>
+            <div class="flex items-center gap-2">
+              <button id="btnRandom" class="btn btn-ghost px-3 py-2">🎲 Surpreenda-me</button>
+              <button id="btnReset" class="btn btn-ghost px-3 py-2">↺ Voltar ao padrão</button>
             </div>
             <button id="btnSaveTheme" class="btn btn-primary px-4 py-2">Salvar</button>
           </div>
@@ -666,18 +665,19 @@
   <div id="toastWrap" aria-live="polite"></div>
 
   <script>
-    /** ====================== Config / Consts ====================== */
+    /** APIs */
     const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/, '');
     const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
     const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
 
+    /** Carteiras */
     const phoneIdMap = { "828473960349364": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
     const carteiraToPhoneId = Object.fromEntries(Object.entries(phoneIdMap).map(([id, nome]) => [nome, id]));
 
+    /** Consts/Estado */
     const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
     const MAX_NODES = 400;
 
-    /** ====================== Estado ====================== */
     let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
     let tickets = []; let selecionado = null; let renderedKeys = new Set(); let lastTimestampMs = null; let lastDayRendered = null;
     let pollingContatosTimer = null; let pollingMensagensTimer = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
@@ -685,14 +685,14 @@
     let inflightContatos = null; let inflightMensagens = null;
     let backoffMs = 5000;
 
-    // unread por ticket (chave remetente|phone_id) + lastSeen (persistido)
+    /** Unread (fix sem contador infinito) */
     let unreadByKey = Object.create(null);
     function unseenKey() { return `cz:lastSeen:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}`; }
     function loadLastSeen() { try { return JSON.parse(localStorage.getItem(unseenKey()) || "{}"); } catch { return {}; } }
     function saveLastSeen(map) { try { localStorage.setItem(unseenKey(), JSON.stringify(map || {})); } catch { } }
     let lastSeenMap = {};
 
-    /** ====================== Refs ====================== */
+    /** Refs UI */
     const elAgenteNome = document.getElementById("agenteNome");
     const elAgenteCarteira = document.getElementById("agenteCarteira");
     const elAgenteStatus = document.getElementById("agenteStatus");
@@ -716,7 +716,7 @@
     const badgeLimite = document.getElementById("badgeLimite");
     const toastWrap = document.getElementById("toastWrap");
 
-    /** ====================== Helpers ====================== */
+    /** Utils */
     function qsParam(name) { return new URLSearchParams(location.search).get(name); }
     function escapeHtml(s) { if (!s) return ""; return s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
     function gerarCor(nome) { let h = 0; for (const c of (nome || "U")) h = c.charCodeAt(0) + ((h << 5) - h); return `hsl(${h % 360},70%,60%)`; }
@@ -734,7 +734,7 @@
     }
     function toast(msg, type = "ok", ms = 2500) { const div = document.createElement("div"); div.className = `toast ${type}`; div.textContent = msg; toastWrap.appendChild(div); setTimeout(() => { div.remove(); }, ms); }
 
-    // Abortável + timeout + 1 por vez
+    /** Safe fetch (com abort e timeout) */
     function makeSafeFetch() {
       let inflight = null;
       return async function safeFetch(url, { timeoutMs = 9000, signal } = {}) {
@@ -747,20 +747,14 @@
         try {
           const r = await fetch(url, { signal: comp.signal });
           const ct = (r.headers.get("content-type") || "").toLowerCase();
-          const isJson = ct.includes("application/json");
-          return isJson ? await r.json() : await r.text();
-        } finally {
-          clearTimeout(t);
-          if (inflight === ctrl) inflight = null;
-        }
+          return ct.includes("application/json") ? await r.json() : await r.text();
+        } finally { clearTimeout(t); if (inflight === ctrl) inflight = null; }
       }
     }
     const safeFetchContatos = makeSafeFetch();
     const safeFetchMensagens = makeSafeFetch();
 
-    function nextDelay(ok) { backoffMs = ok ? 5000 : Math.min(backoffMs * 1.5, 30000); return backoffMs + Math.random() * 800; }
-
-    /** ====================== Menu concluir ====================== */
+    /** Concluir menu */
     const MOTIVOS_CONCLUSAO = ["Realizou negociação", "Solicitou 2ª via de boleto", "Recusou a proposta", "Dúvidas gerais", "Cliente ficou inativo"];
     function renderMenuConcluir() {
       menuConcluir.innerHTML = MOTIVOS_CONCLUSAO.map(m => `<button type="button" data-motivo="${m}" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50">${m}</button>`).join("");
@@ -774,7 +768,7 @@
     document.getElementById("btnConcluir").onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir(); };
     renderMenuConcluir();
 
-    /** ====================== THEME ====================== */
+    /** Theme */
     function themeKey() { return `cz:theme:${agente.codigo || 'anon'}`; }
     function defaultTheme() {
       return {
@@ -786,25 +780,14 @@
     }
     function applyTheme(t) {
       const r = document.documentElement.style;
-      r.setProperty('--primary', t.primary); r.setProperty('--accent', t.accent); r.setProperty('--sidebar-bg', t.sidebar); r.setProperty('--content-bg', t.contentBg);
+      r.setProperty('--primary', t.primary); r.setProperty('--accent', t.accent);
+      r.setProperty('--sidebar-bg', t.sidebar); r.setProperty('--content-bg', t.contentBg);
       r.setProperty('--bg', t.bg); r.setProperty('--text', t.text);
       r.setProperty('--muted', t.muted || '#6b7280'); r.setProperty('--border', t.border || '#e5e7eb'); r.setProperty('--link', t.link || t.primary || '#2563eb'); r.setProperty('--ghost-bg', t.ghostBg || '#f3f4f6');
       r.setProperty('--bubble-out-g1', t.outG1); r.setProperty('--bubble-out-g2', t.outG2); r.setProperty('--bubble-out-fg', t.outFg || '#111827');
       r.setProperty('--bubble-in-bg', t.inBg); r.setProperty('--bubble-in-border', t.inBorder); r.setProperty('--bubble-in-fg', t.inFg || '#0f172a');
       r.setProperty('--bubble-radius', t.bubbleRadius + 'px'); r.setProperty('--btn-radius', t.btnRadius + 'px'); r.setProperty('--card-radius', t.cardRadius + 'px');
       r.setProperty('--font-size', t.fontSize); r.setProperty('--chat-wallpaper-opacity', t.wallOp);
-      r.setProperty('--hover', t.hover || 'var(--ghost-bg)'); r.setProperty('--hover-strong', t.hoverStrong || 'var(--ghost-bg)');
-      r.setProperty('--input-bg', t.inputBg || t.contentBg || '#ffffff'); r.setProperty('--input-fg', t.inputFg || t.text || '#0f172a'); r.setProperty('--scrollbar', t.scrollbar || '#cbd5e1');
-
-      // Inputs do drawer
-      const ids = ['tPrimary', 'tAccent', 'tSidebar', 'tContentBg', 'tBg', 'tText', 'tOutG1', 'tOutG2', 'tInBg', 'tInBorder'];
-      const vals = [t.primary, t.accent, t.sidebar, t.contentBg, t.bg, t.text, t.outG1, t.outG2, t.inBg, t.inBorder];
-      ids.forEach((id, i) => { const el = document.getElementById(id); if (el) el.value = vals[i]; });
-      (document.getElementById('tRadius') || {}).value = t.bubbleRadius;
-      (document.getElementById('tBgOp') || {}).value = t.wallOp;
-      (document.getElementById('tFontSize') || {}).value = t.fontSize;
-      (document.getElementById('tBtnRadius') || {}).value = t.btnRadius;
-      (document.getElementById('tCardRadius') || {}).value = t.cardRadius;
     }
     function readThemeFromInputs() {
       return {
@@ -815,17 +798,6 @@
     }
     function saveTheme(t) { try { localStorage.setItem(themeKey(), JSON.stringify(t)); } catch { } }
     function loadTheme() { try { return JSON.parse(localStorage.getItem(themeKey())) || null; } catch { return null; } }
-    function randomHex() { return '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0'); }
-    function randomTheme() { const b1 = randomHex(), b2 = randomHex(); return { ...defaultTheme(), primary: randomHex(), accent: randomHex(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: Math.random() > .5 ? .08 : 0, bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; }
-    const presets = {
-      corporate: { primary: "#2563eb", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", outG1: "#e0f2fe", outG2: "#bfdbfe", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px" },
-      ocean: { primary: "#06b6d4", accent: "#10b981", sidebar: "#f0fdff", contentBg: "#ecfeff", bg: "#f0fdfa", text: "#0b1320", outG1: "#cffafe", outG2: "#a7f3d0", inBg: "#ffffff", inBorder: "#cbd5e1", bubbleRadius: 18, btnRadius: 12, cardRadius: 18, wallOp: .05, fontSize: "14px" },
-      sunset: { primary: "#f97316", accent: "#ef4444", sidebar: "#fff7ed", contentBg: "#fff7ed", bg: "#fff1f2", text: "#111827", outG1: "#fed7aa", outG2: "#fda4af", inBg: "#ffffff", inBorder: "#fecaca", bubbleRadius: 20, btnRadius: 12, cardRadius: 20, wallOp: .06, fontSize: "14px" },
-      dark: { primary: "#60a5fa", accent: "#22c55e", sidebar: "#0b1220", contentBg: "#0b1220", bg: "#0a0f1a", text: "#e5e7eb", muted: "#94a3b8", border: "#1f2937", link: "#93c5fd", ghostBg: "#111827", outG1: "#1f2937", outG2: "#0f172a", outFg: "#e5e7eb", inBg: "#0e1726", inBorder: "#1f2937", inFg: "#e5e7eb", bubbleRadius: 16, btnRadius: 10, cardRadius: 16, wallOp: 1, fontSize: "14px", hover: "#111827", hoverStrong: "#0f172a", inputBg: "#0e1726", inputFg: "#e5e7eb", scrollbar: "#334155" },
-      minimal: { primary: "#111827", accent: "#64748b", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#0f172a", outG1: "#f3f4f6", outG2: "#e5e7eb", inBg: "#ffffff", inBorder: "#e5e7eb", bubbleRadius: 14, btnRadius: 8, cardRadius: 16, wallOp: 0, fontSize: "15px" },
-      funky: { primary: "#a78bfa", accent: "#ec4899", sidebar: "#faf5ff", contentBg: "#fff0f7", bg: "#fafafa", text: "#111827", outG1: "#e9d5ff", outG2: "#fecdd3", inBg: "#ffffff", inBorder: "#f5d0fe", bubbleRadius: 22, btnRadius: 14, cardRadius: 22, wallOp: .08, fontSize: "14px" }
-    };
-    document.querySelectorAll('.preset').forEach(el => el.addEventListener('click', () => { const name = el.dataset.preset; const t = { ...defaultTheme(), ...(presets[name] || {}) }; applyTheme(t); }));
 
     const themeDrawer = document.getElementById('themeDrawer');
     const btnTheme = document.getElementById('btnTheme');
@@ -840,7 +812,7 @@
       tContentBg: document.getElementById('tContentBg'), tBg: document.getElementById('tBg'), tText: document.getElementById('tText'),
       tOutG1: document.getElementById('tOutG1'), tOutG2: document.getElementById('tOutG2'), tInBg: document.getElementById('tInBg'), tInBorder: document.getElementById('tInBorder'),
       tRadius: document.getElementById('tRadius'), tBgOp: document.getElementById('tBgOp'), tFontSize: document.getElementById('tFontSize'),
-      tBtnRadius: document.getElementById('tBtnRadius'), tCardRadius: document.getElementById('tCardRadius'),
+      tBtnRadius: document.getElementById('tBtnRadius'), tCardRadius: document.getElementById('tCardRadius')
     };
 
     btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
@@ -848,11 +820,14 @@
     Object.values(inputs).forEach(input => { input && input.addEventListener('input', () => applyTheme(readThemeFromInputs())); });
     btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open'); });
     btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); });
-    btnRandom.addEventListener('click', () => { const t = randomTheme(); applyTheme(t); });
-    btnThemeExport.addEventListener('click', () => { const t = readThemeFromInputs(); const blob = new Blob([JSON.stringify(t, null, 2)], { type: "application/json" }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `theme-${agente.codigo || 'meu'}.json`; a.click(); URL.revokeObjectURL(a.href); });
+    btnRandom.addEventListener('click', () => { const t = { ...defaultTheme(), primary: '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0') }; applyTheme(t); });
+    btnThemeExport.addEventListener('click', () => {
+      const t = readThemeFromInputs(); const blob = new Blob([JSON.stringify(t, null, 2)], { type: "application/json" });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `theme-${agente.codigo || 'meu'}.json`; a.click(); URL.revokeObjectURL(a.href);
+    });
     importTheme.addEventListener('change', async (e) => { const file = e.target.files[0]; if (!file) return; try { const text = await file.text(); const t = JSON.parse(text); const merged = { ...defaultTheme(), ...t }; applyTheme(merged); saveTheme(merged); } catch { alert('Arquivo inválido.'); } e.target.value = ''; });
 
-    /** ====================== Boot ====================== */
+    /** Boot */
     async function boot() {
       agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
       agente.origem = localStorage.getItem("agente_origem") || qsParam("origem") || null;
@@ -862,10 +837,6 @@
       if (!agente.codigo) {
         const cod = prompt("Informe seu código de agente:"); if (!cod) return;
         agente.codigo = String(parseInt(cod, 10));
-        const anonKey = `cz:theme:anon`; const anon = localStorage.getItem(anonKey);
-        if (anon && !localStorage.getItem(themeKey())) localStorage.setItem(themeKey(), anon);
-        localStorage.removeItem(anonKey);
-        const nowT = loadTheme(); nowT && applyTheme(nowT);
       }
 
       try {
@@ -878,12 +849,11 @@
         elAgenteNome.textContent = `${agente.nome} (#${agente.codigo})`;
         elAgenteCarteira.textContent = agente.carteira;
 
-        const tAgente = loadTheme(); if (tAgente) applyTheme(tAgente);
-
         lastSeenMap = loadLastSeen();
 
         await verificarOnline();
 
+        // carrega tickets pendentes do agente
         try {
           const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
           const r2 = await fetch(url);
@@ -891,9 +861,7 @@
         } catch { }
 
         renderTickets();
-
-        startPolling(true); // dispara já
-
+        startPolling(true); // contatos
         await refreshAtivosELimite();
 
         if (!tickets.length) btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
@@ -903,6 +871,7 @@
       }
     }
 
+    /** Online/offline */
     async function verificarOnline() {
       try {
         const r = await fetch(`${FILA_API}/fila/status?carteira=${encodeURIComponent(agente.carteira)}`);
@@ -913,7 +882,6 @@
         else { elMsgAviso.classList.add("hidden"); elMsgAviso.textContent = ""; }
       } catch { setStatus(false); }
     }
-
     function setStatus(online) {
       elAgenteStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
       agente.online = !!online;
@@ -925,27 +893,23 @@
       else { toggleLabel.textContent = "Ficar online"; btnToggleOnline.classList.add("bg-green-600", "text-white", "hover:bg-green-700"); btnToggleOnline.classList.remove("bg-gray-100"); }
     }
 
-    /** ====================== Polling (contatos) com abort/backoff ====================== */
+    /** Polling contatos com backoff */
+    function nextDelay(ok) { backoffMs = ok ? 5000 : Math.min(backoffMs * 1.5, 30000); return backoffMs + Math.random() * 800; }
     function startPolling(immediate = false) {
       stopPolling();
       const loop = async () => {
-        if (document.hidden) { scheduleContatos(nextDelay(true)); return; }
-        try {
-          await refreshOrdemCarteira(); // atualiza ordem e unread
-          scheduleContatos(nextDelay(true));
-        } catch (e) {
-          scheduleContatos(nextDelay(false));
-        }
+        if (document.hidden) { schedule(nextDelay(true)); return; }
+        try { await refreshOrdemCarteira(); schedule(nextDelay(true)); } catch { schedule(nextDelay(false)); }
       };
-      function scheduleContatos(ms) { pollingContatosTimer = setTimeout(loop, ms); }
-      if (immediate) loop(); else scheduleContatos(5000);
+      function schedule(ms) { pollingContatosTimer = setTimeout(loop, ms); }
+      if (immediate) loop(); else schedule(5000);
     }
     function stopPolling() { if (pollingContatosTimer) { clearTimeout(pollingContatosTimer); pollingContatosTimer = null; } if (inflightContatos) { try { inflightContatos.abort("stop"); } catch { } } }
     document.addEventListener('visibilitychange', () => { if (document.hidden) { stopPolling(); } else { startPolling(true); if (selecionado) startMessagesPolling(true); } });
 
+    /** Atualiza ordem + unread (sem somar infinito) */
     async function refreshOrdemCarteira() {
       const phoneId = carteiraToPhoneId[agente.carteira]; if (!phoneId) return;
-      // Contatos de todas as contas (endpoint consolidado)
       try {
         inflightContatos = new AbortController();
         const res = await safeFetchContatos(`${CONV_API}/api/conversas/contatos`, { signal: inflightContatos.signal, timeoutMs: 9000 });
@@ -954,31 +918,21 @@
         filtrados.sort((a, b) => { const ai = a.status === 'in', bi = b.status === 'in'; if (ai !== bi) return bi - ai; return new Date(b.data_hora) - new Date(a.data_hora); });
         ordemCache = filtrados;
         atualizarUnreadComBaseNosContatos(filtrados);
-        renderTickets(); // re-render para mostrar badges de unread
-      } catch (e) {
-        if (String(e).includes("AbortError")) return;
-        // silencioso
-      } finally {
-        inflightContatos = null;
-      }
+        renderTickets();
+      } catch { } finally { inflightContatos = null; }
     }
-
     function keyFrom(remetente, phone_id) { return `${remetente}|${phone_id || ''}`; }
-
     function atualizarUnreadComBaseNosContatos(contatos) {
       for (const c of contatos) {
         const k = keyFrom(c.remetente, c.phone_id);
         const lastSeen = lastSeenMap[k] || 0;
         const ts = +new Date(c.data_hora || 0);
-        const incoming = (c.status === 'in'); // contato indica última direção
-        // se última mensagem é incoming e mais recente que lastSeen, marcar como unread
-        if (incoming && ts > lastSeen) {
-          unreadByKey[k] = (unreadByKey[k] || 0) + 1;
-        }
+        const incoming = (c.status === 'in');
+        unreadByKey[k] = (incoming && ts > lastSeen) ? 1 : 0; // 0/1 simples (evita “eterno”)
       }
     }
 
-    /** ====================== Ativos & Limite ====================== */
+    /** Limite */
     async function refreshAtivosELimite() {
       try {
         const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
@@ -1003,7 +957,7 @@
       btnPegarProxima.disabled = !agente.online || atingiu; btnPrioridade.disabled = !agente.online || atingiu;
     }
 
-    /** ====================== Ações topo ====================== */
+    /** Controles topo */
     btnToggleOnline.onclick = async () => {
       if (!agente.carteira || !agente.codigo) return;
       const toggleSpinner = document.getElementById('toggleSpinner'); const toggleLabel = document.getElementById('toggleLabel');
@@ -1019,8 +973,11 @@
           const j = await r.json(); if (!j.ok) throw new Error(j.erro || "Erro ao ficar offline");
           setStatus(false); toast("Você ficou offline.", "warn");
         }
-      } catch (e) { elMsgAviso.classList.remove("hidden"); elMsgAviso.textContent = (e?.message || "Falha ao alterar status"); }
-      finally { toggleSpinner.classList.add('hidden'); toggleLabel.textContent = agente.online ? 'Ficar offline' : 'Ficar online'; btnToggleOnline.disabled = false; }
+      } catch (e) {
+        elMsgAviso.classList.remove("hidden"); elMsgAviso.textContent = (e?.message || "Falha ao alterar status");
+      } finally {
+        toggleSpinner.classList.add('hidden'); toggleLabel.textContent = agente.online ? 'Ficar offline' : 'Ficar online'; btnToggleOnline.disabled = false;
+      }
     };
 
     btnPegarProxima.onclick = async () => {
@@ -1031,10 +988,7 @@
       try {
         const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
         const j = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
-        if (r.status === 409 && j && (j.limit_per_agent !== undefined)) {
-          limitPerAgent = Number(j.limit_per_agent || 0); ativosCount = Number(j.ativos || ativosCount);
-          elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return;
-        }
+        if (r.status === 409 && j && (j.limit_per_agent !== undefined)) { limitPerAgent = Number(j.limit_per_agent || 0); ativosCount = Number(j.ativos || ativosCount); elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return; }
         if (!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
         if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) { tickets.unshift(j.ticket); saveTickets(); }
         renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosLimiteUI(); toast("Ticket atribuído.", "ok", 1800);
@@ -1042,7 +996,7 @@
       finally { spinner.classList.add('hidden'); label.textContent = 'Pegar próxima'; btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent); }
     };
 
-    // Prioridade
+    /** Prioridade (mantido, com validações) */
     const priorityModal = document.getElementById('priorityModal');
     const priorityTelefone = document.getElementById('priorityTelefone');
     const priorityInfo = document.getElementById('priorityInfo');
@@ -1051,33 +1005,24 @@
     const prioritySpinner = document.getElementById('prioritySpinner');
     const priorityBtnLabel = document.getElementById('priorityBtnLabel');
 
-    btnPrioridade.onclick = () => { if (!agente.online) { alert('Você está offline.'); return; } if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { elMsgLimite.textContent = `Limite ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); return; } abrirPriorityModal(); };
+    btnPrioridade.onclick = () => {
+      if (!agente.online) { alert('Você está offline. Clique em “Ficar online”.'); return; }
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de solicitar prioridade.`; elMsgLimite.classList.remove('hidden'); return; }
+      abrirPriorityModal();
+    };
     function abrirPriorityModal() { isModalOpen = true; priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden'); priorityTelefone.value = ''; priorityModal.classList.remove('hidden'); setTimeout(() => priorityTelefone.focus(), 50); }
     function fecharPriorityModal() { isModalOpen = false; priorityModal.classList.add('hidden'); }
     priorityTelefone.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); btnPriorityBuscar.click(); } });
     document.addEventListener('keydown', e => { if (!priorityModal.classList.contains('hidden') && e.key === 'Escape') { fecharPriorityModal(); } });
-
-    function normalizarTelefone(raw) {
-      let d = String(raw || '').replace(/\D/g, ''); if (!d) return '';
-      if (!d.startsWith('55')) d = '55' + d;
-      const m = d.match(/^55(\d{2})(\d{8,9})(.*)$/);
-      if (m) { const ddd = m[1]; let num = m[2]; const tail = m[3] || ''; if (num.length === 9 && num.startsWith('9')) num = num.slice(1); d = '55' + ddd + num + tail; }
-      return d;
-    }
+    function normalizarTelefone(raw) { let d = String(raw || '').replace(/\D/g, ''); if (!d) return ''; if (!d.startsWith('55')) d = '55' + d; const m = d.match(/^55(\d{2})(\d{8,9})(.*)$/); if (m) { const ddd = m[1]; let numero = m[2]; const tail = m[3] || ''; if (numero.length === 9 && numero.startsWith('9')) numero = numero.slice(1); d = '55' + ddd + numero + tail; } return d; }
     async function findContatoNaOrdem(remetente) {
-      let c = (ordemCache || []).find(x => String(x.remetente) === String(remetente));
-      if (c) return c;
-      try {
-        const r = await fetch(`${CONV_API}/api/conversas/contatos`); const all = await r.json();
-        const phoneId = carteiraToPhoneId[agente.carteira];
-        c = (all || []).find(x => x.phone_id === phoneId && String(x.remetente) === String(remetente));
-        return c || null;
-      } catch { return null; }
+      let c = (ordemCache || []).find(x => String(x.remetente) === String(remetente)); if (c) return c;
+      try { const r = await fetch(`${CONV_API}/api/conversas/contatos`); const all = await r.json(); const phoneId = carteiraToPhoneId[agente.carteira]; c = (all || []).find(x => x.phone_id === phoneId && String(x.remetente) === String(remetente)); return c || null; } catch { return null; }
     }
     btnPriorityBuscar.onclick = async () => {
       priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden');
-      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { priorityErro.textContent = `Limite de ${limitPerAgent} atingido.`; priorityErro.classList.remove('hidden'); return; }
-      const nrm = normalizarTelefone(priorityTelefone.value); if (nrm.length < 11) { priorityErro.textContent = 'Informe DDI (55)+DDD+numero.'; priorityErro.classList.remove('hidden'); return; }
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de solicitar prioridade.`; priorityErro.classList.remove('hidden'); return; }
+      const nrm = normalizarTelefone(priorityTelefone.value); if (nrm.length < 11) { priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).'; priorityErro.classList.remove('hidden'); return; }
       priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`; priorityInfo.classList.remove('hidden');
       const phoneIdCarteira = carteiraToPhoneId[agente.carteira]; await findContatoNaOrdem(nrm);
       btnPriorityBuscar.disabled = true; prioritySpinner.classList.remove('hidden'); priorityBtnLabel.textContent = 'Solicitando…';
@@ -1085,53 +1030,53 @@
         const body = { codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira, remetente: nrm, phone_id: phoneIdCarteira, prioridade: true };
         const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const data = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
-        if (r.status === 409 && data && (data.limit_per_agent !== undefined)) {
-          limitPerAgent = Number(data.limit_per_agent || 0); ativosCount = Number(data.ativos || ativosCount);
-          priorityErro.textContent = data.erro || `Limite de ${limitPerAgent} atingido.`; priorityErro.classList.remove('hidden'); await refreshAtivosELimite(); return;
-        }
+        if (r.status === 409 && data && (data.limit_per_agent !== undefined)) { limitPerAgent = Number(data.limit_per_agent || 0); ativosCount = Number(data.ativos || ativosCount); priorityErro.textContent = data.erro || `Limite de ${limitPerAgent} atingido.`; priorityErro.classList.remove('hidden'); await refreshAtivosELimite(); return; }
         if (r.ok && data && data.ok && data.ticket) {
           priorityInfo.innerHTML = `<span class="text-emerald-700 font-medium">Prioridade concedida.</span> Abrindo o ticket…`;
           if (!tickets.find(t => t.remetente === data.ticket.remetente && t.phone_id === data.ticket.phone_id)) { tickets.unshift(data.ticket); saveTickets(); renderTickets(); }
-          fecharPriorityModal(); abrirTicket(data.ticket);
-          ativosCount++; renderAtivosELimiteUI(); return;
+          fecharPriorityModal(); abrirTicket(data.ticket); ativosCount++; renderAtivosLimiteUI(); return;
         }
-        if (data && (data.assigned_to || data.atendimento)) {
-          const owner = data.assigned_to || data.atendimento;
-          priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome || '—')}</strong> (#${escapeHtml(String(owner.codigo || '—'))}).`; priorityErro.classList.remove('hidden'); return;
-        }
+        if (data && (data.assigned_to || data.atendimento)) { const owner = data.assigned_to || data.atendimento; priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome || '—')}</strong> (#${escapeHtml(String(owner.codigo || '—'))}).`; priorityErro.classList.remove('hidden'); return; }
         if (r.status === 404) { priorityErro.textContent = 'Contato não está na fila desta carteira.'; priorityErro.classList.remove('hidden'); return; }
         const msg = (data && (data.erro || data.message)) || 'Não foi possível conceder prioridade.'; priorityErro.textContent = msg; priorityErro.classList.remove('hidden');
       } catch { priorityErro.textContent = 'Falha ao solicitar prioridade.'; priorityErro.classList.remove('hidden'); }
       finally { btnPriorityBuscar.disabled = false; prioritySpinner.classList.add('hidden'); priorityBtnLabel.textContent = 'Buscar e solicitar'; }
     };
 
+    /** Liberar ticket — com fallbacks (POST, DELETE+body, DELETE+query) */
     btnLiberar.onclick = async () => {
       if (!selecionado) return;
+      const payload = { codigo_do_agente: parseInt(agente.codigo, 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id };
       try {
-        const r = await fetch(`${CONV_API}/api/tickets/liberar`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id }) });
-        const j = await r.json();
-        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível liberar."); return; }
+        // 1) POST
+        let r = await fetch(`${CONV_API}/api/tickets/liberar`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        let j = await r.json().catch(() => null);
+
+        // 2) DELETE com body
+        if (!(j && j.ok)) {
+          r = await fetch(`${CONV_API}/api/tickets/liberar`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+          j = await r.json().catch(() => null);
+        }
+
+        // 3) DELETE com querystring (servidores que rejeitam body)
+        if (!(j && j.ok)) {
+          const qs = `codigo_do_agente=${encodeURIComponent(payload.codigo_do_agente)}&remetente=${encodeURIComponent(payload.remetente)}&phone_id=${encodeURIComponent(payload.phone_id)}`;
+          r = await fetch(`${CONV_API}/api/tickets/liberar?${qs}`, { method: "DELETE" });
+          j = await r.json().catch(() => null);
+        }
+
+        if (!(j && j.ok)) throw new Error((j && (j.erro || j.message)) || "Resposta inválida do servidor");
+
         tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
         saveTickets(); renderTickets(); limparChat();
-        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
-        if (ativosCount > 0) ativosCount--; renderAtivosELimiteUI(); toast("Ticket liberado.", "ok");
-      } catch { alert("Erro ao liberar."); }
+        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true;
+        // atualiza limite/contagem
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI(); toast("Ticket liberado.", "ok");
+        selecionado = null;
+      } catch (e) { alert("Erro ao liberar: " + (e?.message || "desconhecido")); }
     };
 
-    btnLogout.onclick = async () => {
-      try {
-        await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) }).catch(() => { });
-      } catch { }
-      try {
-        localStorage.removeItem("agente_codigo"); localStorage.removeItem("agente_nome"); localStorage.removeItem("agente_carteira"); localStorage.removeItem("agente_origem");
-        Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:") || k.startsWith("cz:lastSeen:")) localStorage.removeItem(k); });
-      } catch { }
-      stopPolling(); stopMessagesPolling();
-      setStatus(false); tickets = []; renderTickets(); limparChat();
-      elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true;
-      if (LOGOUT_REDIRECT) { window.location.href = LOGOUT_REDIRECT; } else { window.location.reload(); }
-    };
-
+    /** Concluir */
     async function concluirAtendimento(motivo) {
       if (!selecionado) return;
       try {
@@ -1142,11 +1087,11 @@
         tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
         saveTickets(); renderTickets(); limparChat();
         elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
-        if (ativosCount > 0) ativosCount--; renderAtivosELimiteUI(); toast("Atendimento concluído.", "ok");
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI(); toast("Atendimento concluído.", "ok");
       } catch { alert("Erro ao concluir."); btnConcluir.disabled = false; }
     }
 
-    /** ====================== Render lista + unread ====================== */
+    /** Render lista (usa unreadByKey 0/1) */
     function renderTickets(filtro = "") {
       const q = (filtro || "").toLowerCase().trim();
       elListaTickets.innerHTML = "";
@@ -1156,21 +1101,18 @@
         const ultima = t.mensagem_final ? t.mensagem_final.slice(0, 70) : "";
         const hora = t.data_hora ? new Date(t.data_hora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
         const hay = `${nome} ${t.remetente}`.toLowerCase(); if (q && !hay.includes(q)) return;
-
-        const k = keyFrom(t.remetente, t.phone_id);
-        const unread = unreadByKey[k] || 0;
-
+        const k = keyFrom(t.remetente, t.phone_id); const unread = unreadByKey[k] || 0;
         const li = document.createElement("li"); li.className = "flex items-center p-3 hover-soft cursor-pointer border-b"; li.onclick = () => abrirTicket(t);
         li.innerHTML = `
-        <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">${(nome || "U").charAt(0).toUpperCase()}</div>
-        <div class="flex-1 min-w-0">
-          <div class="font-semibold truncate">${escapeHtml(nome)}</div>
-          <div class="text-sm text-gray-600 truncate">${escapeHtml(ultima)}</div>
-        </div>
-        <div class="flex items-center gap-2 pl-2">
-          ${unread > 0 ? `<span class="badge" title="${unread} novas">${unread}</span>` : ''}
-          <div class="text-xs text-gray-400">${hora}</div>
-        </div>`;
+          <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">${(nome || "U").charAt(0).toUpperCase()}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold truncate">${escapeHtml(nome)}</div>
+            <div class="text-sm text-gray-600 truncate">${escapeHtml(ultima)}</div>
+          </div>
+          <div class="flex items-center gap-2 pl-2">
+            ${unread > 0 ? `<span class="badge" title="${unread} novas">${unread}</span>` : ''}
+            <div class="text-xs text-gray-400">${hora}</div>
+          </div>`;
         if (selecionado && selecionado.remetente === t.remetente && selecionado.phone_id === t.phone_id) li.classList.add("ticket-selected");
         frag.appendChild(li);
       });
@@ -1178,25 +1120,25 @@
     }
     function filtrarTickets(v) { renderTickets(v); }
 
-    /** ====================== Abrir ticket + mensagens ====================== */
+    /** Abrir ticket */
     async function abrirTicket(t) {
       selecionado = t; renderTickets();
       elTitulo.textContent = t.nome_exibicao ? `${t.nome_exibicao} (${t.remetente})` : t.remetente;
       elSubInfo.textContent = `conta: ${phoneIdMap[t.phone_id] || t.phone_id}`;
       textarea.disabled = false; textarea.focus(); btnEnviar.disabled = true; btnLiberar.disabled = false; btnConcluir.disabled = false;
 
-      // zera unread e atualiza lastSeen
+      // zera unread deste ticket e grava lastSeen agora
       const k = keyFrom(t.remetente, t.phone_id);
-      unreadByKey[k] = 0;
-      lastSeenMap[k] = Date.now();
-      saveLastSeen(lastSeenMap);
+      unreadByKey[k] = 0; lastSeenMap[k] = Date.now(); saveLastSeen(lastSeenMap);
       renderTickets();
 
+      // reinicia estado de mensagens
       lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); chat.innerHTML = "";
       await carregarMensagens(false);
       startMessagesPolling(true);
     }
 
+    /** Polling mensagens */
     function startMessagesPolling(immediate = false) {
       stopMessagesPolling();
       const loop = async () => {
@@ -1219,22 +1161,15 @@
         if (!incremental) { chat.innerHTML = ""; lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); }
         const wasNearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 200;
         const frag = document.createDocumentFragment();
-        for (const m of msgs) {
-          const node = renderMsgNode(m, incremental);
-          if (node) frag.appendChild(node);
-        }
+        for (const m of msgs) { const node = renderMsgNode(m, incremental); if (node) frag.appendChild(node); }
         if (frag.childNodes.length) chat.appendChild(frag);
-        // virtualização simples
         while (chat.childElementCount > MAX_NODES) { chat.removeChild(chat.firstChild); }
         if (wasNearBottom) chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" });
-        // atualizar lastSeen do ticket aberto
-        const k = keyFrom(selecionado.remetente, selecionado.phone_id); lastSeenMap[k] = Date.now(); saveLastSeen(lastSeenMap);
-      } catch (e) {
-        if (String(e).includes("AbortError")) return;
-        // silencioso
-      } finally {
-        inflightMensagens = null;
-      }
+
+        // Marca lastSeen ao final do carregamento do ticket aberto
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id);
+        lastSeenMap[k] = Date.now(); saveLastSeen(lastSeenMap);
+      } catch { } finally { inflightMensagens = null; }
     }
 
     function renderMsgNode(m, incremental) {
@@ -1245,32 +1180,23 @@
 
       const dia = new Date(m.data_hora).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
       const frag = document.createDocumentFragment();
-      if (!lastDayRendered || lastDayRendered !== dia) {
-        const sep = document.createElement("div"); sep.className = "dia"; sep.textContent = `— ${dia} —`; frag.appendChild(sep); lastDayRendered = dia;
-      }
+      if (!lastDayRendered || lastDayRendered !== dia) { const sep = document.createElement("div"); sep.className = "dia"; sep.textContent = `— ${dia} —`; frag.appendChild(sep); lastDayRendered = dia; }
       const hora = new Date(m.data_hora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
       const incoming = isIncoming(m);
       const div = document.createElement("div"); div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
 
       if (m.tipo === "imagem" || m.mensagem_final === "[image]") {
         div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div><button class="btn-olhinho text-blue-600 underline mt-1">👁 Ver imagem</button><span class="hora">${hora}</span>`;
-        const btn = div.querySelector(".btn-olhinho");
-        if (!m.msg_id) { btn.disabled = true; btn.textContent = "Imagem indisponível"; }
-        else btn.onclick = () => carregarImagem(div, btn, m.msg_id);
+        const btn = div.querySelector(".btn-olhinho"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Imagem indisponível"; } else btn.onclick = () => carregarImagem(div, btn, m.msg_id);
       } else if (m.tipo === "audio" || m.mensagem_final === "[audio]") {
         div.innerHTML = `<div class="text-gray-600 italic">[áudio recebido]</div><button class="btn-audio text-blue-600 underline mt-1">▶ Reproduzir áudio</button><span class="hora">${hora}</span>`;
-        const btn = div.querySelector(".btn-audio");
-        if (!m.msg_id) { btn.disabled = true; btn.textContent = "Áudio indisponível"; }
-        else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
+        const btn = div.querySelector(".btn-audio"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Áudio indisponível"; } else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
       } else if (m.tipo === "document" || m.mensagem_final === "[document]") {
         div.innerHTML = `<div class="text-gray-600 italic">[documento recebido]</div><button class="btn-doc text-blue-600 underline mt-1">📎 Ver documento</button><span class="hora">${hora}</span>`;
-        const btn = div.querySelector(".btn-doc");
-        if (!m.msg_id) { btn.disabled = true; btn.textContent = "Documento indisponível"; }
-        else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
+        const btn = div.querySelector(".btn-doc"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Documento indisponível"; } else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
       } else if (typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")) {
         const lines = m.mensagem_final.split("\n"); const filename = (lines[0] || "").replace("📎 PDF:", "").trim() || "Arquivo"; const link = (lines[1] || "").replace("🔗", "").trim();
-        div.innerHTML = `<div class="flex items-start gap-2"><div class="text-xl leading-none">📄</div><div class="min-w-0">
-        <div class="font-semibold">${escapeHtml(filename)}</div>${link ? `<a href="${escapeHtml(link)}" target="_blank" class="text-blue-600 underline break-all">Abrir/baixar</a>` : `<span class="text-slate-500">sem link</span>`}</div></div><span class="hora">${hora}</span>`;
+        div.innerHTML = `<div class="flex items-start gap-2"><div class="text-xl leading-none">📄</div><div class="min-w-0"><div class="font-semibold">${escapeHtml(filename)}</div>${link ? `<a href="${escapeHtml(link)}" target="_blank" class="text-blue-600 underline break-all">Abrir/baixar</a>` : `<span class="text-slate-500">sem link</span>`}</div></div><span class="hora">${hora}</span>`;
       } else if (m.tipo === "emoji" || m.mensagem_final === "[reaction]") {
         const wrap = document.createElement("div"); wrap.className = "flex items-center gap-2";
         const emojiEl = document.createElement("span"); emojiEl.className = "text-2xl"; emojiEl.textContent = "🙂";
@@ -1282,8 +1208,7 @@
         }
       } else if (m.tipo === "system" || m.mensagem_final === "[system]") {
         div.className = "msg system";
-        div.innerHTML = `<div class="sys-title"><span>ℹ️ Evento do sistema</span> <span class="sys-pill">carregando…</span></div>
-        <div class="sys-body mt-1">Obtendo detalhes…</div><div class="sys-meta mt-1"></div><span class="hora">${hora}</span>`;
+        div.innerHTML = `<div class="sys-title"><span>ℹ️ Evento do sistema</span> <span class="sys-pill">carregando…</span></div><div class="sys-body mt-1">Obtendo detalhes…</div><div class="sys-meta mt-1"></div><span class="hora">${hora}</span>`;
         if (!m.msg_id) { div.querySelector(".sys-body").textContent = "Detalhes indisponíveis (sem msg_id)."; const pill = div.querySelector(".sys-pill"); if (pill) pill.textContent = "indisponível"; }
         else {
           (async () => {
@@ -1317,24 +1242,16 @@
       btn.disabled = true; btn.textContent = "⏳ Carregando…";
       try {
         const r = await fetch(`${CONV_API}/api/conversas/image/${encodeURIComponent(msg_id)}`); const j = await r.json();
-        if (j.ok && j.data_uri) {
-          const img = document.createElement("img"); img.src = j.data_uri; img.alt = "Imagem"; img.className = "thumb mt-2";
-          img.onclick = () => abrirModalImagem(j.data_uri); div.insertBefore(img, btn); btn.remove();
-        } else throw new Error(j.erro || "Resposta inválida");
+        if (j.ok && j.data_uri) { const img = document.createElement("img"); img.src = j.data_uri; img.alt = "Imagem"; img.className = "thumb mt-2"; img.onclick = () => abrirModalImagem(j.data_uri); div.insertBefore(img, btn); btn.remove(); } else throw new Error(j.erro || "Resposta inválida");
       } catch { alert("Erro ao carregar imagem"); btn.disabled = false; btn.textContent = "👁 Ver imagem"; }
     }
-
     async function carregarAudio(div, btn, msg_id) {
       btn.disabled = true; btn.textContent = "⏳ Carregando…";
       try {
         const r = await fetch(`${CONV_API}/api/conversas/audio/${encodeURIComponent(msg_id)}`); const j = await r.json();
-        if (j.ok && j.data_uri) {
-          const audio = document.createElement("audio"); audio.src = j.data_uri; audio.controls = true; audio.preload = "metadata"; audio.className = "mt-2";
-          div.insertBefore(audio, btn); btn.remove();
-        } else throw new Error(j.erro || "Resposta inválida");
+        if (j.ok && j.data_uri) { const audio = document.createElement("audio"); audio.src = j.data_uri; audio.controls = true; audio.preload = "metadata"; audio.className = "mt-2"; div.insertBefore(audio, btn); btn.remove(); } else throw new Error(j.erro || "Resposta inválida");
       } catch { alert("Erro ao carregar áudio"); btn.disabled = false; btn.textContent = "▶ Reproduzir áudio"; }
     }
-
     async function carregarDocumento(div, btn, msg_id) {
       btn.disabled = true; btn.textContent = "⏳ Carregando…";
       try {
@@ -1346,8 +1263,7 @@
           const preview = document.createElement("embed"); preview.src = j.data_uri; preview.type = mime; preview.className = "w-[260px] h-[200px] rounded border"; box.appendChild(preview);
           const meta = document.createElement("div"); meta.className = "text-xs text-slate-600";
           const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
-          meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div><div>${size ? bytesToHuman(size) : ""}</div><a href="${link}" target="_blank" class="text-blue-600 underline">Abrir/baixar</a>`;
-          box.appendChild(meta);
+          meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div><div>${size ? bytesToHuman(size) : ""}</div><a href="${link}" target="_blank" class="text-blue-600 underline">Abrir/baixar</a>`; box.appendChild(meta);
         } else {
           const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
           const row = document.createElement("div"); row.className = "flex items-start gap-2";
@@ -1358,6 +1274,7 @@
       } catch { alert("Erro ao carregar documento"); btn.disabled = false; btn.textContent = "📎 Ver documento"; }
     }
 
+    /** Reply helpers */
     function responderMensagem(msgId, conteudo) {
       respostaMsgId = msgId || null;
       document.getElementById("respostaPreview").classList.remove("hidden");
@@ -1366,41 +1283,25 @@
     }
     function cancelarResposta() { respostaMsgId = null; document.getElementById("respostaPreview").classList.add("hidden"); document.getElementById("respostaTexto").innerText = ""; }
 
-    async function enviarMensagem() {
-      if (!selecionado) return; const texto = textarea.value.trim(); if (!texto) return;
-      userTyping = true; btnEnviar.disabled = true;
-      try {
-        const body = { texto, phone_id: selecionado.phone_id, msg_id: respostaMsgId || null };
-        const r = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-        const j = await r.json(); if (j.ok) { textarea.value = ""; textarea.style.height = "auto"; cancelarResposta(); await carregarMensagens(true); }
-        else { alert("Erro ao enviar: " + (j.erro || JSON.stringify(j))); }
-      } catch { alert("Erro ao enviar mensagem. Verifique rede/CORS."); }
-      finally { userTyping = false; btnEnviar.disabled = textarea.value.trim().length === 0; }
-    }
-
-    // input/teclado
-    const imageModal = document.getElementById("imageModal"); const modalImg = document.getElementById("modalImg"); const closeModal = document.getElementById("closeModal");
-    function abrirModalImagem(src) { isModalOpen = true; modalImg.src = src; imageModal.classList.remove("hidden"); }
-    function fecharModal() { imageModal.classList.add("hidden"); modalImg.src = ""; isModalOpen = false; }
-    closeModal.onclick = fecharModal; imageModal.onclick = e => { if (e.target === imageModal) fecharModal(); };
-
-    function limparChat() { chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>'; }
-
-    document.getElementById("buscaTicket").addEventListener("input", e => filtrarTickets(e.target.value));
+    /** Enviar texto/pdf */
     const textareaEl = document.getElementById("textoMensagem");
     textareaEl.addEventListener("input", () => {
       textareaEl.style.height = "auto"; textareaEl.style.height = textareaEl.scrollHeight + "px";
       btnEnviar.disabled = textareaEl.value.trim().length === 0;
       digitando.style.display = textareaEl.value.trim() ? "block" : "none";
     });
-    textareaEl.addEventListener("keydown", e => {
-      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!btnEnviar.disabled) enviarMensagem(); }
-      if (e.altKey && e.key.toLowerCase() === "n") { e.preventDefault(); btnPegarProxima.click(); }
-      if (e.altKey && e.key.toLowerCase() === "l") { e.preventDefault(); btnLiberar.click(); }
-      if (e.altKey && e.key.toLowerCase() === "c") { e.preventDefault(); btnConcluir.click(); }
-    });
+    textareaEl.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!btnEnviar.disabled) enviarMensagem(); } });
 
-    setInterval(refreshAtivosELimite, 15000);
+    async function enviarMensagem() {
+      if (!selecionado) return; const texto = textarea.value.trim(); if (!texto) return;
+      userTyping = true; btnEnviar.disabled = true;
+      try {
+        const body = { texto, phone_id: selecionado.phone_id, msg_id: respostaMsgId || null };
+        const r = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        const j = await r.json(); if (j.ok) { textarea.value = ""; textarea.style.height = "auto"; cancelarResposta(); await carregarMensagens(true); } else { alert("Erro ao enviar: " + (j.erro || JSON.stringify(j))); }
+      } catch { alert("Erro ao enviar mensagem. Verifique rede/CORS."); }
+      finally { userTyping = false; btnEnviar.disabled = textarea.value.trim().length === 0; }
+    }
 
     async function enviarPDF(event) {
       const file = event.target.files[0]; if (!file) return;
@@ -1419,7 +1320,31 @@
       finally { event.target.value = ""; }
     }
 
-    // Inicializa
+    /** Modal imagem */
+    const imageModal = document.getElementById("imageModal"); const modalImg = document.getElementById("modalImg"); const closeModal = document.getElementById("closeModal");
+    function abrirModalImagem(src) { isModalOpen = true; modalImg.src = src; imageModal.classList.remove("hidden"); }
+    function fecharModal() { imageModal.classList.add("hidden"); modalImg.src = ""; isModalOpen = false; }
+    closeModal.onclick = fecharModal; imageModal.onclick = e => { if (e.target === imageModal) fecharModal(); };
+
+    /** Logout */
+    btnLogout.onclick = async () => {
+      try {
+        await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) }).catch(() => { });
+      } catch { }
+      try {
+        localStorage.removeItem("agente_codigo"); localStorage.removeItem("agente_nome"); localStorage.removeItem("agente_carteira"); localStorage.removeItem("agente_origem");
+        Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:")) localStorage.removeItem(k); });
+      } catch { }
+      stopPolling(); stopMessagesPolling(); setStatus(false); tickets = []; renderTickets(); limparChat();
+      elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true;
+      if (LOGOUT_REDIRECT) { window.location.href = LOGOUT_REDIRECT; } else { window.location.reload(); }
+    };
+
+    /** Misc */
+    function limparChat() { chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>'; }
+    document.getElementById("buscaTicket").addEventListener("input", e => filtrarTickets(e.target.value));
+    setInterval(refreshAtivosELimite, 15000);
+
     boot();
   </script>
 </body>
