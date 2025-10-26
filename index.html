@@ -31,6 +31,12 @@
       --font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
       --font-size: 14px;
       --chat-wallpaper-opacity: 0;
+      --hover: #f1f5f9;
+      --hover-strong: #e2e8f0;
+      --input-bg: #ffffff;
+      --input-fg: var(--text);
+      --scrollbar: #cbd5e1;
+      --ticket-selected-bg: #f0f9ff;
     }
 
     * {
@@ -309,15 +315,6 @@
       color: var(--link)
     }
 
-    :root {
-      --hover: #f1f5f9;
-      --hover-strong: #e2e8f0;
-      --input-bg: #ffffff;
-      --input-fg: var(--text);
-      --scrollbar: #cbd5e1;
-      --ticket-selected-bg: #f0f9ff;
-    }
-
     .text-gray-500 {
       color: var(--muted) !important
     }
@@ -405,7 +402,7 @@
         <div class="flex flex-col items-end gap-2">
           <button id="btnToggleOnline"
             class="btn px-3 py-2 text-sm bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
-            disabled>
+            disabled aria-live="polite" aria-pressed="false">
             <svg id="toggleSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
               </circle>
@@ -413,7 +410,6 @@
             </svg>
             <span id="toggleLabel">Ficar online</span>
           </button>
-          <!-- AQUI: passou a usar o tema -->
           <button id="btnPegarProxima"
             class="btn btn-primary px-3 py-2 text-sm text-white disabled:opacity-50 flex items-center gap-2" disabled>
             <svg id="pegarSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -426,22 +422,17 @@
           <button id="btnPrioridade" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50" disabled
             style="background: rebeccapurple">Pedir prioridade</button>
           <div class="flex gap-2">
-            <button id="btnTheme" class="btn btn-ghost px-3 py-1 text-xs">🎨 Tema</button>
+            <button id="btnTheme" class="btn btn-ghost px-3 py-1 text-xs" aria-haspopup="true"
+              aria-controls="themeDrawer">🎨 Tema</button>
             <button id="btnLogout" class="btn btn-ghost px-3 py-1 text-xs">Logout</button>
           </div>
         </div>
       </div>
-      <div id="msgAviso" class="mt-2 text-xs text-amber-600 hidden"></div>
-      <div id="msgLimite" class="mt-1 text-xs text-red-600 hidden"></div>
+      <div id="msgAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
+      <div id="msgLimite" class="mt-1 text-xs text-red-600 hidden" role="alert" aria-live="polite"></div>
     </div>
 
-    <div class="p-2 border-b topbar">
-      <input id="buscaTicket" class="w-full p-2 border rounded-md text-sm"
-        style="background:var(--input-bg);color:var(--input-fg)" placeholder="🔍 Buscar nas minhas conversas"
-        oninput="filtrarTickets(this.value)" />
-    </div>
-
-    <ul id="listaTickets" class="flex-1 overflow-y-auto"></ul>
+    <ul id="listaTickets" class="flex-1 overflow-y-auto" aria-label="Minhas conversas"></ul>
 
     <div class="p-2 text-xs text-gray-500 border-t topbar">
       Apenas conversas da sua carteira. “Pegar próxima” usa ordem por última mensagem <em>recebida</em>.
@@ -460,7 +451,7 @@
           disabled>Liberar</button>
         <div class="relative">
           <button id="btnConcluir" class="btn px-3 py-2 text-sm text-white disabled:opacity-50"
-            style="background:var(--accent)" disabled>Concluir</button>
+            style="background:var(--accent)" disabled aria-haspopup="true" aria-expanded="false">Concluir</button>
           <div id="menuConcluir" class="hidden absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-20">
           </div>
         </div>
@@ -470,17 +461,18 @@
     <div class="relative flex-1 overflow-hidden">
       <div class="absolute inset-0 chat-wrap"></div>
       <div class="chat-overlay"></div>
-      <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" style="background:transparent">
+      <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" style="background:transparent"
+        role="log" aria-live="polite">
         <p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>
       </div>
     </div>
-    <div id="digitando" class="px-4 text-left hidden">Digitando…</div>
+    <div id="digitando" class="px-4 text-left hidden" aria-live="polite">Digitando…</div>
 
     <div id="respostaPreview" class="hidden px-3 py-2 border-t bg-gray-50 text-sm flex justify-between items-center">
       <div class="truncate max-w-[80%]">
         <span class="font-semibold">Respondendo:</span> <span id="respostaTexto" class="text-gray-600"></span>
       </div>
-      <button onclick="cancelarResposta()" class="text-red-500 text-xs">✖</button>
+      <button onclick="cancelarResposta()" class="text-red-500 text-xs" aria-label="Cancelar resposta">✖</button>
     </div>
 
     <div class="p-3 border-t topbar flex space-x-2 items-center">
@@ -494,26 +486,28 @@
   </main>
 
   <!-- Modal imagem -->
-  <div id="imageModal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-    <span id="closeModal" class="absolute top-4 right-6 text-white text-3xl cursor-pointer">&times;</span>
+  <div id="imageModal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50" aria-modal="true"
+    role="dialog">
+    <span id="closeModal" class="absolute top-4 right-6 text-white text-3xl cursor-pointer"
+      aria-label="Fechar imagem">&times;</span>
     <img id="modalImg" src="" alt="Imagem" class="max-h-[90%] max-w-[90%] rounded-lg shadow-lg">
   </div>
 
   <!-- Modal prioridade -->
-  <div id="priorityModal" class="hidden fixed inset-0 z-50">
-    <div class="absolute inset-0 bg-black/60" onclick="fecharPriorityModal()"></div>
+  <div id="priorityModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
+    <div class="absolute inset-0 bg-black/60" onclick="fecharPriorityModal()" aria-hidden="true"></div>
     <div class="relative mx-auto mt-24 w-[95%] max-w-md bg-white rounded-xl shadow-xl border">
       <div class="p-4 border-b flex items-center justify-between">
         <h3 class="font-semibold">Pedir prioridade</h3>
-        <button class="text-gray-500" onclick="fecharPriorityModal()">✖</button>
+        <button class="text-gray-500" onclick="fecharPriorityModal()" aria-label="Fechar">✖</button>
       </div>
       <div class="p-4 space-y-3">
         <label class="block text-sm text-gray-600">Telefone do cliente</label>
-        <input id="priorityTelefone" class="w-full p-2 border rounded-md"
-          placeholder="Ex: 61999999999 ou 5561999999999" />
+        <input id="priorityTelefone" class="w-full p-2 border rounded-md" placeholder="Ex: 61999999999 ou 5561999999999"
+          autocomplete="off" inputmode="numeric" pattern="[0-9]*" />
         <p class="text-xs text-gray-500">Atenção: informe um telefone valido DDD + 8/9 Digitos.</p>
         <div id="priorityInfo" class="text-sm text-gray-700 hidden"></div>
-        <div id="priorityErro" class="text-sm text-red-600 hidden"></div>
+        <div id="priorityErro" class="text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
       </div>
       <div class="p-4 border-t flex items-center justify-end gap-2">
         <button class="px-3 py-2 text-sm bg-gray-100 rounded hover:bg-gray-200"
@@ -533,7 +527,7 @@
   </div>
 
   <!-- Theme Drawer -->
-  <div id="themeDrawer" class="drawer">
+  <div id="themeDrawer" class="drawer" aria-hidden="true">
     <div class="h-full flex flex-col">
       <div class="p-4 border-b flex items-center justify-between">
         <h3 class="font-semibold">🎨 Seu tema</h3>
@@ -542,7 +536,7 @@
           <label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">
             Importar um tema salvo <input id="importTheme" type="file" accept="application/json" class="hidden">
           </label>
-          <button id="btnThemeClose" class="btn btn-ghost px-2 py-1 text-xs">✖</button>
+          <button id="btnThemeClose" class="btn btn-ghost px-2 py-1 text-xs" aria-label="Fechar">✖</button>
         </div>
       </div>
 
@@ -682,6 +676,11 @@
 
     /** Consts */
     const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
+    const POLL_ACTIVE_MS = 5000;     // aba visível
+    const POLL_HIDDEN_MS = 30000;    // aba oculta (30s)
+    /** data */
+    const fmtHoraBR = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+    const fmtDataBR = new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/Sao_Paulo' });
 
     /** Refs */
     const elAgenteNome = document.getElementById("agenteNome");
@@ -742,8 +741,8 @@
         btn.onclick = async () => { await concluirAtendimento(btn.getAttribute("data-motivo")); fecharMenuConcluir(); };
       });
     }
-    function abrirMenuConcluir() { if (!selecionado || btnConcluir.disabled) return; menuConcluir.classList.remove("hidden"); document.addEventListener("click", clickForaMenuConcluir, { capture: true }); }
-    function fecharMenuConcluir() { menuConcluir.classList.add("hidden"); document.removeEventListener("click", clickForaMenuConcluir, { capture: true }); }
+    function abrirMenuConcluir() { if (!selecionado || btnConcluir.disabled) return; menuConcluir.classList.remove("hidden"); btnConcluir.setAttribute("aria-expanded", "true"); document.addEventListener("click", clickForaMenuConcluir, { capture: true }); }
+    function fecharMenuConcluir() { menuConcluir.classList.add("hidden"); btnConcluir.setAttribute("aria-expanded", "false"); document.removeEventListener("click", clickForaMenuConcluir, { capture: true }); }
     function clickForaMenuConcluir(e) { const within = menuConcluir.contains(e.target) || btnConcluir.contains(e.target); if (!within) fecharMenuConcluir(); }
     btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir(); };
     renderMenuConcluir();
@@ -751,14 +750,21 @@
     /** Utils */
     function qsParam(name) { return new URLSearchParams(location.search).get(name); }
     function escapeHtml(s) { if (!s) return ""; return s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
-    function gerarCor(nome) { let h = 0; for (const c of (nome || "U")) h = c.charCodeAt(0) + ((h << 5) - h); return `hsl(${h % 360},70%,60%)`; }
+    const __colorCache = new Map();
+    function gerarCor(nome) { const key = String(nome || "U"); if (__colorCache.has(key)) return __colorCache.get(key); let h = 0; for (const c of key) h = c.charCodeAt(0) + ((h << 5) - h); const val = `hsl(${h % 360},70%,60%)`; __colorCache.set(key, val); return val; }
+
     function keyLocal() { return `cz:tickets:${agente.codigo}:${agente.carteira}`; }
-    function saveTickets() { localStorage.setItem(keyLocal(), JSON.stringify(tickets)); }
+    let __lastSavedTicketsStr = "";
+    function saveTickets() { try { const s = JSON.stringify(tickets); if (s !== __lastSavedTicketsStr) { localStorage.setItem(keyLocal(), s); __lastSavedTicketsStr = s; } } catch { } }
     function loadTickets() { try { tickets = JSON.parse(localStorage.getItem(keyLocal()) || "[]") || []; } catch { tickets = []; } }
     function bytesToHuman(n) { if (!n && n !== 0) return ""; const u = ["B", "KB", "MB", "GB", "TB"]; let i = 0, s = n; while (s >= 1024 && i < u.length - 1) { s /= 1024; i++; } return `${s.toFixed(s >= 10 || i === 0 ? 0 : 1)} ${u[i]}`; }
     function isIncoming(m) {
-      const s = (m.status || "").toLowerCase(); if (typeof m.from_me === "boolean") return !m.from_me; if (m.direction) return String(m.direction).toLowerCase().startsWith("in");
-      if (["in", "received", "incoming"].includes(s)) return true; if (["out", "sent", "delivered", "read", "outgoing"].includes(s)) return false; return s === "in";
+      const s = (m.status || "").toLowerCase();
+      if (typeof m.from_me === "boolean") return !m.from_me;
+      if (m.direction) return String(m.direction).toLowerCase().startsWith("in");
+      if (["in", "received", "incoming"].includes(s)) return true;
+      if (["out", "sent", "delivered", "read", "outgoing"].includes(s)) return false;
+      return s === "in";
     }
 
     // ===== Helpers de contador persistente =====
@@ -766,6 +772,16 @@
     function loadUnread() { try { const { unread, lastTs } = storageKeys(); unreadCountByKey = JSON.parse(localStorage.getItem(unread) || "{}"); lastContatoTsByKey = JSON.parse(localStorage.getItem(lastTs) || "{}"); } catch { unreadCountByKey = {}; lastContatoTsByKey = {}; } }
     function persistUnread() { try { const { unread, lastTs } = storageKeys(); localStorage.setItem(unread, JSON.stringify(unreadCountByKey)); localStorage.setItem(lastTs, JSON.stringify(lastContatoTsByKey)); } catch { } }
     function keyFrom(remetente, phone_id) { return `${remetente}|${phone_id || ''}`; }
+    function schedulePolls() {
+      if (pollingContatos) clearInterval(pollingContatos);
+      if (pollingMensagens) clearInterval(pollingMensagens);
+      const gap = document.hidden ? POLL_HIDDEN_MS : POLL_ACTIVE_MS;
+      pollingContatos = setInterval(refreshOrdemCarteira, gap);
+      if (selecionado) {
+        pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true); }, gap);
+      }
+    }
+    document.addEventListener('visibilitychange', schedulePolls);
 
     /** THEME */
     function themeKey() { return `cz:theme:${agente.codigo || 'anon'}`; }
@@ -785,7 +801,6 @@
       const r = document.documentElement.style;
       const base = defaultTheme();
       r.setProperty('--ticket-selected-bg', t.ticketSelectedBg ?? base.ticketSelectedBg);
-      r.setProperty('--primary', t.primary); r.setProperty('--accent', t.accent);
       r.setProperty('--sidebar-bg', t.sidebar); r.setProperty('--content-bg', t.contentBg);
       r.setProperty('--bg', t.bg); r.setProperty('--text', t.text);
       r.setProperty('--muted', t.muted || '#6b7280'); r.setProperty('--border', t.border || '#e5e7eb');
@@ -796,8 +811,7 @@
       r.setProperty('--font-size', t.fontSize); r.setProperty('--chat-wallpaper-opacity', t.wallOp);
       r.setProperty('--hover', t.hover || 'var(--ghost-bg)'); r.setProperty('--hover-strong', t.hoverStrong || 'var(--ghost-bg)');
       r.setProperty('--input-bg', t.inputBg || t.contentBg || '#ffffff'); r.setProperty('--input-fg', t.inputFg || t.text || '#0f172a'); r.setProperty('--scrollbar', t.scrollbar || '#cbd5e1');
-      r.setProperty('--primary', t.primary);
-      r.setProperty('--accent', t.accent);
+      r.setProperty('--primary', t.primary); r.setProperty('--accent', t.accent);
       // sincroniza inputs
       inputs.tPrimary.value = t.primary; inputs.tAccent.value = t.accent; inputs.tSidebar.value = t.sidebar;
       inputs.tContentBg.value = t.contentBg; inputs.tBg.value = t.bg; inputs.tText.value = t.text;
@@ -863,12 +877,15 @@
         const name = el.dataset.preset;
         const t = { ...defaultTheme(), ...(presets[name] || {}) };
         applyTheme(t);
-        saveTheme(t); // <- garante persistência
+        saveTheme(t); // persistência
       });
     });
 
     btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
     btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
+    // Fechar drawer com ESC
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open'); });
+
     Object.values(inputs).forEach(input => { input && input.addEventListener('input', () => applyTheme(readThemeFromInputs())); });
     btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open'); });
     btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); });
@@ -932,10 +949,8 @@
 
         renderTickets();
 
-        if (pollingContatos) clearInterval(pollingContatos);
-        pollingContatos = setInterval(refreshOrdemCarteira, 5000);
+        schedulePolls();
         await refreshOrdemCarteira();
-
         await refreshAtivosELimite();
 
         if (!tickets.length) btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
@@ -962,6 +977,7 @@
       btnPegarProxima.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
       btnPrioridade.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
       const toggleLabel = document.getElementById("toggleLabel"); btnToggleOnline.disabled = false;
+      btnToggleOnline.setAttribute('aria-pressed', online ? 'true' : 'false');
       if (agente.online) { toggleLabel.textContent = "Ficar offline"; btnToggleOnline.classList.remove("bg-green-600", "hover:bg-green-700", "text-white"); btnToggleOnline.classList.add("bg-gray-100"); }
       else { toggleLabel.textContent = "Ficar online"; btnToggleOnline.classList.add("bg-green-600", "text-white", "hover:bg-green-700"); btnToggleOnline.classList.remove("bg-gray-100"); }
     }
@@ -1080,7 +1096,10 @@
     function abrirPriorityModal() { isModalOpen = true; priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden'); priorityTelefone.value = ''; priorityModal.classList.remove('hidden'); setTimeout(() => priorityTelefone.focus(), 50); }
     function fecharPriorityModal() { isModalOpen = false; priorityModal.classList.add('hidden'); }
     priorityTelefone.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); btnPriorityBuscar.click(); } });
-    document.addEventListener('keydown', e => { if (!priorityModal.classList.contains('hidden') && e.key === 'Escape') { fecharPriorityModal(); } });
+    document.addEventListener('keydown', e => {
+      if (!priorityModal.classList.contains('hidden') && e.key === 'Escape') { fecharPriorityModal(); }
+      if (!document.getElementById('imageModal').classList.contains('hidden') && e.key === 'Escape') { fecharModal(); }
+    });
 
     function normalizarTelefone(raw) {
       let d = String(raw || '').replace(/\D/g, ''); if (!d) return ''; if (!d.startsWith('55')) d = '55' + d;
@@ -1184,23 +1203,44 @@
     }
 
     function renderTickets(filtro = "") {
-      const q = (filtro || "").toLowerCase().trim(); elListaTickets.innerHTML = "";
+      const q = (filtro || "").toLowerCase().trim();
+      const frag = document.createDocumentFragment();
+      elListaTickets.innerHTML = "";
+
       tickets.forEach(t => {
-        const nome = t.nome_exibicao || t.remetente; const ultima = t.mensagem_final ? t.mensagem_final.slice(0, 70) : "";
-        const hora = t.data_hora ? new Date(t.data_hora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
-        const hay = `${nome} ${t.remetente}`.toLowerCase(); if (q && !hay.includes(q)) return;
-        const li = document.createElement("li"); li.className = "relative flex items-center p-3 hover-soft cursor-pointer border-b"; li.onclick = () => abrirTicket(t);
-        const key = keyFrom(t.remetente, t.phone_id); const unread = unreadCountByKey[key] || 0;
+        const nome = t.nome_exibicao || t.remetente;
+        const hay = `${nome} ${t.remetente}`.toLowerCase();
+        if (q && !hay.includes(q)) return;
+
+        const li = document.createElement("li");
+        li.className = "relative flex items-center p-3 hover-soft cursor-pointer border-b";
+        li.onclick = () => abrirTicket(t);
+
+        const key = keyFrom(t.remetente, t.phone_id);
+        const unread = unreadCountByKey[key] || 0;
         const badge = unread > 0 ? `<span class="badge absolute right-2 top-2">${unread}</span>` : "";
-        li.innerHTML = `<div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">
-          ${(nome || "U").charAt(0).toUpperCase()}</div>
-          <div class="flex-1 min-w-0"><div class="font-semibold truncate">${escapeHtml(nome)}</div>
-          <div class="text-sm text-gray-600 truncate">${escapeHtml(ultima)}</div></div>
-          <div class="text-xs text-gray-400 pl-2">${hora}</div>${badge}`;
-        if (selecionado && selecionado.remetente === t.remetente && selecionado.phone_id === t.phone_id) li.classList.add("ticket-selected");
-        elListaTickets.appendChild(li);
+
+        const hora = t.data_hora ? fmtHoraBR.format(new Date(t.data_hora)) : "";
+
+        li.innerHTML = `
+          <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium"
+              style="background:${gerarCor(nome)};color:#fff;">${(nome || "U").charAt(0).toUpperCase()}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold truncate">${escapeHtml(nome)}</div>
+            <div class="text-sm text-gray-600 truncate">${escapeHtml(t.mensagem_final ? t.mensagem_final.slice(0, 70) : "")}</div>
+          </div>
+          <div class="text-xs text-gray-400 pl-2">${hora}</div>
+          ${badge}
+        `;
+        if (selecionado && selecionado.remetente === t.remetente && selecionado.phone_id === t.phone_id) {
+          li.classList.add("ticket-selected");
+        }
+        frag.appendChild(li);
       });
+
+      elListaTickets.appendChild(frag);
     }
+
     function filtrarTickets(v) { renderTickets(v); }
 
     async function abrirTicket(t) {
@@ -1232,10 +1272,7 @@
     });
 
     let msgsCtrl = null;
-    function startMensagensPoll() {
-      if (pollingMensagens) clearInterval(pollingMensagens);
-      pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true); }, 5000);
-    }
+    function startMensagensPoll() { schedulePolls(); }
 
     async function carregarMensagens(incremental = true) {
       if (!selecionado) return;
@@ -1246,7 +1283,8 @@
         const msgs = await r.json(); msgs.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
         if (!incremental) { chat.innerHTML = ""; lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); }
         const isNearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 200;
-        msgs.forEach(m => renderMsg(m, incremental)); if (isNearBottom) chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" });
+        msgs.forEach(m => renderMsg(m, incremental));
+        if (isNearBottom) requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" }));
       } catch (e) { if (String(e?.name) !== "AbortError") console.error(e); }
     }
 
@@ -1256,10 +1294,14 @@
       if (renderedKeys.has(key)) return;
       if (incremental && lastTimestampMs !== null && tMs <= lastTimestampMs) return;
 
-      const dia = new Date(m.data_hora).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
-      if (!lastDayRendered || lastDayRendered !== dia) { const sep = document.createElement("div"); sep.className = "dia"; sep.textContent = `— ${dia} —`; chat.appendChild(sep); lastDayRendered = dia; }
-      const hora = new Date(m.data_hora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
-      const incoming = isIncoming(m); const div = document.createElement("div"); div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
+      const dia = fmtDataBR.format(new Date(m.data_hora));
+      const hora = fmtHoraBR.format(new Date(m.data_hora));
+      if (!lastDayRendered || lastDayRendered !== dia) {
+        const sep = document.createElement("div"); sep.className = "dia"; sep.textContent = `— ${dia} —`; chat.appendChild(sep); lastDayRendered = dia;
+      }
+
+      const incoming = isIncoming(m);
+      const div = document.createElement("div"); div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
 
       if (m.tipo === "imagem" || m.mensagem_final === "[image]") {
         div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div><button class="btn-olhinho text-blue-600 underline mt-1">👁 Ver imagem</button><span class="hora">${hora}</span>`;
@@ -1271,9 +1313,11 @@
         div.innerHTML = `<div class="text-gray-600 italic">[documento recebido]</div><button class="btn-doc text-blue-600 underline mt-1">📎 Ver documento</button><span class="hora">${hora}</span>`;
         const btn = div.querySelector(".btn-doc"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Documento indisponível"; } else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
       } else if (typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")) {
-        const lines = m.mensagem_final.split("\n"); const filename = (lines[0] || "").replace("📎 PDF:", "").trim() || "Arquivo"; const link = (lines[1] || "").replace("🔗", "").trim();
+        const lines = m.mensagem_final.split("\n");
+        const filename = (lines[0] || "").replace("📎 PDF:", "").trim() || "Arquivo";
+        const link = (lines[1] || "").replace("🔗", "").trim();
         div.innerHTML = `<div class="flex items-start gap-2"><div class="text-xl leading-none">📄</div><div class="min-w-0">
-          <div class="font-semibold">${escapeHtml(filename)}</div>${link ? `<a href="${escapeHtml(link)}" target="_blank" class="text-blue-600 underline break-all">Abrir/baixar</a>` : `<span class="text-slate-500">sem link</span>`}
+          <div class="font-semibold">${escapeHtml(filename)}</div>${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">Abrir/baixar</a>` : `<span class="text-slate-500">sem link</span>`}
         </div></div><span class="hora">${hora}</span>`;
       } else if (m.tipo === "emoji" || m.mensagem_final === "[reaction]") {
         const wrap = document.createElement("div"); wrap.className = "flex items-center gap-2";
@@ -1290,8 +1334,10 @@
         div.className = "msg system";
         div.innerHTML = `<div class="sys-title"><span>ℹ️ Evento do sistema</span> <span class="sys-pill">carregando…</span></div>
           <div class="sys-body mt-1">Obtendo detalhes…</div><div class="sys-meta mt-1"></div><span class="hora">${hora}</span>`;
-        if (!m.msg_id) { div.querySelector(".sys-body").textContent = "Detalhes indisponíveis (sem msg_id)."; const pill = div.querySelector(".sys-pill"); if (pill) pill.textContent = "indisponível"; }
-        else {
+        if (!m.msg_id) {
+          div.querySelector(".sys-body").textContent = "Detalhes indisponíveis (sem msg_id).";
+          const pill = div.querySelector(".sys-pill"); if (pill) pill.textContent = "indisponível";
+        } else {
           (async () => {
             try {
               const r = await fetch(`${CONV_API}/api/conversas/system/${encodeURIComponent(m.msg_id)}`); const j = await r.json();
@@ -1322,7 +1368,7 @@
       try {
         const r = await fetch(`${CONV_API}/api/conversas/image/${encodeURIComponent(msg_id)}`); const j = await r.json();
         if (j.ok && j.data_uri) {
-          const img = document.createElement("img"); img.src = j.data_uri; img.alt = "Imagem"; img.className = "thumb mt-2";
+          const img = document.createElement("img"); img.src = j.data_uri; img.alt = "Imagem"; img.className = "thumb mt-2"; img.loading = "lazy"; img.decoding = "async";
           img.onclick = () => abrirModalImagem(j.data_uri); div.insertBefore(img, btn); btn.remove();
         } else throw new Error(j.erro || "Resposta inválida");
       } catch { alert("Erro ao carregar imagem"); btn.disabled = false; btn.textContent = "👁 Ver imagem"; }
@@ -1351,14 +1397,14 @@
           const meta = document.createElement("div"); meta.className = "text-xs text-slate-600";
           const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
           meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div><div>${size ? bytesToHuman(size) : ""}</div>
-            <a href="${link}" target="_blank" class="text-blue-600 underline">Abrir/baixar</a>`; box.appendChild(meta);
+            <a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">Abrir/baixar</a>`; box.appendChild(meta);
         } else {
           const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
           const row = document.createElement("div"); row.className = "flex items-start gap-2";
           row.innerHTML = `<div class="text-xl leading-none">📎</div><div class="min-w-0">
             <div class="font-semibold truncate">${escapeHtml(filename)}</div>
             <div class="text-xs text-slate-600">${escapeHtml(mime)} ${size ? ("• " + bytesToHuman(size)) : ""}</div>
-            <a href="${link}" target="_blank" class="text-blue-600 underline break-all">Baixar documento</a></div>`;
+            <a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">Baixar documento</a></div>`;
           box.appendChild(row);
         }
         div.insertBefore(box, btn); btn.remove();
@@ -1390,15 +1436,20 @@
     function fecharModal() { imageModal.classList.add("hidden"); modalImg.src = ""; isModalOpen = false; }
 
     function limparChat() { chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>'; }
+    function debounce(fn, ms = 150) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
-    document.getElementById("buscaTicket").addEventListener("input", e => filtrarTickets(e.target.value));
-    boot(); setInterval(refreshAtivosELimite, 15000);
+    // Campo de busca pode não existir (foi removido). Evita erro:
+    const buscaEl = document.getElementById("buscaTicket");
+    if (buscaEl) { buscaEl.addEventListener("input", debounce(e => filtrarTickets(e.target.value), 180)); }
+
+    boot();
+    setInterval(refreshAtivosELimite, 15000);
 
     async function enviarPDF(event) {
       const file = event.target.files[0];
       if (!file) return;
-      if (!selecionado) { alert("Abra um ticket antes de enviar PDF."); return; }
-      if (file.type !== "application/pdf") { alert("Somente arquivos PDF são permitidos."); return; }
+      if (!selecionado) { alert("Abra um ticket antes de enviar PDF."); event.target.value = ""; return; }
+      if (file.type !== "application/pdf") { alert("Somente arquivos PDF são permitidos."); event.target.value = ""; return; }
       try {
         const res = await fetch(`${CONV_API}/api/upload/pdf`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ filename: file.name }) });
         const j = await res.json();
