@@ -1699,7 +1699,6 @@
         const resumo = rRes.ok ? await rRes.json() : {};
         const em = Number(resumo.em_atendimento || 0);
         const conc = Number(resumo.concluidos || 0);
-        const outros = Number(resumo.outros || Math.max(0, (resumo.total || 0) - em - conc));
         kpiEm.textContent = String(em);
         kpiConc.textContent = String(conc);
         kpiTma.textContent = fmtDurSec(resumo.tma_segundos);
@@ -1711,7 +1710,7 @@
           if (pieChart) pieChart.destroy();
           pieChart = new Chart(ctxStatus, {
             type: 'pie',
-            data: { labels: ['Em atendimento', 'Concluídos', 'Outros'], datasets: [{ data: [em, conc, outros] }] },
+            data: { labels: ['Em atendimento', 'Concluídos'], datasets: [{ data: [em, conc] }] },
             options: { responsive: true, plugins: { legend: { labels: { color: chartTextColor() } } } }
           });
         }
