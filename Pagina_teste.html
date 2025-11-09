@@ -2,9 +2,12 @@
 <html lang="pt-BR">
 
 <head>
-  <meta charset="UTF-8">
-  <title>Painel de Atendimento - Conversão ZX</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ConnectZap — Agentes</title>
+  <link rel="icon" href="https://joubertcastro.github.io/ConnectZap/favicon.ico" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --primary: #3b82f6;
@@ -21,424 +24,115 @@
       --bubble-out-g1: #dcf8c6;
       --bubble-out-g2: #b8f0a4;
       --bubble-out-fg: #111827;
-      --bubble-in-bg: #ffffff;
+      --bubble-in-bg: #fff;
       --bubble-in-border: #e2e8f0;
       --bubble-in-fg: #0f172a;
       --bubble-radius: 18px;
-      --chat-wallpaper-opacity: 0;
       --btn-radius: 10px;
       --card-radius: 16px;
+      --font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
       --font-size: 14px;
-      --ticket-selected-bg: #f0f9ff;
+      --chat-wallpaper-opacity: 0;
       --scrollbar: #cbd5e1;
-      --hover: #f3f4f6;
-      --hover-strong: #e5e7eb;
-      --input-bg: #ffffff;
-      --input-fg: #0f172a;
-      --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+      --ticket-selected-bg: #f0f9ff
     }
 
     * {
-      box-sizing: border-box
+      outline-color: var(--ring)
     }
 
-    html,
+    html {
+      font-size: var(--font-size)
+    }
+
     body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
       font-family: var(--font-family);
-      font-size: var(--font-size);
-      -webkit-font-smoothing: antialiased
+      color: var(--text);
+      background: var(--bg)
     }
 
-    body {
-      display: flex;
-      flex-direction: column
-    }
-
-    #app {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0
-    }
-
-    .layout {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      max-height: 100vh;
-      min-height: 0
-    }
-
-    header {
-      background: var(--sidebar-bg);
-      border-bottom: 1px solid var(--border);
-      padding: 0.5rem 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: .75rem
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      min-width: 0
-    }
-
-    .brand-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 20%, #38bdf8, #2563eb);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #eff6ff;
-      font-weight: 700;
-      font-size: 16px;
-      box-shadow: 0 8px 16px rgba(37, 99, 235, .35)
-    }
-
-    .brand-text {
-      display: flex;
-      flex-direction: column;
-      min-width: 0
-    }
-
-    .brand-title {
-      font-weight: 600;
-      font-size: .95rem;
-      white-space: nowrap
-    }
-
-    .brand-subtitle {
-      font-size: .7rem;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: .35rem
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: .25rem;
-      padding: 0.1rem .45rem;
-      border-radius: 999px;
-      background: #ecfdf5;
-      color: #15803d;
-      font-size: .7rem;
-      font-weight: 500
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e
-    }
-
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: .5rem
-    }
-
-    .top-actions>div {
-      display: flex;
-      align-items: center;
-      gap: .25rem
-    }
-
-    .top-info-label {
-      font-size: .7rem;
-      color: var(--muted)
-    }
-
-    .top-info-value {
-      font-size: .8rem;
-      font-weight: 500
+    .card {
+      background: var(--content-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius)
     }
 
     .btn {
-      border-radius: var(--btn-radius);
-      border: 1px solid transparent;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: .4rem;
-      cursor: pointer;
-      font-size: .8rem;
-      font-weight: 500;
-      transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .05s ease;
-      background: #f9fafb;
-      color: #111827;
-      padding: .4rem .7rem
-    }
-
-    .btn:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-      box-shadow: none;
-      transform: none
+      border-radius: var(--btn-radius)
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary), #1d4ed8);
-      color: #eff6ff;
-      box-shadow: 0 10px 20px rgba(37, 99, 235, .35)
+      background: var(--primary);
+      color: #fff
     }
 
-    .btn-primary:hover:not(:disabled) {
-      filter: brightness(1.08);
-      box-shadow: 0 12px 24px rgba(37, 99, 235, .4);
-      transform: translateY(-1px)
+    .btn-primary:hover {
+      filter: brightness(.95)
     }
 
     .btn-ghost {
-      background: var(--ghost-bg);
-      border-color: rgba(148, 163, 184, .3);
-      color: var(--text)
-    }
-
-    .btn-ghost:hover:not(:disabled) {
-      background: #e5e7eb
-    }
-
-    .btn-outline {
-      background: transparent;
-      border-color: rgba(148, 163, 184, .6);
-      color: var(--text)
-    }
-
-    .btn-outline:hover:not(:disabled) {
       background: var(--ghost-bg)
     }
 
-    .badge {
-      padding: 0.1rem .4rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, .4);
-      font-size: .7rem;
-      color: var(--muted);
-      display: inline-flex;
-      align-items: center;
-      gap: .2rem
-    }
-
-    .badge-pill {
-      border-radius: 999px
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: .25rem;
-      padding: 0.1rem .5rem;
-      border-radius: 999px;
-      font-size: .7rem;
-      border: 1px solid rgba(148, 163, 184, .3);
-      color: var(--muted);
-      background: rgba(248, 250, 252, .8)
-    }
-
-    .pill-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e
-    }
-
-    .separator {
-      width: 1px;
-      height: 18px;
-      background: rgba(148, 163, 184, .4)
-    }
-
-    .main {
-      display: flex;
-      flex: 1;
-      min-height: 0
-    }
-
     .sidebar {
-      background: var(--sidebar-bg)
+      background: var(--sidebar-bg);
+      border-color: var(--border)
     }
 
     .topbar {
       background: var(--content-bg);
-      backdrop-filter: blur(12px)
+      border-color: var(--border)
     }
 
-    .tabs {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 999px;
-      padding: .2rem;
-      background: rgba(15, 23, 42, .03);
-      border: 1px solid rgba(148, 163, 184, .4)
+    .ticket-selected {
+      background: var(--ticket-selected-bg) !important
     }
 
-    .tab {
-      position: relative;
-      border-radius: 999px;
-      padding: .2rem .9rem;
-      font-size: .78rem;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: .35rem
-    }
-
-    .tab-active {
-      background: #ffffff;
-      color: #111827;
-      box-shadow: 0 4px 8px rgba(15, 23, 42, .12)
-    }
-
-    .tab-pill {
-      font-size: .65rem;
-      padding: 0 .4rem;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, .04);
-      border: 1px solid rgba(148, 163, 184, .4)
-    }
-
-    .scrollbar-thin::-webkit-scrollbar {
-      width: 6px
-    }
-
-    .scrollbar-thin::-webkit-scrollbar-track {
-      background: transparent
-    }
-
-    .scrollbar-thin::-webkit-scrollbar-thumb {
-      background: var(--scrollbar);
-      border-radius: 999px
-    }
-
-    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8
-    }
-
-    .ticket {
-      padding: .55rem .65rem;
-      border-radius: .75rem;
-      border: 1px solid transparent;
-      display: flex;
-      flex-direction: column;
-      gap: .15rem;
-      cursor: pointer;
-      background: transparent;
-      transition: background .15s ease, border-color .15s ease, transform .05s ease, box-shadow .15s ease
-    }
-
-    .ticket:not(.selected):hover {
-      background: rgba(15, 23, 42, .02);
-      border-color: rgba(148, 163, 184, .35);
-      transform: translateY(-1px)
-    }
-
-    .ticket.selected {
-      background: var(--ticket-selected-bg);
-      border-color: var(--primary);
-      box-shadow: 0 10px 18px rgba(59, 130, 246, .35)
-    }
-
-    .ticket-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: .35rem
-    }
-
-    .ticket-name {
-      font-weight: 600;
-      font-size: .85rem;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden
-    }
-
-    .ticket-meta {
-      font-size: .72rem;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: .35rem
-    }
-
-    .ticket-body {
-      font-size: .75rem;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: .35rem
-    }
-
-    .ticket-badge {
-      font-size: .65rem;
-      padding: 0 .4rem;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, .04);
-      border: 1px solid rgba(148, 163, 184, .35)
-    }
-
-    .ticket-unread-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #22c55e
-    }
-
-    .ticket-unread-count {
+    .badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 9999px;
+      padding: 2px 6px;
       min-width: 18px;
-      text-align: center;
-      font-size: .7rem;
-      padding: 0 .35rem;
-      border-radius: 999px;
-      background: #22c55e;
-      color: #ecfdf5;
-      font-weight: 600
+      text-align: center
     }
 
-    .chat-wallpaper {
-      position: absolute;
-      inset: 0;
-      opacity: var(--chat-wallpaper-opacity);
-      background-image:
-        radial-gradient(circle at 0 0, rgba(129, 140, 248, .22), transparent 60%),
-        radial-gradient(circle at 100% 0, rgba(56, 189, 248, .2), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(34, 197, 94, .22), transparent 60%);
-      pointer-events: none
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 9999px;
+      display: inline-block;
+      margin-right: 6px
     }
 
-    .chat-inner {
-      position: relative;
-      z-index: 1
+    .dot.online {
+      background: #16a34a
+    }
+
+    .dot.offline {
+      background: #9ca3af
     }
 
     .msg {
-      max-width: min(80%, 600px);
-      padding: .55rem .75rem;
-      border-radius: var(--bubble-radius);
-      font-size: .8rem;
-      line-height: 1.4;
+      display: inline-block;
+      max-width: min(70%, 560px);
+      padding: 10px 14px 18px;
+      margin: 6px 0;
       position: relative;
-      display: inline-flex;
-      flex-direction: column;
-      gap: .2rem;
-      border: 1px solid transparent
+      border-radius: var(--bubble-radius);
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      white-space: normal;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .10);
+      transition: background .18s ease, border-color .18s ease, color .18s ease
+    }
+
+    @media (max-width:768px) {
+      .msg {
+        max-width: 86%
+      }
     }
 
     .msg.enviada {
@@ -450,147 +144,167 @@
     .msg.recebida {
       align-self: flex-start;
       background: var(--bubble-in-bg);
-      color: var(--bubble-in-fg);
-      border-color: var(--bubble-in-border)
+      border: 1px solid var(--bubble-in-border);
+      color: var(--bubble-in-fg)
     }
 
-    .msg small {
-      font-size: .68rem;
-      color: var(--muted);
-      align-self: flex-end
-    }
-
-    .msg-tail {
+    .msg .hora {
       position: absolute;
-      bottom: -2px;
-      width: 14px;
-      height: 14px;
-      overflow: hidden
+      right: 8px;
+      bottom: 4px;
+      font-size: 11px;
+      color: var(--muted)
     }
 
-    .msg-tail::before {
+    .msg.enviada::after,
+    .msg.recebida::after {
       content: "";
       position: absolute;
+      bottom: 0;
       width: 14px;
       height: 14px;
-      transform: rotate(45deg)
+      clip-path: polygon(0 0, 100% 0, 0 100%)
     }
 
-    .msg.enviada .msg-tail {
-      right: 0
+    .msg.enviada::after {
+      right: -7px;
+      background: linear-gradient(120deg, var(--bubble-out-g1), var(--bubble-out-g2))
     }
 
-    .msg.enviada .msg-tail::before {
-      background: linear-gradient(130deg, var(--bubble-out-g1), var(--bubble-out-g2));
-      right: 2px;
-      bottom: 0
-    }
-
-    .msg.recebida .msg-tail {
-      left: 0
-    }
-
-    .msg.recebida .msg-tail::before {
+    .msg.recebida::after {
+      left: -7px;
       background: var(--bubble-in-bg);
       border-left: 1px solid var(--bubble-in-border);
-      border-bottom: 1px solid var(--bubble-in-border);
-      left: 2px;
-      bottom: 0
+      border-bottom: 1px solid var(--bubble-in-border)
     }
 
-    .input {
-      width: 100%;
-      border-radius: 999px;
+    .msg img.thumb {
+      max-width: 280px;
+      height: auto;
+      border-radius: 12px;
       border: 1px solid var(--border);
-      padding: .45rem .9rem;
-      font-size: .8rem;
-      outline: none;
-      background: var(--input-bg);
-      color: var(--input-fg);
-      transition: border-color .12s ease, box-shadow .12s ease, background .12s ease
+      cursor: pointer
     }
 
-    .input:focus {
-      border-color: var(--ring);
-      box-shadow: 0 0 0 1px var(--ring)
+    .msg audio {
+      width: 320px;
+      display: block
     }
 
-    .input-area {
-      border-radius: 1rem;
-      padding: .6rem .75rem;
-      min-height: 72px;
-      resize: vertical
+    .dia {
+      text-align: center;
+      margin: 12px 0;
+      font-size: 12px;
+      color: var(--muted)
     }
 
-    .label {
-      font-size: .75rem;
-      color: var(--muted);
-      margin-bottom: .2rem
+    .reply-btn {
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 9999px;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 0, 0, .06);
+      color: #334155;
+      border: 1px solid rgba(0, 0, 0, .08);
+      opacity: .0;
+      transition: opacity .15s ease, transform .06s ease;
+      font-size: 12px;
+      line-height: 1;
+      cursor: pointer;
     }
 
-    .card {
+    .msg:hover .reply-btn {
+      opacity: 1
+    }
+
+    .reply-btn:active {
+      transform: scale(.96)
+    }
+
+    .reply-btn svg {
+      width: 14px;
+      height: 14px
+    }
+
+    textarea {
       background: var(--content-bg);
-      border: 1px solid var(--border);
-      border-radius: var(--card-radius)
+      color: var(--text);
+      border-color: var(--border) !important
     }
 
-    .badge-kpi {
-      font-size: .7rem;
-      padding: 0 .4rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, .4);
-      background: rgba(248, 250, 252, .7);
-      color: var(--muted)
+    textarea::placeholder {
+      color: color-mix(in srgb, var(--muted) 85%, var(--bg))
     }
 
-    .kpi-number {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
-      font-weight: 600;
-      font-size: 1.5rem
+    input[type="text"],
+    input[type="search"],
+    input[type="color"],
+    input[type="file"],
+    select {
+      background: var(--content-bg);
+      color: var(--text);
+      border-color: var(--border) !important
     }
 
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      display: inline-block;
-      margin-right: .25rem
+    *::-webkit-scrollbar {
+      width: 10px;
+      height: 10px
     }
 
-    .dot.online {
-      background: #22c55e
+    *::-webkit-scrollbar-thumb {
+      background: var(--scrollbar);
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background-clip: content-box
     }
 
-    .dot.offline {
-      background: #ef4444
+    *::-webkit-scrollbar-track {
+      background: transparent
     }
 
-    .tag {
-      display: inline-flex;
+    .mini-sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 56px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: .25rem;
-      padding: .1rem .5rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, .35);
-      font-size: .7rem;
-      color: var(--muted);
-      background: rgba(248, 250, 252, .9)
+      gap: 12px;
+      padding: 10px 6px;
+      background: #0b1220;
+      color: #e5e7eb;
+      z-index: 70;
+      border-right: 1px solid #111827
     }
 
-    .tag-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: #22c55e
+    .mini-sidebar .btn-mini {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: transparent;
+      transition: background .2s ease, transform .06s ease;
+      cursor: pointer
     }
 
-    .pill-soft {
-      border-radius: 999px;
-      padding: .2rem .6rem;
-      font-size: .7rem;
-      background: rgba(15, 23, 42, .03);
-      border: 1px dashed rgba(148, 163, 184, .4);
-      color: var(--muted)
+    .mini-sidebar .btn-mini:hover {
+      background: #111827
+    }
+
+    .mini-sidebar .btn-mini.active {
+      background: #2563eb;
+      color: #fff
+    }
+
+    .with-mini {
+      margin-left: 56px
     }
 
     .drawer {
@@ -614,1161 +328,1182 @@
     /* FIX: modal não deve abrir após F5 se logado */
     .modal {
       display: none;
-      /* <— manter apenas esta linha */
+      /* <— manter apenas esta declaração */
       position: fixed;
+      z-index: 100;
       inset: 0;
-      z-index: 50;
+      background: rgba(0, 0, 0, .6);
       align-items: center;
-      justify-content: center
+      justify-content: center;
     }
 
-    .modal.open {
-      display: flex
-    }
-
-    .modal-backdrop {
-      position: absolute;
-      inset: 0;
-      background: rgba(15, 23, 42, .35);
-      backdrop-filter: blur(4px)
-    }
-
-    .modal-card {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 360px;
-      background: var(--content-bg);
-      border-radius: 1rem;
-      border: 1px solid rgba(148, 163, 184, .4);
-      box-shadow: 0 24px 60px rgba(15, 23, 42, .35);
-      padding: 1.5rem
-    }
-
-    .modal-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: .6rem
-    }
-
-    .modal-footer {
-      margin-top: 1.2rem;
-      display: flex;
-      justify-content: flex-end;
-      gap: .5rem
-    }
-
-    .input-sm {
-      font-size: .8rem;
-      padding: .4rem .65rem;
-      border-radius: .75rem
-    }
-
-    /* Loader spinner inline (para botões) */
-    .spinner {
-      border-radius: 999px;
-      border: 2px solid rgba(148, 163, 184, .35);
-      border-top-color: var(--primary);
-      width: 14px;
-      height: 14px;
-      animation: spin .7s linear infinite
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg)
-      }
-    }
-
-    @media (max-width:960px) {
-      header {
-        flex-wrap: wrap;
-        align-items: flex-start
-      }
-
-      .brand-title {
-        font-size: .9rem
-      }
-
-      .brand-subtitle {
-        font-size: .68rem
-      }
-
-      .top-actions {
-        width: 100%;
-        justify-content: flex-end
-      }
-
-      .tabs {
-        width: 100%;
-        justify-content: center
-      }
-    }
-
-    @media (max-width:768px) {
-      .main {
-        flex-direction: column
-      }
-
-      .sidebar {
-        width: 100% !important;
-        border-right: none;
-        border-bottom: 1px solid var(--border)
-      }
-
-      .ticket {
-        padding: .5rem .55rem
-      }
-
-      .msg {
-        max-width: 86%
-      }
-    }
-
-    .topbar.small {
-      padding: .35rem .75rem
-    }
-
-    .topbar-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: .5rem
-    }
-
-    .topbar-title {
-      font-weight: 600;
-      font-size: .8rem;
-      color: var(--muted)
-    }
-
-    .assist-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: .25rem;
-      padding: .15rem .5rem;
-      border-radius: 999px;
-      background: rgba(56, 189, 248, .08);
-      border: 1px solid rgba(56, 189, 248, .45);
-      color: #0e7490;
-      font-size: .7rem
-    }
-
-    .topbar-actions {
-      display: flex;
-      align-items: center;
-      gap: .35rem
-    }
-
-    .fs-xs {
-      font-size: .68rem
-    }
-
-    .fs-sm {
-      font-size: .8rem
-    }
-
-    .text-muted {
-      color: var(--muted)
-    }
-
-    .ticket-filter-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: .25rem;
-      padding: .15rem .5rem;
-      border-radius: 999px;
-      font-size: .7rem;
-      cursor: pointer;
-      border: 1px solid rgba(148, 163, 184, .4);
-      background: rgba(248, 250, 252, .9);
-      color: var(--muted)
-    }
-
-    .ticket-filter-pill.active {
-      background: rgba(59, 130, 246, .08);
-      border-color: rgba(59, 130, 246, .8);
-      color: #1d4ed8
-    }
-
-    .pill-small {
-      padding: 0 .45rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, .4);
-      font-size: .7rem;
-      color: var(--muted)
-    }
-
-    .text-xxs {
-      font-size: .68rem
+    .modal-inner {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: min(420px, 94%);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .14)
     }
   </style>
 </head>
 
-<body>
-  <div id="app">
-    <div class="layout">
-      <header>
-        <div class="brand">
-          <div class="brand-icon">CZ</div>
-          <div class="brand-text">
-            <div class="brand-title">Central de Atendimento</div>
-            <div class="brand-subtitle">
-              <span>Conversão ZX</span>
-              <span class="separator"></span>
-              <span class="status-pill">
-                <span class="status-dot" id="pillStatusDot"></span>
-                <span id="pillStatusLabel">Offline</span>
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="top-actions">
-          <div>
-            <div class="top-info-label">Tickets ativos</div>
-            <div class="top-info-value">
-              <span id="ativosCount">0</span>/<span id="limiteAtivos">4</span>
-            </div>
-          </div>
-          <div class="separator"></div>
-          <div>
-            <div class="top-info-label">Em fila</div>
-            <div class="top-info-value" id="filaCount">0</div>
-          </div>
-          <div class="separator"></div>
-          <div>
-            <div class="top-info-label">Agente</div>
-            <div class="top-info-value" id="headerAgente">—</div>
-          </div>
-          <div class="separator"></div>
-          <div>
-            <div class="top-info-label">Carteira</div>
-            <div class="top-info-value" id="headerCarteira">—</div>
-          </div>
-          <div class="separator"></div>
-          <div class="tabs" role="tablist">
-            <button id="tabBtnHome" class="tab tab-active" role="tab" aria-selected="true" aria-controls="tabHome">
-              <span>🏠 Home</span>
-            </button>
-            <button id="tabBtnConversas" class="tab" role="tab" aria-selected="false"
-              aria-controls="tabConversas">
-              <span>💬 Conversas</span>
-              <span id="tabBadgeConversas" class="tab-pill">0</span>
-            </button>
-            <button id="tabBtnRelatorio" class="tab" role="tab" aria-selected="false" aria-controls="tabRelatorio">
-              <span>📊 Relatório</span>
-            </button>
-          </div>
-        </div>
-      </header>
+<body class="h-screen flex with-mini">
 
-      <main class="main">
-        <!-- HOME -->
-        <section id="tabHome" class="flex-1 p-6">
-          <div class="max-w-4xl mx-auto">
-            <div class="card p-6">
-              <h1 class="text-2xl font-bold">Bem-vindo(a) 👋</h1>
-              <p class="text-gray-600 mt-2">Olá <span id="homeAgenteNome" class="font-semibold">—</span>!</p>
-              <p class="text-gray-600">Carteira: <span id="homeAgenteCarteira" class="font-semibold">—</span></p>
+  <!-- Mini Sidebar -->
+  <nav class="mini-sidebar select-none">
+    <button id="tabBtnHome" class="btn-mini active" title="Home" aria-label="Home">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+        <path
+          d="M12 3.172 2.293 12.88a1 1 0 0 0 1.414 1.415L5 13.001V20a1 1 0 0 0 1 1h5v-6h2v6h5a 1 1 0 0 0 1-1v-6.999l1.293 1.294a1 1 0 0 0 1.414-1.415L12 3.172z" />
+      </svg>
+    </button>
+    <button id="tabBtnConversas" class="btn-mini" title="Conversas" aria-label="Conversas">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
+      </svg>
+    </button>
+    <button id="tabBtnRelatorio" class="btn-mini" title="Relatório" aria-label="Relatório">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M11 2a10 10 0 1 0 10 10h-8a2 2 0 0 1-2-2V2zM13 2.05V10h7.95A10.004 10.004 0 0 0 13 2.05z" />
+      </svg>
+    </button>
+  </nav>
 
-              <!-- CONTROLES GERAIS NA HOME -->
-              <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div class="p-4 border rounded-lg">
-                  <div class="text-sm text-gray-500 mb-1">Status</div>
-                  <div id="homeStatus" class="font-medium"><span class="dot offline"></span>Offline</div>
-                  <div class="mt-3 flex flex-wrap gap-2">
-                    <button id="btnToggleOnline"
-                      class="btn px-3 py-2 bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
-                      disabled aria-live="polite" aria-pressed="false">
-                      <svg id="toggleSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24"
-                        aria-hidden="true">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                          fill="none"></circle>
-                        <path class="opacity-75" fill="currentColor"
-                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                      </svg>
-                      <span id="toggleLabel">Ficar online</span>
-                    </button>
-                    <!-- Botão dinâmico: Login/Logout -->
-                    <button id="btnLogout" class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200">Logout</button>
-                  </div>
-                  <div id="homeAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert"
-                    aria-live="polite"></div>
-                </div>
+  <!-- Tabs Wrapper -->
+  <div id="tabsWrapper" class="flex-1 flex flex-col">
 
-                <div class="p-4 border rounded-lg">
-                  <div class="text-sm text-gray-500 mb-1">Atalhos</div>
-                  <div class="flex flex-wrap gap-2">
-                    <button id="goToConversas1" class="btn btn-primary px-4 py-2">Ir para Conversas</button>
-                    <button id="goToRelatorio1"
-                      class="btn px-4 py-2 bg-gray-100 hover:bg-gray-200">Ver Relatório</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+    <!-- HOME -->
+    <section id="tabHome" class="flex-1 p-6">
+      <div class="max-w-4xl mx-auto">
+        <div class="card p-6">
+          <h1 class="text-2xl font-bold">Bem-vindo(a) 👋</h1>
+          <p class="text-gray-600 mt-2">Olá <span id="homeAgenteNome" class="font-semibold">—</span>!</p>
+          <p class="text-gray-600">Carteira: <span id="homeAgenteCarteira" class="font-semibold">—</span></p>
 
-        <!-- CONVERSAS -->
-        <section id="tabConversas" class="hidden h-full flex">
-          <!-- Sidebar esquerda -->
-          <aside class="sidebar w-1/3 lg:w-1/4 border-r flex flex-col">
-            <div class="p-3 border-b topbar">
-              <div class="flex items-start justify-between gap-2">
-                <div class="min-w-0">
-                  <div class="text-xs text-muted mb-1">Tickets</div>
-                  <div class="flex items-center gap-2">
-                    <div class="pill">
-                      <span class="pill-dot"></span>
-                      <span class="fs-xs">Ativos: <span id="sidebarAtivos">0</span>/<span id="sidebarLimite">4</span></span>
-                    </div>
-                    <div class="pill-soft fs-xs">
-                      Fila: <span id="sidebarFila">0</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="text-xs text-muted mb-1">Agente</div>
-                  <div id="sidebarAgente" class="fs-sm font-medium truncate">—</div>
-                  <div class="text-xxs text-muted">Carteira: <span id="sidebarCarteira">—</span></div>
-                </div>
-              </div>
-              <div class="mt-3 flex items-center justify-between gap-2">
-                <div class="flex flex-wrap gap-1">
-                  <button id="filterTodos" class="ticket-filter-pill active">
-                    Todos
-                  </button>
-                  <button id="filterMeus" class="ticket-filter-pill">
-                    Meus
-                  </button>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="pill-small">
-                    SLA médio: <span id="slaMedio">—</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="p-2 border-b">
-              <input id="buscaTickets" class="input input-sm w-full" type="search" placeholder="Buscar por nome ou número"
-                autocomplete="off">
-            </div>
-            <div class="flex-1 overflow-y-auto scrollbar-thin" id="ticketsContainer">
-              <div class="p-3 text-xs text-muted">Nenhum ticket carregado ainda.</div>
-            </div>
-          </aside>
-
-          <!-- Coluna central - Chat -->
-          <main class="flex-1 flex flex-col">
-            <div class="flex items-center justify-between p-3 border-b topbar">
-              <div class="min-w-0">
-                <div id="tituloConversa" class="font-bold text-lg truncate">Selecione um ticket</div>
-                <div id="subInfo" class="text-sm text-gray-500 truncate"></div>
-              </div>
-              <div class="flex items-center gap-2">
-                <button id="btnLiberar"
-                  class="btn px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
-                  disabled>Liberar</button>
-                <div class="relative">
-                  <button id="btnConcluir" class="btn px-3 py-2 text-sm text-white disabled:opacity-50"
-                    style="background:var(--accent)" disabled aria-haspopup="true"
-                    aria-expanded="false">Concluir</button>
-                  <div id="menuConcluir"
-                    class="hidden absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-20"></div>
-                </div>
-                <button id="btnTheme" class="btn btn-ghost px-3 py-2 text-sm" type="button">🎨 Tema</button>
-              </div>
-            </div>
-
-            <div class="relative flex-1 overflow-hidden">
-              <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" role="log"
-                aria-live="polite">
-                <p id="logInfo" class="text-sm text-gray-400">Nenhum ticket selecionado.</p>
-              </div>
-              <div class="chat-wallpaper"></div>
-            </div>
-
-            <form id="formMensagem" class="border-t bg-white/90 backdrop-blur-sm p-3 flex items-end gap-2"
-              autocomplete="off">
-              <div class="flex-1">
-                <label for="mensagem" class="label">Mensagem</label>
-                <textarea id="mensagem" class="input input-area" rows="2" placeholder="Digite sua mensagem..."
-                  autocomplete="off"></textarea>
-              </div>
-              <div class="flex flex-col gap-2">
-                <button id="btnEnviar" type="submit"
-                  class="btn btn-primary px-4 py-2 disabled:opacity-50 flex items-center gap-2" disabled>
-                  <span>Enviar</span>
+          <!-- CONTROLES GERAIS NA HOME -->
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="p-4 border rounded-lg">
+              <div class="text-sm text-gray-500 mb-1">Status</div>
+              <div id="homeStatus" class="font-medium"><span class="dot offline"></span>Offline</div>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button id="btnToggleOnline"
+                  class="btn px-3 py-2 bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+                  disabled aria-live="polite" aria-pressed="false">
+                  <svg id="toggleSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+                      fill="none"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                  <span id="toggleLabel">Ficar online</span>
                 </button>
-                <button id="btnMacros" type="button" class="btn btn-ghost px-3 py-2 text-xs">Ver macros</button>
+                <!-- Botão dinâmico: Login/Logout -->
+                <button id="btnLogout" class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200">Logout</button>
               </div>
-            </form>
-          </main>
-
-          <!-- Coluna direita - Detalhes -->
-          <aside class="sidebar w-1/3 lg:w-1/4 border-l flex flex-col">
-            <div class="p-3 border-b topbar small">
-              <div class="topbar-inner">
-                <div>
-                  <div class="topbar-title">Contato</div>
-                  <div id="detNome" class="font-medium text-sm truncate">—</div>
-                  <div id="detTelefone" class="text-xs text-muted truncate">—</div>
-                </div>
-                <div class="topbar-actions">
-                  <div class="assist-pill">
-                    <span class="badge-dot" style="background:#22c55e;width:6px;height:6px;border-radius:999px"></span>
-                    <span class="fs-xs">Ativo</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="flex-1 overflow-y-auto scrollbar-thin">
-              <div class="p-3 space-y-3">
-                <div>
-                  <div class="label">Origem</div>
-                  <div id="detOrigem" class="fs-sm">—</div>
-                </div>
-                <div>
-                  <div class="label">Primeiro contato</div>
-                  <div id="detPrimeiro" class="fs-sm">—</div>
-                </div>
-                <div>
-                  <div class="label">Última interação</div>
-                  <div id="detUltimo" class="fs-sm">—</div>
-                </div>
-                <div>
-                  <div class="label">Notas internas</div>
-                  <textarea id="detNotas" class="input input-area" rows="3"
-                    placeholder="Anotações deste atendimento"></textarea>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </section>
-
-        <!-- RELATÓRIO -->
-        <section id="tabRelatorio" class="hidden flex-1 p-6">
-          <div class="max-w-5xl mx-auto space-y-4">
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <h2 class="text-xl font-semibold">Resumo do seu dia</h2>
-                <p class="text-sm text-gray-500">Acompanhe seus indicadores de atendimento.</p>
-              </div>
-              <button id="btnRefreshRel" class="btn btn-ghost px-3 py-2 text-sm flex items-center gap-2">
-                <span class="spinner" id="spinnerRel" style="display:none"></span>
-                <span>Atualizar</span>
-              </button>
+              <div id="homeAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div class="card p-4 space-y-2">
-                <div class="flex items-center justify-between">
-                  <div class="text-xs text-gray-500 uppercase tracking-wide">Atendimentos concluídos</div>
-                  <span class="badge-kpi">Hoje</span>
-                </div>
-                <div class="kpi-number" id="kpiConcluidos">—</div>
-                <div class="text-xs text-muted">Total de tickets que você finalizou.</div>
+            <div class="p-4 border rounded-lg">
+              <div class="text-sm text-gray-500 mb-1">Atalhos</div>
+              <div class="flex flex-wrap gap-2">
+                <button id="goToConversas1" class="btn btn-primary px-4 py-2">Ir para Conversas</button>
+                <button id="goToRelatorio1" class="btn px-4 py-2 bg-gray-100 hover:bg-gray-200">Ver Relatório</button>
               </div>
-              <div class="card p-4 space-y-2">
-                <div class="flex items-center justify-between">
-                  <div class="text-xs text-gray-500 uppercase tracking-wide">Tempo médio de atendimento</div>
-                  <span class="badge-kpi">Hoje</span>
-                </div>
-                <div class="kpi-number" id="kpiTma">—</div>
-                <div class="text-xs text-muted">Do primeiro contato até a conclusão.</div>
-              </div>
-              <div class="card p-4 space-y-2">
-                <div class="flex items-center justify-between">
-                  <div class="text-xs text-gray-500 uppercase tracking-wide">Avaliação média</div>
-                  <span class="badge-kpi">Hoje</span>
-                </div>
-                <div class="kpi-number" id="kpiAvaliacao">—</div>
-                <div class="text-xs text-muted">Baseado no feedback dos clientes.</div>
-              </div>
-            </div>
-
-            <div class="card p-4">
-              <div class="flex items-center justify-between mb-2">
-                <div class="text-sm font-medium">Fila de tickets</div>
-                <div class="text-xs text-muted">Visão geral por status</div>
-              </div>
-              <div id="relatorioLista" class="text-sm text-muted">Nenhum dado carregado.</div>
             </div>
           </div>
-        </section>
-      </main>
-    </div>
-  </div>
+        </div>
+      </div>
+    </section>
 
-  <!-- Theme Drawer -->
-  <div id="themeDrawer" class="drawer" aria-hidden="true">
-    <div class="h-full flex flex-col">
-      <div class="p-4 border-b flex items-center justify-between">
-        <h3 class="font-semibold">🎨 Seu tema</h3>
-        <div class="flex items-center gap-2">
-          <button id="btnThemeExport" class="btn btn-ghost px-2 py-1 text-xs">Salvar no meu computador</button>
-          <label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">Importar um tema salvo <input id="importTheme"
-              type="file" accept="application/json" class="hidden"></label>
-          <button id="btnThemeClose" class="btn btn-ghost px-2 py-1 text-xs" aria-label="Fechar">✖</button>
+    <!-- CONVERSAS -->
+    <section id="tabConversas" class="hidden h-full flex">
+      <!-- Sidebar esquerda -->
+      <aside class="sidebar w-1/3 lg:w-1/4 border-r flex flex-col">
+        <div class="p-3 border-b topbar">
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <div class="text-xs text-gray-500">Agente</div>
+              <div id="agenteNome" class="font-semibold truncate">—</div>
+              <div class="text-xs text-gray-500">Carteira: <span id="agenteCarteira">—</span></div>
+              <div class="text-xs text-gray-500">Status: <span id="agenteStatus"><span
+                    class="dot offline"></span>Offline</span></div>
+              <div class="mt-1 text-xs">
+                <span class="text-gray-500">Tickets:</span>
+                <span id="badgeAtivos" class="badge">0</span>
+                <span class="text-gray-500 mx-1">/</span>
+                <span id="badgeLimite" class="badge" style="background:#64748b">∞</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+              <button id="btnPegarProxima"
+                class="btn btn-primary px-3 py-2 text-sm text-white disabled:opacity-50 flex items-center gap-2"
+                disabled>
+                <svg id="pegarSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
+                  </circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v 4a 4 4 0 00-4 4H4z"></path>
+                </svg>
+                <span id="pegarLabel">Pegar próxima</span>
+              </button>
+              <button id="btnPrioridade" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50"
+                disabled style="background: rebeccapurple">Pedir prioridade</button>
+            </div>
+          </div>
+          <div id="msgAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
+          <div id="msgLimite" class="mt-1 text-xs text-red-600 hidden" role="alert" aria-live="polite"></div>
+        </div>
+
+        <ul id="listaTickets" class="flex-1 overflow-y-auto" aria-label="Minhas conversas"></ul>
+
+        <div class="p-2 text-xs text-gray-500 border-t topbar">
+          Apenas conversas da sua carteira. “Pegar próxima” usa ordem por última mensagem <em>recebida</em>.
+        </div>
+      </aside>
+
+      <!-- Chat principal -->
+      <main class="flex-1 flex flex-col">
+        <div class="flex items-center justify-between p-3 border-b topbar">
+          <div class="min-w-0">
+            <div id="tituloConversa" class="font-bold text-lg truncate">Selecione um ticket</div>
+            <div id="subInfo" class="text-sm text-gray-500 truncate"></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnLiberar" class="btn px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+              disabled>Liberar</button>
+            <div class="relative">
+              <button id="btnConcluir" class="btn px-3 py-2 text-sm text-white disabled:opacity-50"
+                style="background:var(--accent)" disabled aria-haspopup="true" aria-expanded="false">Concluir</button>
+              <div id="menuConcluir"
+                class="hidden absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-20"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative flex-1 overflow-hidden">
+          <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" role="log"
+            aria-live="polite">
+            <p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>
+          </div>
+        </div>
+
+        <div id="digitando" class="px-4 text-left hidden text-sm text-gray-500" aria-live="polite">Digitando…</div>
+
+        <div id="respostaPreview"
+          class="hidden px-3 py-2 border-t bg-gray-50 text-sm flex justify-between items-center">
+          <div class="truncate max-w-[80%]"><span class="font-semibold">Respondendo:</span> <span id="respostaTexto"
+              class="text-gray-600"></span></div>
+          <button onclick="cancelarResposta()" class="text-red-500 text-xs" aria-label="Cancelar resposta">✖</button>
+        </div>
+
+        <div class="p-3 border-t topbar flex space-x-2 items-center">
+          <input type="file" id="fileInput" accept="application/pdf" class="hidden" onchange="enviarPDF(event)">
+          <button onclick="document.getElementById('fileInput').click()" class="btn btn-primary px-3 py-2">📝
+            PDF</button>
+          <textarea id="textoMensagem" rows="1" class="flex-1 border rounded-md p-2 resize-none"
+            placeholder="Digite uma mensagem…" disabled></textarea>
+          <button id="btnEnviar" class="btn px-4 py-2 text-white disabled:opacity-50" style="background:var(--accent)"
+            disabled>Enviar</button>
+        </div>
+      </main>
+
+      <!-- Modal imagem -->
+      <div id="imageModal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+        aria-modal="true" role="dialog">
+        <span id="closeModal" class="absolute top-4 right-6 text-white text-3xl cursor-pointer"
+          aria-label="Fechar imagem">&times;</span>
+        <img id="modalImg" src="" alt="Imagem" class="max-h-[90%] max-w-[90%] rounded-lg shadow-lg">
+      </div>
+
+      <!-- Modal prioridade -->
+      <div id="priorityModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
+        <div class="absolute inset-0 bg-black/60" onclick="fecharPriorityModal()" aria-hidden="true"></div>
+        <div class="relative mx-auto mt-24 w-[95%] max-w-md bg-white rounded-xl shadow-xl border">
+          <div class="p-4 border-b flex items-center justify-between">
+            <h3 class="font-semibold">Pedir prioridade</h3>
+            <button class="text-gray-500" onclick="fecharPriorityModal()" aria-label="Fechar">✖</button>
+          </div>
+          <div class="p-4 space-y-3">
+            <label class="block text-sm text-gray-600">Telefone do cliente</label>
+            <input id="priorityTelefone" class="w-full p-2 border rounded-md"
+              placeholder="Ex: 61999999999 ou 5561999999999" autocomplete="off" inputmode="numeric" pattern="[0-9]*" />
+            <p class="text-xs text-gray-500">Atenção: informe um telefone válido DDD + 8/9 dígitos.</p>
+            <div id="priorityInfo" class="text-sm text-gray-700 hidden"></div>
+            <div id="priorityErro" class="text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
+          </div>
+          <div class="p-4 border-t flex items-center justify-end gap-2">
+            <button class="px-3 py-2 text-sm bg-gray-100 rounded hover:bg-gray-200"
+              onclick="fecharPriorityModal()">Cancelar</button>
+            <button id="btnPriorityBuscar"
+              class="px-3 py-2 text-sm text-white rounded-md hover:bg-purple-700 flex items-center gap-2"
+              style="background: rebeccapurple">
+              <svg id="prioritySpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
+                </circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v4a 4 4 0 00-4 4H4z"></path>
+              </svg>
+              <span id="priorityBtnLabel">Buscar e solicitar</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="p-4 overflow-y-auto space-y-6">
-        <!-- Temas rápidos -->
-        <section>
-          <div class="text-xs text-gray-500 mb-2">Temas rápidos</div>
-          <div class="grid grid-cols-2 gap-2">
-            <div class="preset" data-preset="corporate">
-              <div class="h-8 rounded" style="background:linear-gradient(90deg,#0ea5e9,#2563eb)"></div>
-              <div class="mt-1 text-xs">Corporate</div>
-            </div>
-            <div class="preset" data-preset="ocean">
-              <div class="h-8 rounded" style="background:linear-gradient(90deg,#06b6d4,#10b981)"></div>
-              <div class="mt-1 text-xs">Ocean</div>
-            </div>
-            <div class="preset" data-preset="sunset">
-              <div class="h-8 rounded" style="background:linear-gradient(90deg,#fb923c,#ef4444)"></div>
-              <div class="mt-1 text-xs">Sunset</div>
-            </div>
-            <div class="preset" data-preset="terminal">
-              <div class="h-8 rounded" style="background:linear-gradient(90deg,#020617,#22c55e)"></div>
-              <div class="mt-1 text-xs">Terminal</div>
+      <!-- Theme Drawer -->
+      <div id="themeDrawer" class="drawer" aria-hidden="true">
+        <div class="h-full flex flex-col">
+          <div class="p-4 border-b flex items-center justify-between">
+            <h3 class="font-semibold">🎨 Seu tema</h3>
+            <div class="flex items-center gap-2">
+              <button id="btnThemeExport" class="btn btn-ghost px-2 py-1 text-xs">Salvar no meu computador</button>
+              <label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">Importar um tema salvo <input
+                  id="importTheme" type="file" accept="application/json" class="hidden"></label>
+              <button id="btnThemeClose" class="btn btn-ghost px-2 py-1 text-xs" aria-label="Fechar">✖</button>
             </div>
           </div>
-        </section>
-
-        <!-- Cores principais -->
-        <section>
-          <div class="text-xs text-gray-500 mb-2">Cores principais</div>
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <label class="space-y-1">
-              <span class="block">Primária</span>
-              <input id="tPrimary" type="color" class="w-full h-8 rounded border border-gray-200">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Destaque</span>
-              <input id="tAccent" type="color" class="w-full h-8 rounded border border-gray-200">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Sidebar</span>
-              <input id="tSidebar" type="color" class="w-full h-8 rounded border border-gray-200">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Fundo do conteúdo</span>
-              <input id="tContentBg" type="color" class="w-full h-8 rounded border border-gray-200">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Fundo geral</span>
-              <input id="tBg" type="color" class="w-full h-8 rounded border border-gray-200">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Texto</span>
-              <input id="tText" type="color" class="w-full h-8 rounded border border-gray-200">
-            </label>
+          <div class="p-4 overflow-y-auto space-y-6">
+            <!-- Conteúdo de tema (como antes) -->
+            <section>
+              <div class="text-xs text-gray-500 mb-2">Temas rápidos</div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="preset" data-preset="corporate">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#0ea5e9,#2563eb)"></div>
+                  <div class="mt-1 text-xs">Corporate</div>
+                </div>
+                <div class="preset" data-preset="ocean">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#06b6d4,#10b981)"></div>
+                  <div class="mt-1 text-xs">Ocean</div>
+                </div>
+                <div class="preset" data-preset="sunset">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#fb923c,#ef4444)"></div>
+                  <div class="mt-1 text-xs">Sunset</div>
+                </div>
+                <div class="preset" data-preset="dark">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#0b1220,#374151)"></div>
+                  <div class="mt-1 text-xs">Dark</div>
+                </div>
+                <div class="preset" data-preset="minimal">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#f8fafc,#e2e8f0)"></div>
+                  <div class="mt-1 text-xs">Minimal</div>
+                </div>
+                <div class="preset" data-preset="funky">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#a78bfa,#ec4899)"></div>
+                  <div class="mt-1 text-xs">Funky</div>
+                </div>
+              </div>
+            </section>
+            <hr class="border-gray-200">
+            <section>
+              <div class="text-xs text-gray-500 mb-2">Personalizar</div>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="block"><span class="text-xs text-gray-600">Botão PDF</span><input id="tPrimary"
+                    type="color" class="w-full h-10 border rounded" value="#3b82f6"></label>
+                <label class="block"><span class="text-xs text-gray-600">Botão Concluir</span><input id="tAccent"
+                    type="color" class="w-full h-10 border rounded" value="#22c55e"></label>
+                <label class="block"><span class="text-xs text-gray-600">Barra lateral</span><input id="tSidebar"
+                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
+                <label class="block"><span class="text-xs text-gray-600">Cabeçalho</span><input id="tContentBg"
+                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
+                <label class="block"><span class="text-xs text-gray-600">Cor de fundo</span><input id="tBg" type="color"
+                    class="w-full h-10 border rounded" value="#f3f4f6"></label>
+                <label class="block"><span class="text-xs text-gray-600">Texto</span><input id="tText" type="color"
+                    class="w-full h-10 border rounded" value="#0f172a"></label>
+              </div>
+              <div class="grid grid-cols-2 gap-3 mt-3">
+                <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 1</span><input id="tOutG1"
+                    type="color" class="w-full h-10 border rounded" value="#dcf8c6"></label>
+                <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 2</span><input id="tOutG2"
+                    type="color" class="w-full h-10 border rounded" value="#b8f0a4"></label>
+                <label class="block"><span class="text-xs text-gray-600">Cliente mensagem cor</span><input id="tInBg"
+                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
+                <label class="block"><span class="text-xs text-gray-600">Cliente mensagem bordas</span><input
+                    id="tInBorder" type="color" class="w-full h-10 border rounded" value="#e2e8f0"></label>
+                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos balões</span><input
+                    id="tRadius" type="range" min="8" max="28" value="18" class="w-full"></label>
+              </div>
+              <div class="grid grid-cols-1 gap-3 mt-3">
+                <label class="block"><span class="text-xs text-gray-600">Opacidade do fundo</span><input id="tBgOp"
+                    type="range" min="0" max="1" step="0.05" value="0"></label>
+              </div>
+              <div class="grid grid-cols-2 gap-3 mt-3">
+                <label class="block"><span class="text-xs text-gray-600">Tamanho base</span>
+                  <select id="tFontSize" class="w-full p-2 border rounded">
+                    <option value="13px">13px</option>
+                    <option value="14px" selected>14px</option>
+                    <option value="15px">15px</option>
+                    <option value="16px">16px</option>
+                  </select>
+                </label>
+                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos botões</span><input
+                    id="tBtnRadius" type="range" min="6" max="16" value="10" class="w-full"></label>
+                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos cards</span><input
+                    id="tCardRadius" type="range" min="10" max="24" value="16" class="w-full"></label>
+              </div>
+              <div class="flex items-center justify-between mt-4">
+                <div class="flex items-center gap-2">
+                  <button id="btnRandom" class="btn btn-ghost px-3 py-2">🎲 Surpreenda-me</button>
+                  <button id="btnReset" class="btn btn-ghost px-3 py-2">↺ Voltar ao padrão</button>
+                </div>
+                <button id="btnSaveTheme" class="btn btn-primary px-4 py-2">Salvar</button>
+              </div>
+            </section>
           </div>
-        </section>
-
-        <!-- Balões -->
-        <section>
-          <div class="text-xs text-gray-500 mb-2">Balões de conversa</div>
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <label class="space-y-1">
-              <span class="block">Saída - gradiente 1</span>
-              <input id="tOutG1" type="color" class="w-full h-8 rounded border border-gray-200">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Saída - gradiente 2</span>
-              <input id="tOutG2" type="color" class="w-full h-8 rounded border border-gray-200">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Entrada - fundo</span>
-              <input id="tInBg" type="color" class="w-full h-8 rounded border border-gray-200">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Entrada - borda</span>
-              <input id="tInBorder" type="color" class="w-full h-8 rounded border border-gray-200">
-            </label>
-          </div>
-        </section>
-
-        <!-- Ajustes finos -->
-        <section>
-          <div class="text-xs text-gray-500 mb-2">Ajustes finos</div>
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <label class="space-y-1">
-              <span class="block">Raio dos balões</span>
-              <input id="tRadius" type="range" min="10" max="28" class="w-full">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Raio dos botões</span>
-              <input id="tBtnRadius" type="range" min="6" max="16" class="w-full">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Raio dos cards</span>
-              <input id="tCardRadius" type="range" min="8" max="22" class="w-full">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Opacidade do papel de parede</span>
-              <input id="tBgOp" type="range" min="0" max="0.35" step="0.01" class="w-full">
-            </label>
-            <label class="space-y-1">
-              <span class="block">Tamanho da fonte</span>
-              <select id="tFontSize" class="w-full border border-gray-200 rounded px-2 py-1">
-                <option value="13px">Pequena</option>
-                <option value="14px">Padrão</option>
-                <option value="15px">Média</option>
-                <option value="16px">Grande</option>
-              </select>
-            </label>
-          </div>
-        </section>
-
-        <!-- Ações -->
-        <section class="pt-2 border-t">
-          <div class="flex justify-between items-center gap-2">
-            <button id="btnReset" class="btn btn-ghost px-3 py-2 text-xs">Voltar ao padrão</button>
-            <div class="flex gap-2">
-              <button id="btnRandom" class="btn btn-ghost px-3 py-2 text-xs">Surpreenda-me 🎲</button>
-              <button id="btnSaveTheme" class="btn btn-primary px-3 py-2 text-xs">Salvar tema</button>
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <!-- RELATÓRIO -->
+    <section id="tabRelatorio" class="hidden p-4">
+      <div class="max-w-6xl mx-auto space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold">Relatório — Atendimentos</h2>
+          <div class="text-sm text-gray-500" id="relatorioPeriodo">Hoje</div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="card p-4">
+            <div class="text-xs text-gray-500">Em atendimento</div>
+            <div id="kpiEm" class="text-2xl font-bold">0</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-xs text-gray-500">Concluídos</div>
+            <div id="kpiConc" class="text-2xl font-bold">0</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-xs text-gray-500">TMA</div>
+            <div class="text-2xl font-bold"><span id="kpiTma">—</span><span class="text-sm text-gray-500"> min</span>
+            </div>
+          </div>
+          <div class="card p-4">
+            <div class="text-xs text-gray-500">1ª resposta</div>
+            <div class="text-2xl font-bold"><span id="kpiFRT">—</span><span class="text-sm text-gray-500"> seg</span>
+            </div>
+          </div>
+        </div>
+        <div class="card p-4">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold">Distribuição por status</div>
+            <button id="btnRefreshRel" class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200 text-sm">Atualizar</button>
+          </div>
+          <div class="mt-4"><canvas id="pieStatus" height="260"></canvas></div>
+        </div>
+      </div>
+    </section>
+
   </div>
 
-  <!-- Modal de Login -->
-  <div id="loginModal" class="modal" aria-hidden="true">
-    <div class="modal-backdrop"></div>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="loginTitulo">
-      <h2 id="loginTitulo" class="modal-title">Entrar no painel</h2>
-      <p class="text-sm text-gray-600 mb-3">Informe o código do agente para iniciar os atendimentos.</p>
-      <div class="space-y-2">
-        <label class="block text-sm">
-          <span class="block text-xs text-gray-500 mb-1">Código do agente</span>
-          <input id="loginCodigoAgente" type="text" inputmode="numeric" pattern="\d*" autocomplete="off"
-            class="input input-sm w-full" placeholder="Ex: 1234">
-        </label>
-        <label class="block text-sm">
-          <span class="block text-xs text-gray-500 mb-1">Origem</span>
-          <select id="loginOrigem" class="input input-sm w-full">
-            <option value="web">Web</option>
-            <option value="app">App</option>
-          </select>
-        </label>
-        <div id="loginErro" class="text-xs text-red-600 mt-1 hidden"></div>
+  <!-- MODAL DE LOGIN (apenas código do agente) -->
+  <div id="modalLogin" class="modal">
+    <div class="modal-inner">
+      <div class="p-4 border-b flex items-center justify-between">
+        <h3 class="font-semibold">Identifique-se</h3>
+        <button class="btn btn-ghost px-2 py-1 text-xs" onclick="fecharModalLogin()" aria-label="Fechar">✖</button>
       </div>
-      <div class="modal-footer">
-        <button id="btnCancelarLogin" type="button" class="btn btn-ghost px-3 py-2 text-sm">Cancelar</button>
-        <button id="btnDoLogin" type="button" class="btn btn-primary px-3 py-2 text-sm">Entrar</button>
+      <div class="p-4 space-y-3">
+        <label class="block text-sm text-gray-600">Informe seu código de agente</label>
+        <input id="loginCodigoAgente" inputmode="numeric" pattern="[0-9]*" class="w-full p-2 border rounded-md"
+          placeholder="Ex: 101" />
+        <p class="text-xs text-gray-500">Usaremos este código para carregar seu nome, carteira e permissões.</p>
+        <div id="loginErro" class="text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
+      </div>
+      <div class="p-4 border-t flex items-center justify-end gap-2">
+        <button class="px-3 py-2 text-sm bg-gray-100 rounded hover:bg-gray-200"
+          onclick="fecharModalLogin()">Cancelar</button>
+        <button id="btnDoLogin" class="px-3 py-2 text-sm text-white rounded-md"
+          style="background:var(--primary)">Confirmar</button>
       </div>
     </div>
   </div>
 
   <script>
-    const CONV_API = "https://conversaozx.com.br";
-    const agente = { codigo: null, origem: null };
-    let tickets = [];
-    let selecionado = null;
-    let ativosCount = 0;
-    let limiteAtivos = 4;
-    let unreadCountByKey = {};
-    let lastContatoTsByKey = {};
+    /** =================== CONFIG / APIs =================== */
+    const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/, '');
+    const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
+    const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
 
-    const elHomeNome = document.getElementById("homeAgenteNome");
-    const elHomeCart = document.getElementById("homeAgenteCarteira");
-    const headerAgente = document.getElementById("headerAgente");
-    const headerCarteira = document.getElementById("headerCarteira");
-    const sidebarAgente = document.getElementById("sidebarAgente");
-    const sidebarCarteira = document.getElementById("sidebarCarteira");
-    const sidebarAtivos = document.getElementById("sidebarAtivos");
-    const sidebarLimite = document.getElementById("sidebarLimite");
-    const elHomeStatus = document.getElementById("homeStatus");
-    const pillStatusDot = document.getElementById("pillStatusDot");
-    const pillStatusLabel = document.getElementById("pillStatusLabel");
-    const homeAviso = document.getElementById("homeAviso");
-    const btnToggleOnline = document.getElementById("btnToggleOnline");
-    const toggleSpinner = document.getElementById("toggleSpinner");
-    const toggleLabel = document.getElementById("toggleLabel");
-    const btnLogout = document.getElementById("btnLogout");
-    const tabBtnHome = document.getElementById("tabBtnHome");
-    const tabBtnConversas = document.getElementById("tabBtnConversas");
-    const tabBtnRelatorio = document.getElementById("tabBtnRelatorio");
-    const tabBadgeConversas = document.getElementById("tabBadgeConversas");
-    const tabHome = document.getElementById("tabHome");
-    const tabConversas = document.getElementById("tabConversas");
-    const tabRelatorio = document.getElementById("tabRelatorio");
-    const goToConversas1 = document.getElementById("goToConversas1");
-    const goToRelatorio1 = document.getElementById("goToRelatorio1");
-    const ticketsContainer = document.getElementById("ticketsContainer");
-    const buscaTickets = document.getElementById("buscaTickets");
-    const logInfo = document.getElementById("logInfo");
+    /** ================== CARTEIRAS / Phone IDs ================== */
+    const phoneIdMap = {
+      "828473960349364": "ConnectZap",
+      "805610009301153": "Banco PAN",
+      "727586317113885": "Recovery PJ",
+      "864779140046932": "Recovery PF",
+      "802977069563598": "Recovery PF",
+      "864779140046932,802977069563598": "Recovery PF",
+      "873637622491517": "Mercado Pago Cobrança",
+      "821562937700669": "Mercado Pago Cobrança",
+      "873637622491517,821562937700669": "Mercado Pago Cobrança",
+      "779797401888141": "DivZero",
+      "829210283602406": "Arc4U",
+      "713021321904495": "Serasa",
+      "803535039503723": "Mercado Pago Vendas"
+    };
+    const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => {
+      const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean);
+      acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts]));
+      return acc;
+    }, {});
+
+    /** =================== ESTADO GLOBAL =================== */
+    let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
+    let tickets = []; let selecionado = null; let renderedKeys = new Set(); let lastTimestampMs = null; let lastDayRendered = null;
+    let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
+    let limitPerAgent = 0; let ativosCount = 0;
+    let unreadCountByKey = {}; let lastContatoTsByKey = {};
+    let ordemCache = [];
+    let pieChart = null;
+    let typingTimer = null;
+
+    /** =================== UTILS =================== */
+    const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
+    const POLL_ACTIVE_MS = 5000, POLL_HIDDEN_MS = 30000;
+    const fmtHoraBR = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+    const fmtDataBR = new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/Sao_Paulo' });
+    function qsParam(name) { return new URLSearchParams(location.search).get(name); }
+    function escapeHtml(s) { if (!s) return ""; return s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
+    const __colorCache = new Map();
+    function gerarCor(nome) { const key = String(nome || "U"); if (__colorCache.has(key)) return __colorCache.get(key); let h = 0; for (const c of key) h = c.charCodeAt(0) + ((h << 5) - h); const v = `hsl(${h % 360},70%,60%)`; __colorCache.set(key, v); return v; }
+    function keyLocal() { return `cz:tickets:${agente.codigo}:${agente.carteira}`; }
+    let __lastSavedTicketsStr = ""; function saveTickets() { try { const s = JSON.stringify(tickets); if (s !== __lastSavedTicketsStr) { localStorage.setItem(keyLocal(), s); __lastSavedTicketsStr = s; } } catch { } }
+    function loadTickets() { try { tickets = JSON.parse(localStorage.getItem(keyLocal()) || "[]") || []; } catch { tickets = []; } }
+    function bytesToHuman(n) { if (n === undefined || n === null) return ''; const u = ['B', 'KB', 'MB', 'GB', 'TB']; let i = 0, s = n; while (s >= 1024 && i < u.length - 1) { s /= 1024; i++; } return `${s.toFixed(s >= 10 || i === 0 ? 0 : 1)} ${u[i]}`; }
+    function isIncoming(m) { const s = (m.status || "").toLowerCase(); if (typeof m.from_me === "boolean") return !m.from_me; if (m.direction) return String(m.direction).toLowerCase().startsWith("in"); if (["in", "received", "incoming"].includes(s)) return true; if (["out", "sent", "delivered", "read", "outgoing"].includes(s)) return false; return s === "in"; }
+    function storageKeys() { return { unread: `cz:unreadCount:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}`, lastTs: `cz:lastContatoTs:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}` }; }
+    function loadUnread() { try { const { unread, lastTs } = storageKeys(); unreadCountByKey = JSON.parse(localStorage.getItem(unread) || "{}"); lastContatoTsByKey = JSON.parse(localStorage.getItem(lastTs) || "{}"); } catch { unreadCountByKey = {}; lastContatoTsByKey = {}; } }
+    function persistUnread() { try { const { unread, lastTs } = storageKeys(); localStorage.setItem(unread, JSON.stringify(unreadCountByKey)); localStorage.setItem(lastTs, JSON.stringify(lastContatoTsByKey)); } catch { } }
+    function keyFrom(remetente, phone_id) { return `${remetente}|${phone_id || ''}`; }
+    function schedulePolls() {
+      if (pollingContatos) clearInterval(pollingContatos);
+      if (pollingMensagens) clearInterval(pollingMensagens);
+      const gap = document.hidden ? POLL_HIDDEN_MS : POLL_ACTIVE_MS;
+      pollingContatos = setInterval(refreshOrdemCarteira, gap);
+      if (selecionado) {
+        pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true); }, gap);
+      }
+    }
+    document.addEventListener('visibilitychange', schedulePolls);
+
+    /** =================== DOM REFS =================== */
+    // Home
+    const elHomeNome = document.getElementById('homeAgenteNome');
+    const elHomeCart = document.getElementById('homeAgenteCarteira');
+    const elHomeStatus = document.getElementById('homeStatus');
+    const elHomeAviso = document.getElementById('homeAviso');
+
+    // Relatório
+    const kpiEm = document.getElementById('kpiEm');
+    const kpiConc = document.getElementById('kpiConc');
+    const kpiTma = document.getElementById('kpiTma');
+    const kpiFRT = document.getElementById('kpiFRT');
+    const btnRefreshRel = document.getElementById('btnRefreshRel');
+
+    // Conversas
+    const elAgenteNome = document.getElementById("agenteNome");
+    const elAgenteCarteira = document.getElementById("agenteCarteira");
+    const elAgenteStatus = document.getElementById("agenteStatus");
+    const elMsgAviso = document.getElementById("msgAviso");
+    const elMsgLimite = document.getElementById("msgLimite");
+    const elListaTickets = document.getElementById("listaTickets");
+    const elTitulo = document.getElementById("tituloConversa");
+    const elSubInfo = document.getElementById("subInfo");
     const chat = document.getElementById("chat");
-    const tituloConversa = document.getElementById("tituloConversa");
-    const subInfo = document.getElementById("subInfo");
+    const textarea = document.getElementById("textoMensagem");
     const btnEnviar = document.getElementById("btnEnviar");
+    const btnPegarProxima = document.getElementById("btnPegarProxima");
+    const btnPrioridade = document.getElementById("btnPrioridade");
     const btnLiberar = document.getElementById("btnLiberar");
     const btnConcluir = document.getElementById("btnConcluir");
     const menuConcluir = document.getElementById("menuConcluir");
-    const btnMacros = document.getElementById("btnMacros");
-    const formMensagem = document.getElementById("formMensagem");
-    const mensagemInput = document.getElementById("mensagem");
-    const detNome = document.getElementById("detNome");
-    const detTelefone = document.getElementById("detTelefone");
-    const detOrigem = document.getElementById("detOrigem");
-    const detPrimeiro = document.getElementById("detPrimeiro");
-    const detUltimo = document.getElementById("detUltimo");
-    const detNotas = document.getElementById("detNotas");
-    const kpiConcluidos = document.getElementById("kpiConcluidos");
-    const kpiTma = document.getElementById("kpiTma");
-    const kpiAvaliacao = document.getElementById("kpiAvaliacao");
-    const relatorioLista = document.getElementById("relatorioLista");
-    const btnRefreshRel = document.getElementById("btnRefreshRel");
-    const spinnerRel = document.getElementById("spinnerRel");
-    const filterTodos = document.getElementById("filterTodos");
-    const filterMeus = document.getElementById("filterMeus");
-    const slaMedio = document.getElementById("slaMedio");
-    const headerAtivosCount = document.getElementById("ativosCount");
-    const headerLimiteAtivos = document.getElementById("limiteAtivos");
-    const headerFilaCount = document.getElementById("filaCount");
+    const digitando = document.getElementById("digitando");
+    const badgeAtivos = document.getElementById("badgeAtivos");
+    const badgeLimite = document.getElementById("badgeLimite");
 
-    function keyFrom(remetente, phoneId) {
-      return `${remetente}:${phoneId}`;
-    }
+    // Botões Home
+    const btnToggleOnline = document.getElementById("btnToggleOnline");
+    const btnLogout = document.getElementById("btnLogout");
 
-    function persistUnread() {
-      try {
-        localStorage.setItem("cz:unread", JSON.stringify(unreadCountByKey));
-        localStorage.setItem("cz:lastContato", JSON.stringify(lastContatoTsByKey));
-      } catch (e) { }
-    }
+    // Tabs
+    const tabBtnHome = document.getElementById('tabBtnHome');
+    const tabBtnConversas = document.getElementById('tabBtnConversas');
+    const tabBtnRelatorio = document.getElementById('tabBtnRelatorio');
+    const tabHome = document.getElementById('tabHome');
+    const tabConversas = document.getElementById('tabConversas');
+    const tabRelatorio = document.getElementById('tabRelatorio');
+    document.getElementById('goToConversas1').onclick = () => switchTab('conversas');
+    document.getElementById('goToRelatorio1').onclick = () => switchTab('relatorio');
 
-    function restoreUnread() {
-      try {
-        const unread = JSON.parse(localStorage.getItem("cz:unread") || "{}");
-        const last = JSON.parse(localStorage.getItem("cz:lastContato") || "{}");
-        unreadCountByKey = unread || {};
-        lastContatoTsByKey = last || {};
-      } catch (e) {
-        unreadCountByKey = {};
-        lastContatoTsByKey = {};
-      }
-    }
-
-    function saveTickets() {
-      try {
-        localStorage.setItem(`cz:tickets:${agente.codigo || "anon"}`, JSON.stringify(tickets));
-      } catch (e) { }
-    }
-
-    function loadTicketsFromStorage() {
-      try {
-        const raw = localStorage.getItem(`cz:tickets:${agente.codigo || "anon"}`);
-        if (!raw) return [];
-        return JSON.parse(raw) || [];
-      } catch (e) {
-        return [];
-      }
-    }
-
-    function renderAtivosLimiteUI() {
-      sidebarAtivos.textContent = ativosCount;
-      sidebarLimite.textContent = limiteAtivos;
-      headerAtivosCount.textContent = ativosCount;
-      headerLimiteAtivos.textContent = limiteAtivos;
-      headerFilaCount.textContent = tickets.filter(t => t.status === "fila").length;
-    }
-
-    function renderTickets() {
-      ticketsContainer.innerHTML = "";
-      let filtro = "todos";
-      if (filterMeus.classList.contains("active")) filtro = "meus";
-      const busca = (buscaTickets.value || "").trim().toLowerCase();
-      const list = tickets.filter(t => {
-        if (filtro === "meus" && !t.meu) return false;
-        if (busca) {
-          const nome = (t.nome || "").toLowerCase();
-          const numero = (t.remetente || "").toLowerCase();
-          if (!nome.includes(busca) && !numero.includes(busca)) return false;
-        }
-        return true;
+    /** =================== MENU CONCLUIR =================== */
+    const MOTIVOS_CONCLUSAO = ["Realizou negociação", "Solicitou 2ª via de boleto", "Recusou a proposta", "Dúvidas gerais", "Cliente ficou inativo"];
+    function renderMenuConcluir() {
+      menuConcluir.innerHTML = MOTIVOS_CONCLUSAO.map(m => `<button type="button" data-motivo="${m}" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50">${m}</button>`).join("");
+      menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => {
+        btn.onclick = async () => { await concluirAtendimento(btn.getAttribute("data-motivo")); fecharMenuConcluir(); };
       });
-      if (!list.length) {
-        ticketsContainer.innerHTML = '<div class="p-3 text-xs text-muted">Nenhum ticket para exibir.</div>';
-        return;
-      }
-      const frag = document.createDocumentFragment();
-      for (const t of list) {
-        const k = keyFrom(t.remetente, t.phone_id);
-        const unread = unreadCountByKey[k] || 0;
-        const li = document.createElement("div");
-        li.className = "ticket";
-        li.dataset.remetente = t.remetente;
-        li.dataset.phoneId = t.phone_id;
-        const nome = t.nome || t.remetente;
-        const ultimoTs = lastContatoTsByKey[k] ? new Date(lastContatoTsByKey[k]) : null;
-        const hora = ultimoTs ? ultimoTs.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
-        li.innerHTML = `
-          <div class="ticket-header">
-            <div class="ticket-name">${nome}</div>
-            <div class="ticket-meta">
-              ${t.origem ? `<span>${t.origem}</span>` : ""}
-              ${hora ? `<span>${hora}</span>` : ""}
-            </div>
-          </div>
-          <div class="ticket-body">
-            <span class="truncate text-xs text-muted">${t.preview || ""}</span>
-            <div class="flex items-center gap-1">
-              ${unread > 0 ? `<span class="ticket-unread-count">${unread}</span>` : ""}
-            </div>
-          </div>
-        `;
-        if (selecionado && selecionado.remetente === t.remetente && selecionado.phone_id === t.phone_id) {
-          li.classList.add("selected");
-        }
-        li.addEventListener("click", () => {
-          selecionarTicket(t.remetente, t.phone_id);
-        });
-        frag.appendChild(li);
-      }
-      ticketsContainer.appendChild(frag);
-      const totalConversas = tickets.length;
-      tabBadgeConversas.textContent = totalConversas;
     }
+    function abrirMenuConcluir() { if (!selecionado || btnConcluir.disabled) return; menuConcluir.classList.remove("hidden"); btnConcluir.setAttribute("aria-expanded", "true"); document.addEventListener("click", clickForaMenuConcluir, { capture: true }); }
+    function fecharMenuConcluir() { menuConcluir.classList.add("hidden"); btnConcluir.setAttribute("aria-expanded", "false"); document.removeEventListener("click", clickForaMenuConcluir, { capture: true }); }
+    function clickForaMenuConcluir(e) { const within = menuConcluir.contains(e.target) || btnConcluir.contains(e.target); if (!within) fecharMenuConcluir(); }
+    btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir(); };
+    renderMenuConcluir();
 
-    function selecionarTicket(remetente, phone_id) {
-      const idxTicket = tickets.findIndex(t => t.remetente === remetente && t.phone_id === phone_id);
-      if (idxTicket === -1) return;
-      selecionado = tickets[idxTicket];
-      document.querySelectorAll(".ticket.selected").forEach(el => el.classList.remove("selected"));
-      const el = ticketsContainer.querySelector(
-        `.ticket[data-remetente="${remetente}"][data-phone-id="${phone_id}"]`
-      );
-      if (el) el.classList.add("selected");
-      const k = keyFrom(remetente, phone_id);
-      unreadCountByKey[k] = 0;
-      persistUnread();
-      renderTickets();
-      carregarChatAtual();
-      atualizarDetalhesContato();
+    /** =================== THEME =================== */
+    function themeKey() { return `cz:theme:${agente.codigo || 'anon'}`; }
+    function defaultTheme() { return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff" }; }
+    function applyTheme(t) {
+      const r = document.documentElement.style; const base = defaultTheme(); const x = { ...base, ...t };
+      r.setProperty('--ticket-selected-bg', x.ticketSelectedBg);
+      r.setProperty('--sidebar-bg', x.sidebar); r.setProperty('--content-bg', x.contentBg);
+      r.setProperty('--bg', x.bg); r.setProperty('--text', x.text);
+      r.setProperty('--muted', x.muted); r.setProperty('--border', x.border);
+      r.setProperty('--link', x.link); r.setProperty('--ghost-bg', x.ghostBg);
+      r.setProperty('--bubble-out-g1', x.outG1); r.setProperty('--bubble-out-g2', x.outG2); r.setProperty('--bubble-out-fg', x.outFg || '#111827');
+      r.setProperty('--bubble-in-bg', x.inBg); r.setProperty('--bubble-in-border', x.inBorder); r.setProperty('--bubble-in-fg', x.inFg || '#0f172a');
+      r.setProperty('--bubble-radius', x.bubbleRadius + 'px'); r.setProperty('--btn-radius', x.btnRadius + 'px'); r.setProperty('--card-radius', x.cardRadius + 'px');
+      r.setProperty('--font-size', x.fontSize); r.setProperty('--chat-wallpaper-opacity', x.wallOp);
+      r.setProperty('--scrollbar', x.scrollbar || '#cbd5e1'); r.setProperty('--primary', x.primary); r.setProperty('--accent', x.accent);
+      inputs.tPrimary.value = x.primary; inputs.tAccent.value = x.accent; inputs.tSidebar.value = x.sidebar;
+      inputs.tContentBg.value = x.contentBg; inputs.tBg.value = x.bg; inputs.tText.value = x.text;
+      inputs.tOutG1.value = x.outG1; inputs.tOutG2.value = x.outG2; inputs.tInBg.value = x.inBg; inputs.tInBorder.value = x.inBorder;
+      inputs.tRadius.value = x.bubbleRadius; inputs.tBgOp.value = x.wallOp; inputs.tFontSize.value = x.fontSize;
+      inputs.tBtnRadius.value = x.btnRadius; inputs.tCardRadius.value = x.cardRadius;
     }
+    function readThemeFromInputs() { return { primary: inputs.tPrimary.value, accent: inputs.tAccent.value, sidebar: inputs.tSidebar.value, contentBg: inputs.tContentBg.value, bg: inputs.tBg.value, text: inputs.tText.value, outG1: inputs.tOutG1.value, outG2: inputs.tOutG2.value, inBg: inputs.tInBg.value, inBorder: inputs.tInBorder.value, bubbleRadius: Number(inputs.tRadius.value || 18), wallOp: Number(inputs.tBgOp.value || 0), fontSize: String(inputs.tFontSize.value || '14px'), btnRadius: Number(inputs.tBtnRadius.value || 10), cardRadius: Number(inputs.tCardRadius.value || 16) }; }
+    function saveTheme(t) { try { localStorage.setItem(themeKey(), JSON.stringify(t)); } catch { } }
+    function loadTheme() { try { return JSON.parse(localStorage.getItem(themeKey()) || 'null'); } catch { return null; } }
 
-    function limparChat() {
-      chat.innerHTML = '<p id="logInfo" class="text-sm text-gray-400">Nenhum ticket selecionado.</p>';
-    }
+    // refs de Theme
+    const themeDrawer = document.getElementById('themeDrawer');
+    const btnTheme = document.getElementById('btnTheme');
+    const btnThemeClose = document.getElementById('btnThemeClose');
+    const btnSaveTheme = document.getElementById('btnSaveTheme');
+    const btnRandom = document.getElementById('btnRandom');
+    const btnReset = document.getElementById('btnReset');
+    const btnThemeExport = document.getElementById('btnThemeExport');
+    const importTheme = document.getElementById('importTheme');
+    const inputs = {
+      tPrimary: document.getElementById('tPrimary'), tAccent: document.getElementById('tAccent'),
+      tSidebar: document.getElementById('tSidebar'), tContentBg: document.getElementById('tContentBg'),
+      tBg: document.getElementById('tBg'), tText: document.getElementById('tText'),
+      tOutG1: document.getElementById('tOutG1'), tOutG2: document.getElementById('tOutG2'),
+      tInBg: document.getElementById('tInBg'), tInBorder: document.getElementById('tInBorder'),
+      tRadius: document.getElementById('tRadius'), tBgOp: document.getElementById('tBgOp'),
+      tFontSize: document.getElementById('tFontSize'), tBtnRadius: document.getElementById('tBtnRadius'),
+      tCardRadius: document.getElementById('tCardRadius')
+    };
+    if (btnTheme) btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
+    if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open'); });
+    [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
+      .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
+    if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open'); });
+    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); });
+    if (btnRandom) btnRandom.addEventListener('click', () => { const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')); const b1 = rand(), b2 = rand(); const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; applyTheme(t); });
 
-    function atualizarDetalhesContato() {
-      if (!selecionado) {
-        detNome.textContent = "—";
-        detTelefone.textContent = "—";
-        detOrigem.textContent = "—";
-        detPrimeiro.textContent = "—";
-        detUltimo.textContent = "—";
-        detNotas.value = "";
-        return;
-      }
-      detNome.textContent = selecionado.nome || selecionado.remetente;
-      detTelefone.textContent = selecionado.remetente;
-      detOrigem.textContent = selecionado.origem || "—";
-      detPrimeiro.textContent = selecionado.primeiro_contato || "—";
-      detUltimo.textContent = selecionado.ultimo_contato || "—";
-      detNotas.value = selecionado.notas || "";
-    }
-
-    async function carregarChatAtual() {
-      if (!selecionado) {
-        limparChat();
-        return;
-      }
-      tituloConversa.textContent = selecionado.nome || selecionado.remetente;
-      subInfo.textContent = `${selecionado.remetente} • ${selecionado.origem || ""}`.trim();
-      logInfo.textContent = "Carregando mensagens...";
+    /** =================== LOGIN MODAL =================== */
+    function isLogged() { try { return !!localStorage.getItem('agente_codigo'); } catch { return false; } }
+    function abrirModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'flex'; setTimeout(() => document.getElementById('loginCodigoAgente').focus(), 50); isModalOpen = true; }
+    function fecharModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'none'; const e = document.getElementById('loginErro'); e.textContent = ''; e.classList.add('hidden'); isModalOpen = false; }
+    async function login() {
+      const codigo = (document.getElementById('loginCodigoAgente').value || '').trim();
+      const erro = document.getElementById('loginErro');
+      if (!codigo || !/^\d+$/.test(codigo)) { erro.textContent = 'Informe um código numérico válido.'; erro.classList.remove('hidden'); return; }
       try {
-        const resp = await fetch(`${CONV_API}/api/tickets/${selecionado.remetente}/${selecionado.phone_id}/mensagens`);
-        if (!resp.ok) throw new Error("Erro ao buscar mensagens");
-        const dados = await resp.json();
-        chat.innerHTML = "";
-        const frag = document.createDocumentFragment();
-        (dados.mensagens || []).forEach(msg => {
-          const div = document.createElement("div");
-          div.className = "msg " + (msg.direcao === "OUT" ? "enviada" : "recebida");
-          const hora = msg.criado_em ? new Date(msg.criado_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
-          div.innerHTML = `
-            <div>${msg.texto || ""}</div>
-            <small>${hora}</small>
-            <div class="msg-tail"></div>
-          `;
-          frag.appendChild(div);
-        });
-        chat.appendChild(frag);
-        chat.scrollTop = chat.scrollHeight;
-        btnEnviar.disabled = false;
-        btnLiberar.disabled = false;
-        btnConcluir.disabled = false;
+        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(codigo)}`);
+        const j = await r.json();
+        if (!j.ok) { throw new Error(j.erro || 'Agente não encontrado'); }
+        localStorage.setItem("agente_codigo", String(codigo));
+        localStorage.setItem("agente_nome", j.agente?.nome || `Agente ${codigo}`);
+        localStorage.setItem("agente_carteira", j.agente?.carteira || 'ConnectZap');
+        fecharModalLogin();
+        await boot();
+        switchTab('home');
+        updateAuthButton(); // muda para Logout
       } catch (e) {
-        logInfo.textContent = "Erro ao carregar mensagens.";
+        erro.textContent = e?.message || 'Falha ao validar código.';
+        erro.classList.remove('hidden');
       }
     }
+    document.getElementById('btnDoLogin').onclick = login;
+    document.getElementById('loginCodigoAgente').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); login(); } });
 
-    function keyTickets() {
-      return `cz:tickets:${agente.codigo || "anon"}`;
-    }
+    /** =================== BOOT =================== */
+    async function boot() {
+      const savedT = loadTheme(); applyTheme(savedT || defaultTheme());
 
-    function loadStateAtivos() {
-      try {
-        const raw = localStorage.getItem(`cz:ativos:${agente.codigo || "anon"}`);
-        if (!raw) return null;
-        return JSON.parse(raw);
-      } catch (e) {
-        return null;
-      }
-    }
+      // carrega agente de localStorage / QS
+      agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
+      agente.origem = localStorage.getItem("agente_origem") || qsParam("origem") || 'web';
 
-    function saveStateAtivos(data) {
-      try {
-        localStorage.setItem(`cz:ativos:${agente.codigo || "anon"}`, JSON.stringify(data));
-      } catch (e) { }
-    }
+      updateAuthButton();
 
-    async function toggleOnline(flag) {
       if (!agente.codigo) {
-        abrirModalLogin();
+        // Sem login: mostra HOME limpa
+        elHomeNome.textContent = '—';
+        elHomeCart.textContent = '—';
+        setStatus(false);
         return;
       }
-      btnToggleOnline.disabled = true;
-      toggleSpinner.classList.remove("hidden");
-      try {
-        const url = flag ? `${CONV_API}/api/agentes/${agente.codigo}/online` : `${CONV_API}/api/agentes/${agente.codigo}/offline`;
-        const resp = await fetch(url, { method: "POST" });
-        if (!resp.ok) throw new Error("Erro ao alterar status");
-        const dados = await resp.json();
-        if (!dados.ok) throw new Error(dados.erro || "Erro ao alterar status");
-        setStatus(flag);
-      } catch (e) {
-        homeAviso.textContent = "Não foi possível alterar seu status. Tente novamente.";
-        homeAviso.classList.remove("hidden");
-      } finally {
-        btnToggleOnline.disabled = false;
-        toggleSpinner.classList.add("hidden");
-      }
-    }
 
-    function setStatus(online) {
-      const antes = btnToggleOnline.getAttribute("aria-pressed") === "true";
-      if (online) {
-        elHomeStatus.innerHTML = '<span class="dot online"></span>Online';
-        pillStatusDot.classList.add("bg-green-500");
-        pillStatusDot.classList.remove("bg-red-500");
-        pillStatusLabel.textContent = "Online";
-        toggleLabel.textContent = "Ficar offline";
-        btnToggleOnline.setAttribute("aria-pressed", "true");
-      } else {
-        elHomeStatus.innerHTML = '<span class="dot offline"></span>Offline';
-        pillStatusDot.classList.remove("bg-green-500");
-        pillStatusDot.classList.add("bg-red-500");
-        pillStatusLabel.textContent = "Offline";
-        toggleLabel.textContent = "Ficar online";
-        btnToggleOnline.setAttribute("aria-pressed", "false");
-      }
-      if (antes !== online) {
+      try {
+        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(agente.codigo)}`);
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.erro || "Agente não encontrado");
+        agente.nome = j.agente?.nome || localStorage.getItem("agente_nome") || `Agente ${agente.codigo}`;
+        agente.carteira = j.agente?.carteira || localStorage.getItem("agente_carteira") || 'ConnectZap';
+
+        localStorage.setItem("agente_nome", agente.nome);
+        localStorage.setItem("agente_carteira", agente.carteira);
+
+        elAgenteNome.textContent = `${agente.nome} (#${agente.codigo})`;
+        elAgenteCarteira.textContent = agente.carteira;
+        elHomeNome.textContent = agente.nome;
+        elHomeCart.textContent = agente.carteira;
+
+        loadUnread();
+        await verificarOnline();
+
         try {
-          localStorage.setItem(`cz:online:${agente.codigo || "anon"}`, JSON.stringify(online));
-        } catch (e) { }
-      }
-    }
+          const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
+          const r2 = await fetch(url);
+          if (r2.ok) { tickets = await r2.json(); saveTickets(); }
+        } catch { }
 
-    function qsParam(name) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(name) || null;
-    }
-
-    async function carregarTickets() {
-      if (!agente.codigo) return;
-      try {
-        const resp = await fetch(`${CONV_API}/api/tickets?codigo_do_agente=${agente.codigo}`);
-        if (!resp.ok) throw new Error("Erro ao buscar tickets");
-        const dados = await resp.json();
-        tickets = dados.tickets || [];
-        ativosCount = tickets.filter(t => t.meu).length;
-        limiteAtivos = dados.limite_ativos || 4;
-        renderAtivosLimiteUI();
-        saveTickets();
         renderTickets();
+        schedulePolls();
+        await refreshOrdemCarteira();
+        await refreshAtivosELimite();
+        if (!tickets.length) btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+
+        await refreshKPIs();
+        wireComposer();
       } catch (e) {
-        console.error("Erro ao carregar tickets:", e);
+        elHomeAviso.classList.remove("hidden");
+        elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
       }
     }
 
+    /** =================== Botão Login/Logout dinâmico =================== */
+    function updateAuthButton() {
+      const logged = isLogged();
+      if (!btnLogout) return;
+      if (logged) {
+        btnLogout.textContent = "Logout";
+        btnLogout.onclick = doLogout;
+      } else {
+        btnLogout.textContent = "Login";
+        btnLogout.onclick = () => abrirModalLogin();
+      }
+    }
+
+    /** =================== TABS =================== */
+    function switchTab(tab) {
+      [tabBtnHome, tabBtnConversas, tabBtnRelatorio].forEach(b => b.classList.remove('active'));
+      tabHome.classList.add('hidden'); tabConversas.classList.add('hidden'); tabRelatorio.classList.add('hidden');
+      if (tab === 'conversas') { tabBtnConversas.classList.add('active'); tabConversas.classList.remove('hidden'); }
+      else if (tab === 'relatorio') { tabBtnRelatorio.classList.add('active'); tabRelatorio.classList.remove('hidden'); }
+      else { tabBtnHome.classList.add('active'); tabHome.classList.remove('hidden'); }
+    }
+    tabBtnHome.onclick = () => switchTab('home');
+    tabBtnConversas.onclick = () => switchTab('conversas');
+    tabBtnRelatorio.onclick = () => switchTab('relatorio');
+
+    /** =================== ONLINE/OFFLINE, LIMITES E FILA =================== */
+    async function verificarOnline() {
+      try {
+        const r = await fetch(`${FILA_API}/fila/status?carteira=${encodeURIComponent(agente.carteira)}`);
+        const lista = await r.json();
+        const achou = Array.isArray(lista) && lista.some(x => String(x.codigo_do_agente) === String(agente.codigo));
+        setStatus(achou);
+        if (!achou) { elMsgAviso?.classList.add("hidden"); elHomeAviso.classList.remove("hidden"); elHomeAviso.textContent = "Você está OFFLINE nesta carteira. Use “Ficar online” para entrar na fila."; }
+        else { elHomeAviso.classList.add("hidden"); elHomeAviso.textContent = ""; }
+      } catch (e) { setStatus(false); }
+    }
+    function setStatus(online) {
+      agente.online = !!online;
+      if (elAgenteStatus) elAgenteStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
+      if (elHomeStatus) elHomeStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
+      btnPegarProxima.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+      btnPrioridade.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+      const toggleLabel = document.getElementById("toggleLabel");
+      if (btnToggleOnline) {
+        btnToggleOnline.disabled = false;
+        btnToggleOnline.setAttribute('aria-pressed', online ? 'true' : 'false');
+        if (online) {
+          if (toggleLabel) toggleLabel.textContent = "Ficar offline";
+          btnToggleOnline.classList.remove("bg-green-600", "hover:bg-green-700", "text-white");
+          btnToggleOnline.classList.add("bg-gray-100");
+        } else {
+          if (toggleLabel) toggleLabel.textContent = "Ficar online";
+          btnToggleOnline.classList.add("bg-green-600", "text-white", "hover:bg-green-700");
+          btnToggleOnline.classList.remove("bg-gray-100");
+        }
+      }
+    }
+    async function refreshOrdemCarteira() {
+      if (!agente.carteira) return;
+      const phoneIds = (carteiraToPhoneIds[agente.carteira] || []).map(String);
+      if (!phoneIds.length) return;
+      try {
+        const res = await fetch(`${CONV_API}/api/conversas/contatos`);
+        const contatos = await res.json();
+        const filtrados = (contatos || []).filter(c => phoneIds.includes(String(c.phone_id)));
+        filtrados.sort((a, b) => {
+          const ai = a.status === 'in', bi = b.status === 'in';
+          if (ai !== bi) return bi - ai;
+          return new Date(b.data_hora) - new Date(a.data_hora);
+        });
+        ordemCache = filtrados;
+        const ticketByKey = new Map((tickets || []).map(t => [keyFrom(t.remetente, t.phone_id), t]));
+        filtrados.forEach(c => {
+          const k = keyFrom(c.remetente, c.phone_id);
+          const t = ticketByKey.get(k);
+          if (!t) { lastContatoTsByKey[k] = +new Date(c.data_hora || 0); return; }
+          const ts = +new Date(c.data_hora || 0);
+          const prev = lastContatoTsByKey[k] || 0;
+          const isOpen = !!(selecionado && selecionado.remetente === c.remetente && selecionado.phone_id === c.phone_id);
+          if (c.status === 'in' && ts > prev && !isOpen) { unreadCountByKey[k] = (unreadCountByKey[k] || 0) + 1; }
+          lastContatoTsByKey[k] = ts;
+          if (c.mensagem_final) t.mensagem_final = c.mensagem_final;
+          else if (c.ultima_mensagem) t.mensagem_final = c.ultima_mensagem;
+          if (c.data_hora) t.data_hora = c.data_hora;
+        });
+        persistUnread(); saveTickets(); renderTickets();
+      } catch (e) { console.error("Falha ao atualizar ordem", e); }
+    }
+    async function refreshAtivosELimite() {
+      try {
+        const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo || '')}&carteira=${encodeURIComponent(agente.carteira || '')}`;
+        const r = await fetch(url); const rows = r.ok ? await r.json() : []; ativosCount = Array.isArray(rows) ? rows.length : 0;
+      } catch { ativosCount = tickets.length; }
+      try {
+        const j = await fetch(`${CONV_API}/api/supervisao/tickets-limit?carteira=${encodeURIComponent(agente.carteira || '')}`).then(r => r.json());
+        limitPerAgent = Number(j.limit_per_agent || 0);
+      } catch { limitPerAgent = 0; }
+      renderAtivosLimiteUI();
+    }
+    function renderAtivosLimiteUI() {
+      badgeAtivos.textContent = String(ativosCount);
+      badgeLimite.textContent = limitPerAgent > 0 ? String(limitPerAgent) : "∞";
+      const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+      if (atingiu) {
+        elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua ou libere um atendimento para continuar.`;
+        elMsgLimite.classList.remove("hidden");
+      } else {
+        elMsgLimite.classList.add("hidden");
+        elMsgLimite.textContent = "";
+      }
+      btnPegarProxima.disabled = !agente.online || atingiu;
+      btnPrioridade.disabled = !agente.online || atingiu;
+    }
+
+    // Toggle online (na HOME)
+    btnToggleOnline.onclick = async () => {
+      if (!agente.carteira || !agente.codigo) { abrirModalLogin(); return; }
+      const toggleSpinner = document.getElementById('toggleSpinner'); const toggleLabel = document.getElementById('toggleLabel');
+      elHomeAviso.classList.add("hidden"); elHomeAviso.textContent = ""; const indoOnline = !agente.online;
+      btnToggleOnline.disabled = true; toggleSpinner.classList.remove('hidden'); if (toggleLabel) toggleLabel.textContent = indoOnline ? 'Entrando…' : 'Saindo…';
+      try {
+        if (indoOnline) {
+          const r = await fetch(`${FILA_API}/fila/online`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
+          const j = await r.json(); if (!j.ok) throw new Error(j.erro || "Erro ao entrar online");
+          setStatus(true); await refreshOrdemCarteira(); await refreshAtivosELimite();
+        } else {
+          const r = await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
+          const j = await r.json(); if (!j.ok) throw new Error(j.erro || "Erro ao ficar offline");
+          setStatus(false);
+        }
+      } catch (e) {
+        elHomeAviso.classList.remove("hidden"); elHomeAviso.textContent = (e?.message || "Falha ao alterar status");
+      } finally {
+        toggleSpinner.classList.add('hidden'); if (toggleLabel) toggleLabel.textContent = agente.online ? 'Ficar offline' : 'Ficar online'; btnToggleOnline.disabled = false;
+      }
+    };
+
+    // Pegar próxima / Prioridade
+    btnPegarProxima.onclick = async () => {
+      if (!agente.online) { alert("Você está offline. Vá na Home e clique em “Ficar online”."); return; }
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) {
+        elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return;
+      }
+      const spinner = document.getElementById('pegarSpinner'); const label = document.getElementById('pegarLabel');
+      btnPegarProxima.disabled = true; spinner.classList.remove('hidden'); label.textContent = 'Buscando…';
+      try {
+        const r = await fetch(`${CONV_API}/api/tickets/claim`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira })
+        });
+        const j = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
+        if (r.status === 409 && j && (j.limit_per_agent !== undefined)) {
+          limitPerAgent = Number(j.limit_per_agent || 0); ativosCount = Number(j.ativos || ativosCount);
+          elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosELimite(); return;
+        }
+        if (!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
+        if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) { tickets.unshift(j.ticket); saveTickets(); }
+        renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosLimiteUI();
+      } catch (e) { alert("Falha ao pegar próxima."); }
+      finally {
+        spinner.classList.add('hidden'); label.textContent = 'Pegar próxima';
+        btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+      }
+    };
+
+    // Prioridade
+    const priorityModal = document.getElementById('priorityModal');
+    const priorityTelefone = document.getElementById('priorityTelefone');
+    const priorityInfo = document.getElementById('priorityInfo');
+    const priorityErro = document.getElementById('priorityErro');
+    const btnPriorityBuscar = document.getElementById('btnPriorityBuscar');
+    const prioritySpinner = document.getElementById('prioritySpinner');
+    const priorityBtnLabel = document.getElementById('priorityBtnLabel');
+    btnPrioridade.onclick = () => {
+      if (!agente.online) { alert('Você está offline. Vá na Home e clique em “Ficar online”.'); return; }
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); return; }
+      abrirPriorityModal();
+    };
+    function abrirPriorityModal() { isModalOpen = true; priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden'); priorityTelefone.value = ''; priorityModal.classList.remove('hidden'); setTimeout(() => priorityTelefone.focus(), 50); }
+    function fecharPriorityModal() { isModalOpen = false; priorityModal.classList.add('hidden'); }
+    priorityTelefone.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); btnPriorityBuscar.click(); } });
+    function normalizarTelefone(raw) {
+      let d = String(raw || '').replace(/\D/g, ''); if (!d) return '';
+      if (!d.startsWith('55')) d = '55' + d;
+      const m = d.match(/^55(\d{2})(\d{8,9})(.*)$/);
+      if (m) {
+        const ddd = m[1]; let numero = m[2]; const tail = m[3] || '';
+        if (numero.length === 9 && numero.startsWith('9')) numero = numero.slice(1);
+        d = '55' + ddd + numero + tail;
+      }
+      return d;
+    }
+    function phoneIdsForCarteira() { return (carteiraToPhoneIds[agente.carteira] || []).map(String); }
+    function dedupe(arr) { return Array.from(new Set(arr.filter(Boolean))); }
+    async function preferPhoneIdDoContato(remetente) {
+      const hit = (ordemCache || []).find(x => String(x.remetente) === String(remetente));
+      if (hit && hit.phone_id) return String(hit.phone_id);
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/contatos`);
+        const all = await r.json();
+        const ids = phoneIdsForCarteira();
+        const c = (all || []).find(x => ids.includes(String(x.phone_id)) && String(x.remetente) === String(remetente));
+        return c ? String(c.phone_id) : null;
+      } catch { return null; }
+    }
+    async function tentarClaimComIds(remetente, ids) {
+      const candidatos = [];
+      if (ids && ids.length) {
+        candidatos.push(ids);
+        ids.forEach(id => candidatos.push([id]));
+      } else {
+        candidatos.push([]);
+      }
+      for (const arr of candidatos) {
+        const body = { codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira, remetente, ...(arr.length ? { phone_id: arr } : {}), prioridade: true };
+        const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
+        if (r.status === 404) continue;
+        return data;
+      }
+      return { ok: false, erro: 'Contato não está na fila desta carteira.' };
+    }
+    btnPriorityBuscar.onclick = async () => {
+      priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden');
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) {
+        priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; priorityErro.classList.remove('hidden'); return;
+      }
+      const nrm = normalizarTelefone(priorityTelefone.value);
+      if (nrm.length < 11) { priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).'; priorityErro.classList.remove('hidden'); return; }
+      priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`; priorityInfo.classList.remove('hidden');
+      const preferido = await preferPhoneIdDoContato(nrm);
+      const ordemIds = dedupe([preferido, ...phoneIdsForCarteira()]);
+      btnPriorityBuscar.disabled = true; prioritySpinner.classList.remove('hidden'); priorityBtnLabel.textContent = 'Solicitando…';
+      try {
+        const data = await tentarClaimComIds(nrm, ordemIds);
+        if (data && data.limit_per_agent !== undefined) {
+          limitPerAgent = Number(data.limit_per_agent || 0); ativosCount = Number(data.ativos || ativosCount);
+          priorityErro.textContent = data.erro || `Limite de ${limitPerAgent} atingido.`; priorityErro.classList.remove('hidden'); await refreshAtivosELimite(); return;
+        }
+        if (data && data.ok && data.ticket) {
+          priorityInfo.innerHTML = `<span class="text-emerald-700 font-medium">Prioridade concedida.</span> Abrindo o ticket…`;
+          if (!tickets.find(t => t.remetente === data.ticket.remetente && t.phone_id === data.ticket.phone_id)) { tickets.unshift(data.ticket); saveTickets(); renderTickets(); }
+          fecharPriorityModal(); abrirTicket(data.ticket);
+          ativosCount++; renderAtivosLimiteUI(); return;
+        }
+        if (data && (data.assigned_to || data.atendimento)) {
+          const owner = data.assigned_to || data.atendimento;
+          priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome || '—')}</strong> (#${escapeHtml(String(owner.codigo || '—'))}).`;
+          priorityErro.classList.remove('hidden'); return;
+        }
+        priorityErro.textContent = (data && (data.erro || data.message)) || 'Não foi possível conceder prioridade.';
+        priorityErro.classList.remove('hidden');
+      } catch (e) {
+        priorityErro.textContent = 'Falha ao solicitar prioridade.'; priorityErro.classList.remove('hidden');
+      } finally {
+        btnPriorityBuscar.disabled = false; prioritySpinner.classList.add('hidden'); priorityBtnLabel.textContent = 'Buscar e solicitar';
+      }
+    };
+
+    /** =================== LISTA / CHAT =================== */
+    function renderTickets(filtro = "") {
+      const q = (filtro || "").toLowerCase().trim();
+      const frag = document.createDocumentFragment();
+      elListaTickets.innerHTML = "";
+      tickets.forEach(t => {
+        const nome = t.nome_exibicao || t.remetente;
+        const hay = `${nome} ${t.remetente}`.toLowerCase();
+        if (q && !hay.includes(q)) return;
+        const li = document.createElement("li");
+        li.className = "relative flex items-center p-3 hover:bg-gray-50 cursor-pointer border-b";
+        li.onclick = () => abrirTicket(t);
+        const key = keyFrom(t.remetente, t.phone_id);
+        const unread = unreadCountByKey[key] || 0;
+        const badge = unread > 0 ? `<span class="badge absolute right-2 top-2">${unread}</span>` : "";
+        const hora = t.data_hora ? fmtHoraBR.format(new Date(t.data_hora)) : "";
+        li.innerHTML = `
+          <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">${(nome || "U").charAt(0).toUpperCase()}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold truncate">${escapeHtml(nome)}</div>
+            <div class="text-sm text-gray-600 truncate">${escapeHtml(t.mensagem_final ? t.mensagem_final.slice(0, 70) : "")}</div>
+          </div>
+          <div class="text-xs text-gray-400 pl-2">${hora}</div>
+          ${badge}
+        `;
+        if (selecionado && selecionado.remetente === t.remetente && selecionado.phone_id === t.phone_id) { li.classList.add("ticket-selected"); }
+        frag.appendChild(li);
+      });
+      elListaTickets.appendChild(frag);
+    }
+
+    async function abrirTicket(t) {
+      selecionado = t;
+      try {
+        const k = keyFrom(t.remetente, t.phone_id);
+        unreadCountByKey[k] = 0; lastContatoTsByKey[k] = Date.now(); persistUnread();
+      } catch { }
+      renderTickets();
+      elTitulo.textContent = t.nome_exibicao ? `${t.nome_exibicao} (${t.remetente})` : t.remetente;
+      elSubInfo.textContent = `conta: ${phoneIdMap[t.phone_id] || t.phone_id}`;
+      textarea.disabled = false; textarea.focus(); btnEnviar.disabled = true; btnLiberar.disabled = false; btnConcluir.disabled = false;
+
+      if (msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+      msgsCtrl = new AbortController();
+
+      lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); chat.innerHTML = "";
+      await carregarMensagens(false);
+      startMensagensPoll();
+      wireComposer();
+    }
+
+    function startMensagensPoll() { schedulePolls(); }
+
+    let msgsCtrl = null;
+    async function carregarMensagens(incremental = true) {
+      if (!selecionado) return;
+      let url = `${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`;
+      if (selecionado.phone_id) url += `?phone_id=${encodeURIComponent(selecionado.phone_id)}`;
+      try {
+        const r = await fetch(url, { signal: msgsCtrl?.signal }); if (!r.ok) throw new Error("Erro histórico");
+        const msgs = await r.json(); msgs.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
+        if (!incremental) { chat.innerHTML = ""; lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); }
+        const isNearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 200;
+        msgs.forEach(m => renderMsg(m, incremental));
+        if (isNearBottom) requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" }));
+      } catch (e) { if (String(e?.name) !== "AbortError") console.error(e); }
+    }
+
+    function renderMsg(m, incremental) {
+      const tMs = new Date(m.data_hora).getTime();
+      const key = `${m.data_hora}|${m.status}|${m.mensagem_final || m.tipo || ""}`;
+      if (renderedKeys.has(key)) return;
+      if (incremental && lastTimestampMs !== null && tMs <= lastTimestampMs) return;
+
+      const dia = fmtDataBR.format(new Date(m.data_hora));
+      const hora = fmtHoraBR.format(new Date(m.data_hora));
+      if (!lastDayRendered || lastDayRendered !== dia) {
+        const sep = document.createElement("div"); sep.className = "dia"; sep.textContent = `— ${dia} —`; chat.appendChild(sep); lastDayRendered = dia;
+      }
+
+      const incoming = isIncoming(m);
+      const div = document.createElement("div"); div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
+
+      if (m.tipo === "imagem" || m.mensagem_final === "[image]") {
+        div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div><button class="btn-olhinho text-blue-600 underline mt-1">👁 Ver imagem</button><span class="hora">${hora}</span>`;
+        const btn = div.querySelector(".btn-olhinho"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Imagem indisponível"; } else btn.onclick = () => carregarImagem(div, btn, m.msg_id);
+      } else if (m.tipo === "audio" || m.mensagem_final === "[audio]") {
+        div.innerHTML = `<div class="text-gray-600 italic">[áudio recebido]</div><button class="btn-audio text-blue-600 underline mt-1">▶ Reproduzir áudio</button><span class="hora">${hora}</span>`;
+        const btn = div.querySelector(".btn-audio"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Áudio indisponível"; } else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
+      } else if (m.tipo === "document" || m.mensagem_final === "[document]") {
+        div.innerHTML = `<div class="text-gray-600 italic">[documento recebido]</div><button class="btn-doc text-blue-600 underline mt-1">📎 Ver documento</button><span class="hora">${hora}</span>`;
+        const btn = div.querySelector(".btn-doc"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Documento indisponível"; } else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
+      } else if (typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")) {
+        const lines = m.mensagem_final.split("\n"); const filename = (lines[0] || "").replace("📎 PDF:", "").trim() || "Arquivo"; const link = (lines[1] || "").replace("🔗", "").trim();
+        div.innerHTML = `<div class="flex items-start gap-2"><div class="text-xl leading-none">📄</div><div class="min-w-0">
+          <div class="font-semibold">${escapeHtml(filename)}</div>${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">Abrir/baixar</a>` : `<span class="text-slate-500">sem link</span>`}
+        </div></div><span class="hora">${hora}</span>`;
+      } else if (m.tipo === "emoji" || m.mensagem_final === "[reaction]") {
+        const wrap = document.createElement("div"); wrap.className = "flex items-center gap-2";
+        const emojiEl = document.createElement("span"); emojiEl.className = "text-2xl"; emojiEl.textContent = "🙂";
+        const label = document.createElement("span"); label.className = "text-gray-600 italic"; label.textContent = "enviou um emote";
+        wrap.appendChild(emojiEl); wrap.appendChild(label); div.appendChild(wrap);
+        const horaSpan = document.createElement("span"); horaSpan.className = "hora"; horaSpan.textContent = hora; div.appendChild(horaSpan);
+        if (m.msg_id) {
+          fetch(`${CONV_API}/api/conversas/emoji/${encodeURIComponent(m.msg_id)}`).then(r => r.json())
+            .then(j => { if (j.ok && j.emoji) emojiEl.textContent = j.emoji; else label.textContent = "emoji não carregado"; })
+            .catch(() => label.textContent = "falha ao carregar emoji");
+        }
+      } else if (m.tipo === "system" || m.mensagem_final === "[system]") {
+        div.className = "msg system";
+        div.innerHTML = `<div class="sys-title"><span>ℹ️ Evento do sistema</span> <span class="sys-pill">carregando…</span></div>
+          <div class="sys-body mt-1">Obtendo detalhes…</div><div class="sys-meta mt-1"></div><span class="hora">${hora}</span>`;
+        if (!m.msg_id) {
+          div.querySelector(".sys-body").textContent = "Detalhes indisponíveis (sem msg_id).";
+          const pill = div.querySelector(".sys-pill"); if (pill) pill.textContent = "indisponível";
+        } else {
+          (async () => {
+            try {
+              const r = await fetch(`${CONV_API}/api/conversas/system/${encodeURIComponent(m.msg_id)}`); const j = await r.json();
+              const pill = div.querySelector(".sys-pill"); const bodyEl = div.querySelector(".sys-body"); const metaEl = div.querySelector(".sys-meta");
+              if (!j.ok) { if (pill) pill.textContent = "erro"; bodyEl.textContent = j.erro || "Falha ao obter detalhes do evento."; return; }
+              if (pill) pill.textContent = j.type || "system";
+              if (j.type === "user_changed_number" && j.old_wa_id && j.wa_id) {
+                bodyEl.innerHTML = `O cliente alterou o número:<br><span class="font-semibold">${escapeHtml(j.old_wa_id)}</span> <span class="mx-1">→</span> <span class="font-semibold">${escapeHtml(j.wa_id)}</span>`;
+              } else { bodyEl.textContent = j.body || "Evento de sistema recebido."; }
+              const src = j.from || j.old_wa_id || ""; const pid = j.phone_id ? ` • conta: ${escapeHtml(j.phone_id)}` : ""; metaEl.textContent = `${src ? ("Origem: " + src) : ""}${pid}`;
+            } catch (e) { const pill = div.querySelector(".sys-pill"); if (pill) pill.textContent = "erro"; div.querySelector(".sys-body").textContent = "Falha ao carregar detalhes do evento."; }
+          })();
+        }
+      } else {
+        div.innerHTML = `<div>${escapeHtml(m.mensagem_final || "")}</div><span class="hora">${hora}</span>`;
+      }
+
+      if (incoming && !(m.tipo === "system" || m.mensagem_final === "[system]")) {
+        const btn = document.createElement("button");
+        btn.className = "reply-btn";
+        btn.title = "Responder";
+        btn.setAttribute("aria-label", "Responder");
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 8V5l-7 7 7 7v-3h4c3.314 0 6 2.686 6 6v-2c0-4.418-3.582-8-8-8h-2z"/></svg>`;
+        btn.onclick = (ev) => { ev.stopPropagation(); responderMensagem(m.msg_id, m.mensagem_final || ""); };
+        div.appendChild(btn);
+      }
+      chat.appendChild(div); renderedKeys.add(key); if (lastTimestampMs === null || tMs > lastTimestampMs) lastTimestampMs = tMs;
+    }
+
+    async function carregarImagem(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/image/${encodeURIComponent(msg_id)}`); const j = await r.json();
+        if (j.ok && j.data_uri) {
+          const img = document.createElement("img"); img.src = j.data_uri; img.alt = "Imagem"; img.className = "thumb mt-2"; img.loading = "lazy"; img.decoding = "async";
+          img.onclick = () => abrirModalImagem(j.data_uri); div.insertBefore(img, btn); btn.remove();
+        } else throw new Error(j.erro || "Resposta inválida");
+      } catch { alert("Erro ao carregar imagem"); btn.disabled = false; btn.textContent = "👁 Ver imagem"; }
+    }
+    async function carregarAudio(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/audio/${encodeURIComponent(msg_id)}`); const j = await r.json();
+        if (j.ok && j.data_uri) {
+          const audio = document.createElement("audio"); audio.src = j.data_uri; audio.controls = true; audio.preload = "metadata"; audio.className = "mt-2";
+          div.insertBefore(audio, btn); btn.remove();
+        } else throw new Error(j.erro || "Resposta inválida");
+      } catch { alert("Erro ao carregar áudio"); btn.disabled = false; btn.textContent = "▶ Reproduzir áudio"; }
+    }
+    async function carregarDocumento(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}`); const j = await r.json();
+        if (!j.ok) throw new Error(j.erro || "Falha no backend");
+        const filename = j.filename || "arquivo"; const mime = j.mime_type || "application/octet-stream"; const size = j.size_bytes ?? null;
+        const box = document.createElement("div"); box.className = "mt-2 space-y-1";
+        if (mime.startsWith("application/pdf") && j.data_uri && (size === null || size <= DOC_PREVIEW_MAX)) {
+          const preview = document.createElement("embed"); preview.src = j.data_uri; preview.type = mime; preview.className = "w-[260px] h-[200px] rounded border"; box.appendChild(preview);
+          const meta = document.createElement("div"); meta.className = "text-xs text-slate-600";
+          const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+          meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div><div>${size ? bytesToHuman(size) : ""}</div>
+            <a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">Abrir/baixar</a>`; box.appendChild(meta);
+        } else {
+          const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+          const row = document.createElement("div"); row.className = "flex items-start gap-2";
+          row.innerHTML = `<div class="text-xl leading-none">📎</div><div class="min-w-0">
+            <div class="font-semibold truncate">${escapeHtml(filename)}</div>
+            <div class="text-xs text-slate-600">${escapeHtml(mime)} ${size ? ("• " + bytesToHuman(size)) : ""}</div>
+            <a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">Baixar documento</a></div>`;
+          box.appendChild(row);
+        }
+        div.insertBefore(box, btn); btn.remove();
+      } catch (e) { console.error(e); alert("Erro ao carregar documento"); btn.disabled = false; btn.textContent = "📎 Ver documento"; }
+    }
+
+    function responderMensagem(msgId, conteudo) {
+      respostaMsgId = msgId || null;
+      document.getElementById("respostaPreview").classList.remove("hidden");
+      document.getElementById("respostaTexto").innerText = (conteudo || "").slice(0, 50);
+      textarea.focus();
+    }
+    function cancelarResposta() { respostaMsgId = null; document.getElementById("respostaPreview").classList.add("hidden"); document.getElementById("respostaTexto").innerText = ""; }
+
+    // Composer
+    function wireComposer() {
+      textarea.removeEventListener('input', __onTextInput);
+      textarea.removeEventListener('keydown', __onTextKeydown);
+      btnEnviar.removeEventListener('click', enviarMensagem);
+      textarea.addEventListener('input', __onTextInput);
+      textarea.addEventListener('keydown', __onTextKeydown);
+      btnEnviar.addEventListener('click', enviarMensagem);
+      updateEnviarState();
+    }
+    function autoGrow() { textarea.style.height = 'auto'; textarea.style.height = Math.min(180, Math.max(38, textarea.scrollHeight)) + 'px'; }
+    function updateEnviarState() {
+      const hasText = !!textarea.value.trim();
+      btnEnviar.disabled = !hasText || !selecionado;
+      if (hasText && selecionado) { showTyping(); } else { hideTyping(); }
+    }
+    function showTyping() { digitando.classList.remove('hidden'); if (typingTimer) clearTimeout(typingTimer); typingTimer = setTimeout(hideTyping, 1200); }
+    function hideTyping() { digitando.classList.add('hidden'); if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; } }
+    function __onTextInput() { autoGrow(); updateEnviarState(); }
+    function __onTextKeydown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!btnEnviar.disabled) enviarMensagem(); return false; } showTyping(); }
     async function enviarMensagem() {
       if (!selecionado) return;
-      const texto = (mensagemInput.value || "").trim();
-      if (!texto) return;
-      btnEnviar.disabled = true;
+      const texto = textarea.value.trim(); if (!texto) return;
+      userTyping = true; btnEnviar.disabled = true;
       try {
-        const body = {
-          codigo_do_agente: parseInt(agente.codigo || "0", 10),
-          remetente: selecionado.remetente,
-          phone_id: selecionado.phone_id,
-          mensagem: texto
-        };
-        const resp = await fetch(`${CONV_API}/api/mensagens/enviar`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
+        const body = { texto, phone_id: selecionado.phone_id, msg_id: respostaMsgId || null };
+        const r = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        const j = await r.json();
+        if (j.ok) {
+          textarea.value = ""; autoGrow(); cancelarResposta(); hideTyping();
+          await carregarMensagens(true);
+        } else { alert("Erro ao enviar: " + (j.erro || JSON.stringify(j))); }
+      } catch (e) { alert("Erro ao enviar mensagem. Verifique rede/CORS."); }
+      finally { userTyping = false; updateEnviarState(); }
+    }
+
+    // PDF upload
+    async function enviarPDF(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!selecionado) { alert("Abra um ticket antes de enviar PDF."); event.target.value = ""; return; }
+      if (file.type !== "application/pdf") { alert("Somente arquivos PDF são permitidos."); event.target.value = ""; return; }
+      try {
+        const res = await fetch(`${CONV_API}/api/upload/pdf`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ filename: file.name }) });
+        const j = await res.json();
+        if (!j.ok) { console.error("Presign falhou:", j); alert("Erro ao gerar URL: " + j.erro); return; }
+        const putResp = await fetch(j.upload_url, { method: "PUT", headers: { "Content-Type": "application/pdf" }, body: file });
+        if (!putResp.ok) {
+          const txt = await putResp.text().catch(() => ""); console.error("S3 PUT falhou", putResp.status, txt);
+          alert(`Falha no upload (S3): HTTP ${putResp.status}\n${txt.slice(0, 300)}`); return;
+        }
+        const send = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone_id: selecionado.phone_id, file_url: j.file_url, original_filename: file.name })
         });
-        const dados = await resp.json();
-        if (!resp.ok || !dados.ok) {
-          alert(dados.erro || "Erro ao enviar mensagem.");
-          return;
-        }
-        mensagemInput.value = "";
-        await carregarChatAtual();
-      } catch (e) {
-        alert("Erro ao enviar mensagem.");
-      } finally {
-        btnEnviar.disabled = false;
-      }
+        const sj = await send.json().catch(() => ({ ok: false, erro: "resposta inválida" }));
+        if (sj.ok) { await carregarMensagens(true); }
+        else { console.error("Erro ao enviar PDF para WhatsApp:", sj); alert("Erro ao enviar PDF (API META): " + (sj.erro || JSON.stringify(sj))); }
+      } catch (e) { console.error("Erro geral ao enviar PDF:", e); alert("Erro ao enviar PDF (rede)."); }
+      finally { event.target.value = ""; }
     }
 
-    function switchTab(tab) {
-      tabHome.classList.add("hidden");
-      tabConversas.classList.add("hidden");
-      tabRelatorio.classList.add("hidden");
-      tabBtnHome.classList.remove("tab-active");
-      tabBtnConversas.classList.remove("tab-active");
-      tabBtnRelatorio.classList.remove("tab-active");
-      if (tab === "home") {
-        tabHome.classList.remove("hidden");
-        tabBtnHome.classList.add("tab-active");
-      } else if (tab === "conversas") {
-        tabConversas.classList.remove("hidden");
-        tabBtnConversas.classList.add("tab-active");
-      } else if (tab === "relatorio") {
-        tabRelatorio.classList.remove("hidden");
-        tabBtnRelatorio.classList.add("tab-active");
-      }
-    }
-
-    filterTodos.addEventListener("click", () => {
-      filterTodos.classList.add("active");
-      filterMeus.classList.remove("active");
-      renderTickets();
-    });
-
-    filterMeus.addEventListener("click", () => {
-      filterMeus.classList.add("active");
-      filterTodos.classList.remove("active");
-      renderTickets();
-    });
-
-    buscaTickets.addEventListener("input", () => {
-      renderTickets();
-    });
-
-    btnToggleOnline.addEventListener("click", () => {
-      const current = btnToggleOnline.getAttribute("aria-pressed") === "true";
-      toggleOnline(!current);
-    });
-
-    btnLogout.addEventListener("click", () => {
-      try {
-        localStorage.removeItem("agente_codigo");
-        localStorage.removeItem("agente_origem");
-      } catch (e) { }
-      agente.codigo = null;
-      agente.origem = null;
-      updateAuthButton();
-      switchTab("home");
-      abrirModalLogin();
-    });
-
-    goToConversas1.addEventListener("click", () => switchTab("conversas"));
-    goToRelatorio1.addEventListener("click", () => switchTab("relatorio"));
-    tabBtnHome.addEventListener("click", () => switchTab("home"));
-    tabBtnConversas.addEventListener("click", () => switchTab("conversas"));
-    tabBtnRelatorio.addEventListener("click", () => switchTab("relatorio"));
-
-    formMensagem.addEventListener("submit", (e) => {
-      e.preventDefault();
-      enviarMensagem();
-    });
-
-    btnMacros.addEventListener("click", () => {
-      alert("Em breve: seleção de respostas rápidas.");
-    });
-
-    window.addEventListener("beforeunload", () => {
-      saveTickets();
-    });
-
-    let pollInterval = null;
-    function clearPoll() {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-        pollInterval = null;
-      }
-    }
-
-    async function pollTickets() {
-      if (!agente.codigo) return;
-      try {
-        const resp = await fetch(`${CONV_API}/api/tickets/novos?codigo_do_agente=${agente.codigo}`);
-        if (!resp.ok) return;
-        const dados = await resp.json();
-        if (!dados.ok) return;
-        const novos = dados.novos || [];
-        let houveMudanca = false;
-        for (const tNovo of novos) {
-          const idx = tickets.findIndex(
-            (t) => t.remetente === tNovo.remetente && t.phone_id === tNovo.phone_id
-          );
-          if (idx === -1) {
-            tickets.push(tNovo);
-            houveMudanca = true;
-          } else {
-            tickets[idx] = { ...tickets[idx], ...tNovo };
-            houveMudanca = true;
-          }
-          const k = keyFrom(tNovo.remetente, tNovo.phone_id);
-          unreadCountByKey[k] = (unreadCountByKey[k] || 0) + (tNovo.novas_mensagens || 0);
-          if (tNovo.ultimo_contato) {
-            lastContatoTsByKey[k] = tNovo.ultimo_contato;
-          }
-        }
-        if (houveMudanca) {
-          ativosCount = tickets.filter((t) => t.meu).length;
-          limiteAtivos = dados.limite_ativos || limiteAtivos;
-          renderAtivosLimiteUI();
-          saveTickets();
-          persistUnread();
-          renderTickets();
-          if (selecionado) {
-            const idxSel = tickets.findIndex(
-              (t) => t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id
-            );
-            if (idxSel === -1) {
-              selecionado = null;
-              limparChat();
-              tituloConversa.textContent = "Selecione um ticket";
-              subInfo.textContent = "";
-              btnLiberar.disabled = true;
-              btnConcluir.disabled = true;
-            } else {
-              carregarChatAtual();
-            }
-          }
-        }
-      } catch (e) { }
-    }
-
-    function schedulePolls() {
-      clearPoll();
-      if (!agente.codigo) return;
-      pollTickets();
-      pollInterval = setInterval(pollTickets, 4000);
-    }
-
-    document.addEventListener("visibilitychange", schedulePolls);
+    /** =================== MODAL IMAGEM =================== */
+    const imageModal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImg");
+    const closeModal = document.getElementById("closeModal");
+    function abrirModalImagem(src) { isModalOpen = true; modalImg.src = src; imageModal.classList.remove("hidden"); }
+    closeModal.onclick = fecharModal; imageModal.onclick = e => { if (e.target === imageModal) fecharModal(); };
+    function fecharModal() { imageModal.classList.add("hidden"); modalImg.src = ""; isModalOpen = false; }
 
     /** =================== LIBERAR / CONCLUIR / LOGOUT =================== */
     btnLiberar.onclick = async () => {
@@ -1799,8 +1534,8 @@
         saveTickets();
         renderTickets();
         limparChat();
-        tituloConversa.textContent = "Selecione um ticket";
-        subInfo.textContent = "";
+        elTitulo.textContent = "Selecione um ticket";
+        elSubInfo.textContent = "";
         btnLiberar.disabled = true;
         btnConcluir.disabled = true;
         fecharMenuConcluir();
@@ -1842,8 +1577,8 @@
         saveTickets();
         renderTickets();
         limparChat();
-        tituloConversa.textContent = "Selecione um ticket";
-        subInfo.textContent = "";
+        elTitulo.textContent = "Selecione um ticket";
+        elSubInfo.textContent = "";
         btnLiberar.disabled = true;
         btnConcluir.disabled = true;
         selecionado = null;
@@ -1855,322 +1590,49 @@
       }
     }
 
-    function renderMenuConcluir() {
-      menuConcluir.innerHTML = `
-        <div class="py-1">
-          <button data-motivo="resolvido" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100">Resolvido</button>
-          <button data-motivo="transferido" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100">Transferido</button>
-          <button data-motivo="cliente_nao_responde" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100">Cliente não responde</button>
-          <button data-motivo="outro" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100">Outro</button>
-        </div>
-      `;
-      menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const motivo = btn.getAttribute("data-motivo");
-          concluirAtendimento(motivo);
-          fecharMenuConcluir();
-        });
-      });
-    }
 
-    function abrirMenuConcluir() {
-      menuConcluir.classList.remove("hidden");
-      document.addEventListener("click", clickForaMenuConcluir);
-    }
-
-    function fecharMenuConcluir() {
-      menuConcluir.classList.add("hidden");
-      document.removeEventListener("click", clickForaMenuConcluir);
-    }
-
-    function clickForaMenuConcluir(e) {
-      const within = menuConcluir.contains(e.target) || btnConcluir.contains(e.target);
-      if (!within) fecharMenuConcluir();
-    }
-    btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir(); };
-    renderMenuConcluir();
-
-    /** =================== THEME =================== */
-    function themeKey() { return `cz:theme:${agente.codigo || 'anon'}`; }
-    function defaultTheme() {
-      return {
-        primary: "#3b82f6", accent: "#22c55e",
-        sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a",
-        muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6",
-        outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827",
-        inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a",
-        bubbleRadius: 18, btnRadius: 10, cardRadius: 16,
-        wallOp: 0, fontSize: "14px",
-        ticketSelectedBg: "#f0f9ff"
-      };
-    }
-    function applyTheme(t) {
-      const r = document.documentElement.style;
-      const base = defaultTheme();
-      const x = { ...base, ...t };
-      r.setProperty('--ticket-selected-bg', x.ticketSelectedBg);
-      r.setProperty('--sidebar-bg', x.sidebar); r.setProperty('--content-bg', x.contentBg);
-      r.setProperty('--bg', x.bg); r.setProperty('--text', x.text);
-      r.setProperty('--muted', x.muted); r.setProperty('--border', x.border);
-      r.setProperty('--link', x.link); r.setProperty('--ghost-bg', x.ghostBg);
-      r.setProperty('--bubble-out-g1', x.outG1); r.setProperty('--bubble-out-g2', x.outG2);
-      r.setProperty('--bubble-out-fg', x.outFg || '#111827');
-      r.setProperty('--bubble-in-bg', x.inBg); r.setProperty('--bubble-in-border', x.inBorder);
-      r.setProperty('--bubble-in-fg', x.inFg || '#0f172a');
-      r.setProperty('--bubble-radius', x.bubbleRadius + 'px');
-      r.setProperty('--btn-radius', x.btnRadius + 'px');
-      r.setProperty('--card-radius', x.cardRadius + 'px');
-      r.setProperty('--font-size', x.fontSize);
-      r.setProperty('--chat-wallpaper-opacity', x.wallOp);
-      r.setProperty('--scrollbar', x.scrollbar || '#cbd5e1');
-      r.setProperty('--hover', x.hover || 'var(--ghost-bg)');
-      r.setProperty('--hover-strong', x.hoverStrong || 'var(--ghost-bg)');
-      r.setProperty('--input-bg', x.inputBg || x.contentBg || '#ffffff');
-      r.setProperty('--input-fg', x.inputFg || x.text || '#0f172a');
-      r.setProperty('--primary', x.primary);
-      r.setProperty('--accent', x.accent);
-
-      inputs.tPrimary.value = x.primary;
-      inputs.tAccent.value = x.accent;
-      inputs.tSidebar.value = x.sidebar;
-      inputs.tContentBg.value = x.contentBg;
-      inputs.tBg.value = x.bg;
-      inputs.tText.value = x.text;
-      inputs.tOutG1.value = x.outG1;
-      inputs.tOutG2.value = x.outG2;
-      inputs.tInBg.value = x.inBg;
-      inputs.tInBorder.value = x.inBorder;
-      inputs.tRadius.value = x.bubbleRadius;
-      inputs.tBgOp.value = x.wallOp;
-      inputs.tFontSize.value = x.fontSize;
-      inputs.tBtnRadius.value = x.btnRadius;
-      inputs.tCardRadius.value = x.cardRadius;
-    }
-    function readThemeFromInputs() {
-      return {
-        primary: inputs.tPrimary.value,
-        accent: inputs.tAccent.value,
-        sidebar: inputs.tSidebar.value,
-        contentBg: inputs.tContentBg.value,
-        bg: inputs.tBg.value,
-        text: inputs.tText.value,
-        outG1: inputs.tOutG1.value,
-        outG2: inputs.tOutG2.value,
-        inBg: inputs.tInBg.value,
-        inBorder: inputs.tInBorder.value,
-        bubbleRadius: Number(inputs.tRadius.value || 18),
-        wallOp: Number(inputs.tBgOp.value || 0),
-        fontSize: inputs.tFontSize.value || '14px',
-        btnRadius: Number(inputs.tBtnRadius.value || 10),
-        cardRadius: Number(inputs.tCardRadius.value || 16),
-      };
-    }
-    function saveTheme(t) { try { localStorage.setItem(themeKey(), JSON.stringify(t)); } catch { } }
-    function loadTheme() { try { return JSON.parse(localStorage.getItem(themeKey()) || 'null'); } catch { return null; } }
-
-    // refs de Theme
-    const themeDrawer = document.getElementById('themeDrawer');
-    const btnTheme = document.getElementById('btnTheme');
-    const btnThemeClose = document.getElementById('btnThemeClose');
-    const btnSaveTheme = document.getElementById('btnSaveTheme');
-    const btnRandom = document.getElementById('btnRandom');
-    const btnReset = document.getElementById('btnReset');
-    const btnThemeExport = document.getElementById('btnThemeExport');
-    const importTheme = document.getElementById('importTheme');
-    const inputs = {
-      tPrimary: document.getElementById('tPrimary'), tAccent: document.getElementById('tAccent'),
-      tSidebar: document.getElementById('tSidebar'), tContentBg: document.getElementById('tContentBg'),
-      tBg: document.getElementById('tBg'), tText: document.getElementById('tText'),
-      tOutG1: document.getElementById('tOutG1'), tOutG2: document.getElementById('tOutG2'),
-      tInBg: document.getElementById('tInBg'), tInBorder: document.getElementById('tInBorder'),
-      tRadius: document.getElementById('tRadius'), tBgOp: document.getElementById('tBgOp'),
-      tFontSize: document.getElementById('tFontSize'), tBtnRadius: document.getElementById('tBtnRadius'),
-      tCardRadius: document.getElementById('tCardRadius')
-    };
-    if (btnTheme) btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
-    if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open'); });
-    [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText,
-    inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
-      .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
-    if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); applyTheme(t); saveTheme(t); themeDrawer.classList.remove('open'); });
-    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); });
-    if (btnRandom) btnRandom.addEventListener('click', () => {
-      const b1 = '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0');
-      const b2 = '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0');
-      const t = {
-        ...defaultTheme(),
-        primary: '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0'),
-        accent: '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0'),
-        outG1: b1, outG2: b2,
-        bg: '#f8fafc',
-        wallOp: Math.random() > .5 ? .08 : 0,
-        bubbleRadius: 14 + Math.floor(Math.random() * 12),
-        btnRadius: 8 + Math.floor(Math.random() * 6),
-        cardRadius: 14 + Math.floor(Math.random() * 8)
-      };
-      applyTheme(t);
-    });
-
-    /** =================== LOGIN MODAL =================== */
-    function isLogged() {
-      try { return !!localStorage.getItem('agente_codigo'); } catch { return false; }
-    }
-    function abrirModalLogin() {
-      const m = document.getElementById('loginModal');
-      m.classList.add('open');
-      setTimeout(() => document.getElementById('loginCodigoAgente').focus(), 50);
-      isModalOpen = true;
-    }
-    function fecharModalLogin() {
-      const m = document.getElementById('loginModal');
-      m.classList.remove('open');
-      const e = document.getElementById('loginErro');
-      e.textContent = '';
-      e.classList.add('hidden');
-      isModalOpen = false;
-    }
-    let isModalOpen = false;
-    async function login() {
-      const codigo = (document.getElementById('loginCodigoAgente').value || '').trim();
-      const origemSel = document.getElementById('loginOrigem').value;
-      const erro = document.getElementById('loginErro');
-      if (!codigo || !/^\d+$/.test(codigo)) {
-        erro.textContent = 'Informe um código numérico válido.';
-        erro.classList.remove('hidden');
-        return;
-      }
-      erro.textContent = '';
-      erro.classList.add('hidden');
+    async function doLogout() {
       try {
-        const resp = await fetch(`${CONV_API}/api/agentes/${codigo}`);
-        const dados = await resp.json();
-        if (!resp.ok || !dados.ok) {
-          erro.textContent = dados.erro || 'Não foi possível localizar o agente.';
-          erro.classList.remove('hidden');
-          return;
-        }
-        agente.codigo = codigo;
-        agente.origem = origemSel || 'web';
-        try {
-          localStorage.setItem('agente_codigo', codigo);
-          localStorage.setItem('agente_origem', agente.origem);
-        } catch (e) { }
-        updateAuthButton();
-        fecharModalLogin();
-        await boot();
-      } catch (e) {
-        erro.textContent = 'Erro ao tentar fazer login. Tente novamente.';
-        erro.classList.remove('hidden');
-      }
-    }
-
-    document.getElementById('btnDoLogin').onclick = login;
-    document.getElementById('btnCancelarLogin').onclick = fecharModalLogin;
-    document.getElementById('loginCodigoAgente').addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        login();
-      }
-    });
-
-    /** =================== BOOT =================== */
-    async function boot() {
-      const savedT = loadTheme(); applyTheme(savedT || defaultTheme());
-
-      agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
-      agente.origem = localStorage.getItem("agente_origem") || qsParam("origem") || 'web';
-
-      updateAuthButton();
-
-      if (!agente.codigo) {
-        elHomeNome.textContent = '—';
-        elHomeCart.textContent = '—';
-        setStatus(false);
-        limparChat();
-        tickets = [];
-        ativosCount = 0;
-        renderAtivosLimiteUI();
-        renderTickets();
-        return;
-      }
-
+        await fetch(`${FILA_API}/fila/offline`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), carteira: agente.carteira || '' })
+        }).catch(() => { });
+      } catch (_) { }
       try {
-        const resp = await fetch(`${CONV_API}/api/agentes/${agente.codigo}`);
-        const dados = await resp.json();
-        if (resp.ok && dados.ok) {
-          const ag = dados.agente;
-          elHomeNome.textContent = ag.nome || '—';
-          elHomeCart.textContent = ag.carteira || '—';
-          headerAgente.textContent = ag.nome || '—';
-          headerCarteira.textContent = ag.carteira || '—';
-          sidebarAgente.textContent = ag.nome || '—';
-          sidebarCarteira.textContent = ag.carteira || '—';
-          limiteAtivos = ag.limite_ativos || 4;
-          renderAtivosLimiteUI();
-        }
-      } catch { }
-
-      const storedOnline = (() => {
-        try {
-          const s = localStorage.getItem(`cz:online:${agente.codigo}`);
-          if (!s) return null;
-          return JSON.parse(s);
-        } catch { return null; }
-      })();
-      if (storedOnline === true) {
-        setStatus(true);
-      } else {
-        setStatus(false);
-      }
-
-      restoreUnread();
-      tickets = loadTicketsFromStorage();
-      renderAtivosLimiteUI();
-      renderTickets();
-
-      schedulePolls();
-      await carregarTickets();
+        localStorage.removeItem("agente_codigo"); localStorage.removeItem("agente_nome"); localStorage.removeItem("agente_carteira"); localStorage.removeItem("agente_origem");
+        Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:") || k.startsWith("cz:unreadCount:") || k.startsWith("cz:lastContatoTs:")) localStorage.removeItem(k); });
+      } catch (_) { }
+      if (pollingContatos) clearInterval(pollingContatos);
+      if (pollingMensagens) clearInterval(pollingMensagens);
+      // Refresh imediato para limpar UI e trocar o botão para "Login"
+      location.reload();
     }
 
-    function updateAuthButton() {
-      if (agente.codigo) {
-        btnLogout.classList.remove("hidden");
-      } else {
-        btnLogout.classList.add("hidden");
-      }
-    }
+    function limparChat() { chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>'; }
 
-    /** =================== Relatório =================== */
+    /** =================== KPIs & Relatório =================== */
+    function humanMin(seconds) { if (!seconds && seconds !== 0) return '—'; const m = seconds / 60; return m < 1 ? m.toFixed(1) : Math.round(m); }
+    function humanSeg(seconds) { if (!seconds && seconds !== 0) return '—'; return Math.round(seconds); }
     async function refreshKPIs() {
-      if (!agente.codigo) return;
-      spinnerRel.style.display = "inline-block";
       try {
-        const resp = await fetch(`${CONV_API}/api/agentes/${agente.codigo}/relatorio`);
-        const dados = await resp.json();
-        if (!resp.ok || !dados.ok) {
-          relatorioLista.textContent = "Não foi possível carregar o relatório.";
-          return;
+        const codigo = encodeURIComponent(String(agente.codigo || ''));
+        const url = `${FILA_API}/relatorio_hoje?agente=${codigo}`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const data = await r.json();
+        kpiEm.textContent = typeof data.em_atendimento === 'number' ? String(data.em_atendimento) : '0';
+        kpiConc.textContent = typeof data.concluidos === 'number' ? String(data.concluidos) : '0';
+        kpiTma.textContent = humanMin(data.tma_segundos || 0);
+        kpiFRT.textContent = humanSeg(data.primeira_resposta_seg || 0);
+        const ativos = Number(kpiEm.textContent) || 0, conc = Number(kpiConc.textContent) || 0, outros = Math.max(0, Number(data.outros || 0));
+        const ctx = document.getElementById('pieStatus')?.getContext('2d');
+        if (ctx) {
+          if (pieChart) pieChart.destroy();
+          pieChart = new Chart(ctx, { type: 'pie', data: { labels: ['Em atendimento', 'Concluídos', 'Outros'], datasets: [{ data: [ativos, conc, outros] }] }, options: { responsive: true, plugins: { legend: { display: true } } } });
         }
-        const r = dados.relatorio || {};
-        kpiConcluidos.textContent = r.concluidos ?? "—";
-        kpiTma.textContent = r.tma ?? "—";
-        kpiAvaliacao.textContent = r.nota_media ?? "—";
-        const linhas = [];
-        (r.fila_por_status || []).forEach(item => {
-          linhas.push(`<div class="flex items-center justify-between py-1 text-sm">
-            <span>${item.status}</span>
-            <span class="font-medium">${item.quantidade}</span>
-          </div>`);
-        });
-        relatorioLista.innerHTML = linhas.join("") || "Nenhuma informação de fila disponível.";
-      } catch {
-        relatorioLista.textContent = "Erro ao carregar o relatório.";
-      } finally {
-        spinnerRel.style.display = "none";
-      }
+      } catch (e) { /* silencioso */ }
     }
-
     if (btnRefreshRel) btnRefreshRel.onclick = refreshKPIs;
 
     /** =================== Navegação inicial =================== */
@@ -2178,6 +1640,7 @@
       const saved = loadTheme(); applyTheme(saved || defaultTheme());
       await boot();
       switchTab('home');
+      // Garante que o modal não esteja visível após F5 se logado
       if (isLogged()) fecharModalLogin();
     });
   </script>
