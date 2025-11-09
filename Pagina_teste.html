@@ -1806,11 +1806,11 @@
               </thead>
               <tbody>
                 ${[
-            ['Negociação', r.negociacao],
-            ['2ª via', r.segunda_via],
-            ['Recusa', r.recusou],
-            ['Dúvidas', r.duvidas],
-            ['Inativo', r.inativo]
+            ['Realizou negociação', r.negociacao],
+            ['Solicitou 2ª via de boleto', r.segunda_via],
+            ['Recusou a proposta', r.recusou],
+            ['Dúvidas gerais', r.duvidas],
+            ['Cliente ficou inativo', r.inativo]
           ].map(([mot, v]) => `
                   <tr>
                     <td>${escapeHtml(mot)}</td>
