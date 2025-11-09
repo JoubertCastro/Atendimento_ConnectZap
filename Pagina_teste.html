@@ -261,7 +261,6 @@
       color: color-mix(in srgb, var(--muted) 85%, var(--bg))
     }
 
-    /* inputs respeitam tema (inclui date) */
     input[type="text"],
     input[type="search"],
     input[type="color"],
@@ -382,7 +381,7 @@
       font-size: 12px
     }
 
-    /* ==== Estilização suave para o Relatório (Dark-friendly) ==== */
+    /* Relatório */
     .section-title {
       color: var(--text)
     }
@@ -391,7 +390,6 @@
       color: var(--muted)
     }
 
-    /* Acordeão do extrato */
     .extrato {
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -461,7 +459,7 @@
     <button id="tabBtnHome" class="btn-mini active" title="Home" aria-label="Home">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
         <path
-          d="M12 3.172 2.293 12.88a1 1 0 0 0 1.414 1.415L5 13.001V20a1 1 0 0 0 1 1h5v-6h2v6h5a1 1 0 0 0 1-1v-6.999l1.293 1.294a1 1 0 0 0 1.414-1.415L12 3.172z" />
+          d="M12 3.172 2.293 12.88a1 1 0 0 0 1.414 1.415L5 13.001V20a1 1 0 0 0 1 1h5v-6h2v6h5a 1 1 0 0 0 1-1v-6.999l1.293 1.294a1 1 0 0 0 1.414-1.415L12 3.172z" />
       </svg>
     </button>
     <button id="tabBtnConversas" class="btn-mini" title="Conversas" aria-label="Conversas">
@@ -597,8 +595,9 @@
 
         <div id="respostaPreview" class="hidden px-3 py-2 border-t bar-soft text-sm flex justify-between items-center"
           style="border-color:var(--border)">
-          <div class="truncate max-w-[80%]"><span class="font-semibold">Respondendo:</span> <span id="respostaTexto"
-              class="muted"></span></div>
+          <div class="truncate max-w-[80%]">
+            <span class="font-semibold">Respondendo:</span> <span id="respostaTexto" class="muted"></span>
+          </div>
           <button onclick="cancelarResposta()" class="text-red-500 text-xs" aria-label="Cancelar resposta">✖</button>
         </div>
 
@@ -974,7 +973,11 @@
     const MOTIVOS_CONCLUSAO = ["Realizou negociação", "Solicitou 2ª via de boleto", "Recusou a proposta", "Dúvidas gerais", "Cliente ficou inativo"];
     function renderMenuConcluir() {
       menuConcluir.innerHTML = MOTIVOS_CONCLUSAO.map(m => `<button type="button" data-motivo="${m}" class="w-full text-left px-3 py-2 text-sm" style="border-bottom:1px solid var(--border)">${m}</button>`).join("");
-      menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => { btn.onmouseenter = () => btn.style.background = getCss('--hover'); btn.onmouseleave = () => btn.style.background = 'transparent'; btn.onclick = async () => { await concluirAtendimento(btn.getAttribute("data-motivo")); fecharMenuConcluir(); }; });
+      menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => {
+        btn.onmouseenter = () => btn.style.background = getCss('--hover');
+        btn.onmouseleave = () => btn.style.background = 'transparent';
+        btn.onclick = async () => { await concluirAtendimento(btn.getAttribute("data-motivo")); fecharMenuConcluir(); };
+      });
     }
     function abrirMenuConcluir() { if (!selecionado || btnConcluir.disabled) return; menuConcluir.classList.remove("hidden"); btnConcluir.setAttribute("aria-expanded", "true"); document.addEventListener("click", clickForaMenuConcluir, { capture: true }) }
     function fecharMenuConcluir() { menuConcluir.classList.add("hidden"); btnConcluir.setAttribute("aria-expanded", "false"); document.removeEventListener("click", clickForaMenuConcluir, { capture: true }) }
@@ -984,7 +987,9 @@
 
     /** ============== THEME ============== */
     function themeKey() { return 'cz:theme:v2' }
-    function defaultTheme() { return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff", hover: "#f1f5f9", hoverStrong: "#e2e8f0", inputBg: "#ffffff", inputFg: "#0f172a", scrollbar: "#cbd5e1", replyBg: "rgba(0,0,0,.06)", replyBorder: "rgba(0,0,0,.08)", replyFg: "#334155" } }
+    function defaultTheme() {
+      return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff", hover: "#f1f5f9", hoverStrong: "#e2e8f0", inputBg: "#ffffff", inputFg: "#0f172a", scrollbar: "#cbd5e1", replyBg: "rgba(0,0,0,.06)", replyBorder: "rgba(0,0,0,.08)", replyFg: "#334155" }
+    }
     function applyTheme(t) {
       const r = document.documentElement.style; const base = defaultTheme(); const x = { ...base, ...t };
       r.setProperty('--ticket-selected-bg', x.ticketSelectedBg);
@@ -1000,15 +1005,25 @@
       r.setProperty('--hover', x.hover || '#f1f5f9'); r.setProperty('--hover-strong', x.hoverStrong || '#e2e8f0');
       r.setProperty('--input-bg', x.inputBg || x.contentBg); r.setProperty('--input-fg', x.inputFg || x.text);
       r.setProperty('--reply-bg', x.replyBg || 'rgba(0,0,0,.06)'); r.setProperty('--reply-border', x.replyBorder || 'rgba(0,0,0,.08)'); r.setProperty('--reply-fg', x.replyFg || '#334155');
+
+      // Sincroniza com os inputs do drawer
       inputs.tPrimary.value = x.primary; inputs.tAccent.value = x.accent; inputs.tSidebar.value = x.sidebar;
       inputs.tContentBg.value = x.contentBg; inputs.tBg.value = x.bg; inputs.tText.value = x.text;
       inputs.tOutG1.value = x.outG1; inputs.tOutG2.value = x.outG2; inputs.tInBg.value = x.inBg; inputs.tInBorder.value = x.inBorder;
       inputs.tRadius.value = x.bubbleRadius; inputs.tBgOp.value = x.wallOp; inputs.tFontSize.value = x.fontSize;
       inputs.tBtnRadius.value = x.btnRadius; inputs.tCardRadius.value = x.cardRadius;
-      // Atualiza cor dos gráficos
+
+      // Atualiza gráficos
       setTimeout(() => refreshKPIs(), 0);
     }
-    function readThemeFromInputs() { return { primary: inputs.tPrimary.value, accent: inputs.tAccent.value, sidebar: inputs.tSidebar.value, contentBg: inputs.tContentBg.value, bg: inputs.tBg.value, text: inputs.tText.value, outG1: inputs.tOutG1.value, outG2: inputs.tOutG2.value, inBg: inputs.tInBg.value, inBorder: inputs.tInBorder.value, bubbleRadius: Number(inputs.tRadius.value || 18), wallOp: Number(inputs.tBgOp.value || 0), fontSize: String(inputs.tFontSize.value || '14px'), btnRadius: Number(inputs.tBtnRadius.value || 10), cardRadius: Number(inputs.tCardRadius.value || 16) } }
+    function readThemeFromInputs() {
+      return {
+        primary: inputs.tPrimary.value, accent: inputs.tAccent.value, sidebar: inputs.tSidebar.value, contentBg: inputs.tContentBg.value,
+        bg: inputs.tBg.value, text: inputs.tText.value, outG1: inputs.tOutG1.value, outG2: inputs.tOutG2.value, inBg: inputs.tInBg.value,
+        inBorder: inputs.tInBorder.value, bubbleRadius: Number(inputs.tRadius.value || 18), wallOp: Number(inputs.tBgOp.value || 0),
+        fontSize: String(inputs.tFontSize.value || '14px'), btnRadius: Number(inputs.tBtnRadius.value || 10), cardRadius: Number(inputs.tCardRadius.value || 16)
+      }
+    }
     function saveTheme(t) { try { localStorage.setItem(themeKey(), JSON.stringify(t)); } catch { } }
     function loadTheme() {
       try {
@@ -1027,14 +1042,36 @@
     const btnReset = document.getElementById('btnReset');
     const btnThemeExport = document.getElementById('btnThemeExport');
     const importTheme = document.getElementById('importTheme');
-    const inputs = { tPrimary: document.getElementById('tPrimary'), tAccent: document.getElementById('tAccent'), tSidebar: document.getElementById('tSidebar'), tContentBg: document.getElementById('tContentBg'), tBg: document.getElementById('tBg'), tText: document.getElementById('tText'), tOutG1: document.getElementById('tOutG1'), tOutG2: document.getElementById('tOutG2'), tInBg: document.getElementById('tInBg'), tInBorder: document.getElementById('tInBorder'), tRadius: document.getElementById('tRadius'), tBgOp: document.getElementById('tBgOp'), tFontSize: document.getElementById('tFontSize'), tBtnRadius: document.getElementById('tBtnRadius'), tCardRadius: document.getElementById('tCardRadius') };
+    const inputs = {
+      tPrimary: document.getElementById('tPrimary'),
+      tAccent: document.getElementById('tAccent'),
+      tSidebar: document.getElementById('tSidebar'),
+      tContentBg: document.getElementById('tContentBg'),
+      tBg: document.getElementById('tBg'),
+      tText: document.getElementById('tText'),
+      tOutG1: document.getElementById('tOutG1'),
+      tOutG2: document.getElementById('tOutG2'),
+      tInBg: document.getElementById('tInBg'),
+      tInBorder: document.getElementById('tInBorder'),
+      tRadius: document.getElementById('tRadius'),
+      tBgOp: document.getElementById('tBgOp'),
+      tFontSize: document.getElementById('tFontSize'),
+      tBtnRadius: document.getElementById('tBtnRadius'),
+      tCardRadius: document.getElementById('tCardRadius')
+    };
     if (btnTheme) btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
     if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open') });
-    [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius].filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
+    [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
+      .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
     if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open') });
     if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t) });
-    if (btnRandom) btnRandom.addEventListener('click', () => { const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')); const b1 = rand(), b2 = rand(); const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; applyTheme(t) });
+    if (btnRandom) btnRandom.addEventListener('click', () => {
+      const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0'));
+      const b1 = rand(), b2 = rand();
+      const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) };
+      applyTheme(t)
+    });
 
     /** ============== LOGIN MODAL ============== */
     function isLogged() { try { return !!localStorage.getItem('agente_codigo') } catch { return false } }
@@ -1241,7 +1278,11 @@
       try {
         const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
         const j = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
-        if (r.status === 409 && j && (j.limit_per_agent !== undefined)) { limitPerAgent = Number(j.limit_per_agent || 0); ativosCount = Number(j.ativos || ativosCount); elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimite(); return; }
+        if (r.status === 409 && j && (j.limit_per_agent !== undefined)) {
+          limitPerAgent = Number(j.limit_per_agent || 0); ativosCount = Number(j.ativos || ativosCount);
+          elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden');
+          renderAtivosLimiteUI(); return;
+        }
         if (!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
         if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) { tickets.unshift(j.ticket); saveTickets(); }
         renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosLimiteUI();
@@ -1249,7 +1290,7 @@
       finally { spinner.classList.add('hidden'); label.textContent = 'Pegar próxima'; btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent); }
     };
 
-    // Prioridade (mantido)
+    // Prioridade
     const priorityModal = document.getElementById('priorityModal');
     const priorityTelefone = document.getElementById('priorityTelefone');
     const priorityInfo = document.getElementById('priorityInfo');
@@ -1479,6 +1520,20 @@
         div.insertBefore(box, btn); btn.remove();
       } catch (e) { console.error(e); alert("Erro ao carregar documento"); btn.disabled = false; btn.textContent = "📎 Ver documento" }
     }
+
+    // ==== Modal de imagem (faltava) ====
+    const imageModal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+    const closeImgBtn = document.getElementById('closeModal');
+    function abrirModalImagem(src) {
+      try { isModalOpen = true; modalImg.src = src || ""; imageModal.classList.remove('hidden'); } catch { }
+    }
+    function fecharModalImagem() {
+      try { imageModal.classList.add('hidden'); modalImg.src = ""; isModalOpen = false; } catch { }
+    }
+    if (closeImgBtn) closeImgBtn.addEventListener('click', fecharModalImagem);
+    if (imageModal) imageModal.addEventListener('click', (e) => { if (e.target === imageModal) fecharModalImagem(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !imageModal.classList.contains('hidden')) fecharModalImagem(); });
 
     function responderMensagem(msgId, conteudo) { respostaMsgId = msgId || null; document.getElementById("respostaPreview").classList.remove("hidden"); document.getElementById("respostaTexto").innerText = (conteudo || "").slice(0, 50); textarea.focus() }
     function cancelarResposta() { respostaMsgId = null; document.getElementById("respostaPreview").classList.add("hidden"); document.getElementById("respostaTexto").innerText = "" }
