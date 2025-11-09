@@ -1510,7 +1510,7 @@
       const p = new URLSearchParams();
       p.set('start', start);
       p.set('end', end);
-      if (agente?.codigo) p.set('agentes', String(agente.codigo));
+      if (agente?.codigo) p.set('agente', String(agente.codigo));
       return `?${p.toString()}`;
     }
 
