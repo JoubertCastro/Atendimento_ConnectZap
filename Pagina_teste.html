@@ -451,10 +451,143 @@
       background: color-mix(in srgb, var(--ghost-bg) 60%, transparent)
     }
 
-    /* ↓↓↓ novo: gráficos compactos ↓↓↓ */
+    /* ↓↓↓ gráficos compactos ↓↓↓ */
     .chart-sm {
       height: 160px !important;
       max-height: 160px;
+    }
+
+    /* ======= SUPER PAINEL DE AVISOS ======= */
+    .notice {
+      border: 1px solid var(--border);
+      background: var(--content-bg);
+      border-radius: 14px;
+      padding: 12px;
+      transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .notice.unread {
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent);
+    }
+
+    .notice-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .notice-left {
+      display: flex;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .sev {
+      width: 10px;
+      height: 100%;
+      min-height: 36px;
+      border-radius: 6px;
+      margin-top: 2px;
+    }
+
+    .sev-info {
+      background: #3b82f6;
+    }
+
+    .sev-success {
+      background: #16a34a;
+    }
+
+    .sev-warn {
+      background: #d97706;
+    }
+
+    .sev-crit {
+      background: #dc2626;
+    }
+
+    .notice-title {
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .notice-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .notice-tags .tag {
+      font-size: 11px;
+      border: 1px solid var(--border);
+      background: var(--ghost-bg);
+      border-radius: 9999px;
+      padding: 2px 8px;
+    }
+
+    .notice-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .notice-actions button {
+      font-size: 12px;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: var(--ghost-bg);
+    }
+
+    .notice-actions button:hover {
+      background: var(--hover);
+    }
+
+    .notice-body {
+      margin-top: 8px;
+      color: var(--text);
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .hero {
+      border: 1px solid var(--border);
+      border-left: 6px solid #dc2626;
+      background: color-mix(in srgb, #dc2626 6%, var(--content-bg));
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .hero .title {
+      font-weight: 700;
+    }
+
+    .hero .meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .hero .close {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 8px;
+      background: var(--ghost-bg);
+      font-size: 12px;
+    }
+
+    .hero .close:hover {
+      background: var(--hover);
+    }
+
+    .filter-btn.active {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
+      background: color-mix(in srgb, var(--primary) 10%, var(--ghost-bg));
     }
   </style>
 </head>
@@ -491,6 +624,21 @@
           <p class="muted mt-2">Olá <span id="homeAgenteNome" class="font-semibold">—</span>!</p>
           <p class="muted">Carteira: <span id="homeAgenteCarteira" class="font-semibold">—</span></p>
 
+          <!-- HERO Aviso crítico/pinado -->
+          <div id="homeAvisoHero" class="mt-4 hidden">
+            <div class="hero flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="title" id="heroTitle">—</div>
+                <div class="meta mt-1" id="heroMeta">—</div>
+                <div class="mt-2 text-sm" id="heroBody">—</div>
+              </div>
+              <div class="flex items-start gap-2 shrink-0">
+                <button id="heroMarkRead" class="close">Marcar como lido</button>
+                <button id="heroDismiss" class="close">Dispensar</button>
+              </div>
+            </div>
+          </div>
+
           <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="p-4 border rounded-lg" style="border-color:var(--border)">
               <div class="text-sm muted mb-1">Status</div>
@@ -519,6 +667,26 @@
               </div>
             </div>
           </div>
+
+          <!-- SUPER PAINEL DE AVISOS -->
+          <div class="mt-6">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg font-semibold">📢 Painel de Avisos</h2>
+                <span id="avisosCountPill" class="pill">—</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="btn btn-neutral px-2 py-1 text-xs filter-btn active"
+                  data-avisos-filter="all">Todos</button>
+                <button class="btn btn-neutral px-2 py-1 text-xs filter-btn" data-avisos-filter="unread">Não
+                  lidos</button>
+                <button id="btnAvisoRefresh" class="btn btn-primary px-3 py-2 text-sm">Atualizar</button>
+              </div>
+            </div>
+            <div id="avisosResumo" class="text-sm muted mt-1">—</div>
+            <div id="avisosWrap" class="mt-3 space-y-2"></div>
+          </div>
+          <!-- /SUPER PAINEL DE AVISOS -->
 
         </div>
       </div>
@@ -883,6 +1051,11 @@
     const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
     const API_BASE = (window.API_BASE || "https://dashboard-production-4c05.up.railway.app").replace(/\/+$/, '');
     const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
+    const NOTICES_API_CANDIDATES = [
+      `${API_BASE}/api/avisos`,
+      `${API_BASE}/api/notices`,
+      `${FILA_API}/avisos`
+    ];
 
     /** ============== CARTEIRAS / Phone IDs ============== */
     const phoneIdMap = { "828473960349364": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
@@ -897,6 +1070,12 @@
     let ordemCache = []; let pieChart = null; // status
     let chartMotivos = null; // motivos
     let typingTimer = null;
+
+    // Avisos
+    let notices = [];
+    let noticesFilter = 'all';
+    let noticesReadSet = new Set();
+    let heroNotice = null;
 
     /** ============== UTILS ============== */
     const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
@@ -921,12 +1100,41 @@
     function schedulePolls() { if (pollingContatos) clearInterval(pollingContatos); if (pollingMensagens) clearInterval(pollingMensagens); const gap = document.hidden ? POLL_HIDDEN_MS : POLL_ACTIVE_MS; pollingContatos = setInterval(refreshOrdemCarteira, gap); if (selecionado) { pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true) }, gap) } }
     document.addEventListener('visibilitychange', schedulePolls);
 
+    function timeAgo(iso) {
+      if (!iso) return '';
+      const now = new Date(), d = new Date(iso);
+      const sec = Math.max(1, Math.floor((now - d) / 1000));
+      if (sec < 60) return `${sec}s atrás`;
+      const min = Math.floor(sec / 60); if (min < 60) return `${min}m atrás`;
+      const h = Math.floor(min / 60); if (h < 24) return `${h}h atrás`;
+      const days = Math.floor(h / 24); return `${days}d atrás`;
+    }
+
+    function betweenNow(starts_at, ends_at) {
+      const now = new Date();
+      const okStart = !starts_at || new Date(starts_at) <= now;
+      const okEnd = !ends_at || new Date(ends_at) >= now;
+      return okStart && okEnd;
+    }
+
+    function hashId(s) {
+      // djb2
+      let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h) + s.charCodeAt(i);
+      return String(h >>> 0);
+    }
+
     /** ============== DOM ============== */
     // Home
     const elHomeNome = document.getElementById('homeAgenteNome');
     const elHomeCart = document.getElementById('homeAgenteCarteira');
     const elHomeStatus = document.getElementById('homeStatus');
     const elHomeAviso = document.getElementById('homeAviso');
+    const heroWrap = document.getElementById('homeAvisoHero');
+    const heroTitle = document.getElementById('heroTitle');
+    const heroMeta = document.getElementById('heroMeta');
+    const heroBody = document.getElementById('heroBody');
+    const heroDismiss = document.getElementById('heroDismiss');
+    const heroMarkRead = document.getElementById('heroMarkRead');
 
     // Relatório
     const kpiEm = document.getElementById('kpiEm');
@@ -975,6 +1183,12 @@
     const tabRelatorio = document.getElementById('tabRelatorio');
     document.getElementById('goToConversas1').onclick = () => switchTab('conversas');
     document.getElementById('goToRelatorio1').onclick = () => switchTab('relatorio');
+
+    // Avisos (DOM)
+    const avisosWrap = document.getElementById('avisosWrap');
+    const avisosResumo = document.getElementById('avisosResumo');
+    const btnAvisoRefresh = document.getElementById('btnAvisoRefresh');
+    const avisosCountPill = document.getElementById('avisosCountPill');
 
     /** ============== MENU CONCLUIR ============== */
     const MOTIVOS_CONCLUSAO = ["Realizou negociação", "Solicitou 2ª via de boleto", "Recusou a proposta", "Dúvidas gerais", "Cliente ficou inativo"];
@@ -1114,9 +1328,13 @@
       const today = new Date(); const ymd = fmtYMD(today);
       relStart.value = ymd; relEnd.value = ymd;
 
+      // Avisos: carregar lidos
+      noticesReadSet = loadNoticesReadSet();
+
       if (!agente.codigo) {
         elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false);
         relAgentePill.textContent = '—';
+        await loadNoticesAndRender(); // ainda mostra avisos gerais
         return;
       }
 
@@ -1150,10 +1368,15 @@
 
         // RELATÓRIO
         await refreshKPIs();
+
+        // AVISOS
+        await loadNoticesAndRender();
+
         wireComposer();
       } catch (e) {
         elHomeAviso.classList.remove("hidden");
         elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
+        await loadNoticesAndRender();
       }
     }
 
@@ -1858,6 +2081,187 @@
     relStart?.addEventListener('change', () => { updatePeriodoLabel(); refreshKPIs(); });
     relEnd?.addEventListener('change', () => { updatePeriodoLabel(); refreshKPIs(); });
     bindQuickRanges();
+
+    /** ============== AVISOS (Painel) ============== */
+    function noticesKey() {
+      return `cz:notices_read:${agente?.codigo || 'anon'}`;
+    }
+    function loadNoticesReadSet() {
+      try {
+        const raw = localStorage.getItem(noticesKey());
+        if (!raw) return new Set();
+        const arr = JSON.parse(raw);
+        return new Set(Array.isArray(arr) ? arr : []);
+      } catch { return new Set(); }
+    }
+    function saveNoticesReadSet() {
+      try {
+        localStorage.setItem(noticesKey(), JSON.stringify(Array.from(noticesReadSet)));
+      } catch { }
+    }
+
+    function normalizeNotice(n) {
+      if (!n) return null;
+      const id = String(n.id || n.notice_id || hashId(`${n.title || n.titulo || ''}|${n.body || n.mensagem || ''}|${n.starts_at || n.inicio || ''}`));
+      const title = String(n.title || n.titulo || 'Aviso');
+      const body = String(n.body || n.mensagem || n.descricao || '');
+      const severity = (String(n.severity || n.level || n.tipo || 'info').toLowerCase());
+      const pinned = !!(n.pinned || n.fixado || n.destacado);
+      const carteira = n.carteira || n.scope || n.segment || null;
+      const starts_at = n.starts_at || n.inicio || n.start_at || null;
+      const ends_at = n.ends_at || n.fim || n.end_at || null;
+      const created_at = n.created_at || n.data || n.dt || starts_at || new Date().toISOString();
+      const tags = Array.isArray(n.tags) ? n.tags : (n.categorias || []);
+      return { id, title, body, severity, pinned, carteira, starts_at, ends_at, created_at, tags };
+    }
+
+    async function fetchNotices() {
+      for (const url of NOTICES_API_CANDIDATES) {
+        try {
+          const r = await fetch(url);
+          if (!r.ok) continue;
+          const arr = await r.json();
+          if (Array.isArray(arr)) return arr.map(normalizeNotice).filter(Boolean);
+          if (Array.isArray(arr?.data)) return arr.data.map(normalizeNotice).filter(Boolean);
+        } catch { /* tenta o próximo */ }
+      }
+      // Fallback (exemplos)
+      const now = new Date();
+      const iso = now.toISOString();
+      const soon = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString();
+      const early = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString();
+      return [
+        { id: "crit-maint", title: "Manutenção programada no WhatsApp API", body: "Hoje, 12:30–12:50 (horário de Brasília). Envios podem oscilar.\nImpacto: envio/consulta de mensagens.", severity: "crit", pinned: true, starts_at: early, ends_at: soon, created_at: early, tags: ["Infra", "WhatsApp"] },
+        { id: "warn-limite", title: "Atenção ao limite de tickets", body: "Conclua/Libere atendimentos antes de pegar novos para manter a fila fluindo.", severity: "warn", pinned: false, created_at: iso, tags: ["Operação"] },
+        { id: "info-dica", title: "Dica rápida", body: "Use o botão ‘Pedir prioridade’ para um cliente quente que retornou pelo mesmo número.", severity: "info", pinned: false, created_at: iso, tags: ["Boas práticas"] },
+        { id: "success-meta", title: "Meta batida na sua carteira 🎯", body: "Parabéns! Você ajudou a concluir 50 atendimentos hoje.", severity: "success", pinned: false, created_at: iso, carteira: agente?.carteira || null, tags: ["Reconhecimento"] }
+      ].map(normalizeNotice);
+    }
+
+    function filterNotices(list) {
+      const onlyActive = list.filter(n => betweenNow(n.starts_at, n.ends_at));
+      const byCarteira = onlyActive.filter(n => !n.carteira || String(n.carteira) === String(agente?.carteira || ''));
+      if (noticesFilter === 'unread') {
+        return byCarteira.filter(n => !noticesReadSet.has(n.id));
+      }
+      return byCarteira;
+    }
+
+    function renderHero(list) {
+      // Melhor: primeiro pinado crítico/warn ativo da carteira ou geral
+      const candidate = list.find(n => n.pinned && (n.severity === 'crit' || n.severity === 'warn') && !isHeroDismissed(n.id));
+      heroNotice = candidate || null;
+      if (!heroNotice) { heroWrap.classList.add('hidden'); return; }
+      heroTitle.textContent = heroNotice.title;
+      heroMeta.textContent = `${heroNotice.severity === 'crit' ? 'Crítico' : 'Aviso'} • ${timeAgo(heroNotice.created_at)}${heroNotice.carteira ? ` • ${heroNotice.carteira}` : ''}`;
+      heroBody.textContent = heroNotice.body;
+      heroWrap.classList.remove('hidden');
+      heroMarkRead.onclick = () => {
+        noticesReadSet.add(heroNotice.id); saveNoticesReadSet(); renderNotices();
+      };
+      heroDismiss.onclick = () => {
+        dismissHero(heroNotice.id); renderNotices();
+      };
+    }
+
+    function isHeroDismissed(id) {
+      try { return localStorage.getItem(`cz:notice_hero_dismissed:${id}`) === '1' } catch { return false }
+    }
+    function dismissHero(id) {
+      try { localStorage.setItem(`cz:notice_hero_dismissed:${id}`, '1') } catch { }
+      heroWrap.classList.add('hidden');
+    }
+
+    function renderNotices() {
+      const sorted = [...notices].sort((a, b) => {
+        // pinados primeiro, depois por created_at desc
+        if (a.pinned !== b.pinned) return b.pinned - a.pinned;
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
+
+      // Hero
+      renderHero(sorted);
+
+      const list = filterNotices(sorted);
+      avisosWrap.innerHTML = "";
+      if (!list.length) {
+        avisosWrap.innerHTML = `<div class="notice p-4 text-sm muted">Nenhum aviso para exibir.</div>`;
+      } else {
+        for (const n of list) {
+          const unread = !noticesReadSet.has(n.id);
+          const sev = (n.severity || 'info').toLowerCase();
+          const el = document.createElement('div');
+          el.className = `notice ${unread ? 'unread' : ''}`;
+
+          const tagsHtml = (n.tags || []).map(t => `<span class="tag">${escapeHtml(String(t))}</span>`).join(' ');
+          const sevClass = sev === 'success' ? 'sev-success' : sev === 'warn' ? 'sev-warn' : sev === 'crit' ? 'sev-crit' : 'sev-info';
+
+          el.innerHTML = `
+            <div class="notice-head">
+              <div class="notice-left">
+                <div class="sev ${sevClass}"></div>
+                <div class="min-w-0">
+                  <div class="notice-title">${escapeHtml(n.title)}</div>
+                  <div class="notice-meta">
+                    <span>${n.pinned ? '📌 Fixado' : ' '}</span>
+                    <span>${timeAgo(n.created_at)}</span>
+                    ${n.carteira ? `<span>Carteira: <strong>${escapeHtml(String(n.carteira))}</strong></span>` : ''}
+                    <span class="notice-tags">${tagsHtml}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="notice-actions">
+                <button data-act="copy" title="Copiar conteúdo">Copiar</button>
+                <button data-act="toggle">${unread ? 'Marcar como lido' : 'Marcar como não lido'}</button>
+              </div>
+            </div>
+            <div class="notice-body">${escapeHtml(n.body)}</div>
+          `;
+
+          const btnCopy = el.querySelector('[data-act="copy"]');
+          const btnToggle = el.querySelector('[data-act="toggle"]');
+          btnCopy.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(`${n.title}\n\n${n.body}`);
+              btnCopy.textContent = 'Copiado ✔';
+              setTimeout(() => btnCopy.textContent = 'Copiar', 1200);
+            } catch { alert('Não foi possível copiar'); }
+          });
+          btnToggle.addEventListener('click', () => {
+            if (noticesReadSet.has(n.id)) noticesReadSet.delete(n.id);
+            else noticesReadSet.add(n.id);
+            saveNoticesReadSet();
+            renderNotices();
+          });
+
+          avisosWrap.appendChild(el);
+        }
+      }
+
+      // Resumo e pill
+      const total = filterNotices([...notices]).length;
+      const unreadCnt = filterNotices([...notices]).filter(n => !noticesReadSet.has(n.id)).length;
+      avisosResumo.textContent = `${total} avisos visíveis • ${unreadCnt} não lidos`;
+      avisosCountPill.textContent = `${unreadCnt} não lidos`;
+    }
+
+    async function loadNoticesAndRender() {
+      try {
+        notices = (await fetchNotices()).filter(Boolean);
+      } catch { notices = []; }
+      renderNotices();
+    }
+
+    // Filtros
+    document.querySelectorAll('[data-avisos-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-avisos-filter]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        noticesFilter = btn.getAttribute('data-avisos-filter') || 'all';
+        renderNotices();
+      });
+    });
+    if (btnAvisoRefresh) btnAvisoRefresh.addEventListener('click', loadNoticesAndRender);
 
     /** ============== Navegação inicial ============== */
     window.addEventListener('load', async () => {
