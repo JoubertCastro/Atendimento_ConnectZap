@@ -198,20 +198,58 @@
       color: var(--muted)
     }
 
-    input[type="text"],
-    input[type="search"],
-    input[type="color"],
-    input[type="file"],
-    textarea,
-    select {
+    /* Botão de responder (padrão prod): discreto, aparece no hover, canto superior à direita */
+    .reply-btn {
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 9999px;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 0, 0, .06);
+      color: #334155;
+      border: 1px solid rgba(0, 0, 0, .08);
+      opacity: .0;
+      transition: opacity .15s ease, transform .06s ease;
+      font-size: 12px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .msg:hover .reply-btn {
+      opacity: 1
+    }
+
+    .reply-btn:active {
+      transform: scale(.96)
+    }
+
+    .reply-btn svg {
+      width: 14px;
+      height: 14px
+    }
+
+    /* Campo de mensagem */
+    textarea {
       background: var(--content-bg);
       color: var(--text);
       border-color: var(--border) !important
     }
 
-    input::placeholder,
     textarea::placeholder {
       color: color-mix(in srgb, var(--muted) 85%, var(--bg))
+    }
+
+    input[type="text"],
+    input[type="search"],
+    input[type="color"],
+    input[type="file"],
+    select {
+      background: var(--content-bg);
+      color: var(--text);
+      border-color: var(--border) !important
     }
 
     *::-webkit-scrollbar {
@@ -291,7 +329,7 @@
       transform: translateX(0)
     }
 
-    /* Modal genérico (reaproveita visual da página) */
+    /* Modal genérico */
     .modal {
       display: none;
       position: fixed;
@@ -443,7 +481,8 @@
             <p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>
           </div>
         </div>
-        <div id="digitando" class="px-4 text-left hidden" aria-live="polite">Digitando…</div>
+        <!-- “Digitando...” (mostra enquanto o agente está escrevendo) -->
+        <div id="digitando" class="px-4 text-left hidden text-sm text-gray-500" aria-live="polite">Digitando…</div>
 
         <div id="respostaPreview"
           class="hidden px-3 py-2 border-t bg-gray-50 text-sm flex justify-between items-center">
@@ -458,8 +497,8 @@
             PDF</button>
           <textarea id="textoMensagem" rows="1" class="flex-1 border rounded-md p-2 resize-none"
             placeholder="Digite uma mensagem…" disabled></textarea>
-          <button id="btnEnviar" onclick="enviarMensagem()" class="btn px-4 py-2 text-white disabled:opacity-50"
-            style="background:var(--accent)" disabled>Enviar</button>
+          <button id="btnEnviar" class="btn px-4 py-2 text-white disabled:opacity-50" style="background:var(--accent)"
+            disabled>Enviar</button>
         </div>
       </main>
 
@@ -704,6 +743,7 @@
     let unreadCountByKey = {}; let lastContatoTsByKey = {};
     let ordemCache = [];
     let pieChart = null;
+    let typingTimer = null; // controla exibição do “Digitando...”
 
     /** =================== UTILS =================== */
     const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
@@ -923,6 +963,9 @@
 
         // KPIs iniciais (aba Relatório)
         await refreshKPIs();
+
+        // === FIX 1: Wiring definitivo do campo de mensagem / enviar ===
+        wireComposer();
 
       } catch (e) {
         elMsgAviso.classList.remove("hidden");
@@ -1223,6 +1266,8 @@
       lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); chat.innerHTML = "";
       await carregarMensagens(false);
       startMensagensPoll();
+      // garante o wiring do composer ao abrir ticket
+      wireComposer();
     }
 
     function startMensagensPoll() { schedulePolls(); }
@@ -1307,9 +1352,15 @@
         div.innerHTML = `<div>${escapeHtml(m.mensagem_final || "")}</div><span class="hora">${hora}</span>`;
       }
 
+      // === FIX 3: Botão responder com estilo de produção ===
       if (incoming && !(m.tipo === "system" || m.mensagem_final === "[system]")) {
-        const btn = document.createElement("button"); btn.className = "btn-responder"; btn.title = "Responder"; btn.innerHTML = "↩";
-        btn.onclick = () => responderMensagem(m.msg_id, m.mensagem_final || ""); div.appendChild(btn);
+        const btn = document.createElement("button");
+        btn.className = "reply-btn";
+        btn.title = "Responder";
+        btn.setAttribute("aria-label", "Responder");
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 8V5l-7 7 7 7v-3h4c3.314 0 6 2.686 6 6v-2c0-4.418-3.582-8-8-8h-2z"/></svg>`;
+        btn.onclick = (ev) => { ev.stopPropagation(); responderMensagem(m.msg_id, m.mensagem_final || ""); };
+        div.appendChild(btn);
       }
       chat.appendChild(div); renderedKeys.add(key); if (lastTimestampMs === null || tMs > lastTimestampMs) lastTimestampMs = tMs;
     }
@@ -1368,6 +1419,63 @@
     }
     function cancelarResposta() { respostaMsgId = null; document.getElementById("respostaPreview").classList.add("hidden"); document.getElementById("respostaTexto").innerText = ""; }
 
+    // === FIX 1 + FIX 2: Composer (enviar funcionando, auto-grow, Enter, e “Digitando...”) ===
+    function wireComposer() {
+      // evita múltiplos binds
+      textarea.removeEventListener('input', __onTextInput);
+      textarea.removeEventListener('keydown', __onTextKeydown);
+      btnEnviar.removeEventListener('click', enviarMensagem);
+
+      textarea.addEventListener('input', __onTextInput);
+      textarea.addEventListener('keydown', __onTextKeydown);
+      btnEnviar.addEventListener('click', enviarMensagem);
+      // estado inicial
+      updateEnviarState();
+    }
+
+    function autoGrow() {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(180, Math.max(38, textarea.scrollHeight)) + 'px';
+    }
+
+    function updateEnviarState() {
+      const hasText = !!textarea.value.trim();
+      btnEnviar.disabled = !hasText || !selecionado;
+      // “Digitando...” visível enquanto digita, oculta após 1.2s sem input
+      if (hasText && selecionado) {
+        showTyping();
+      } else {
+        hideTyping();
+      }
+    }
+
+    function showTyping() {
+      digitando.classList.remove('hidden');
+      // reinicia timer
+      if (typingTimer) clearTimeout(typingTimer);
+      typingTimer = setTimeout(hideTyping, 1200);
+    }
+    function hideTyping() {
+      digitando.classList.add('hidden');
+      if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
+    }
+
+    function __onTextInput(e) {
+      autoGrow();
+      updateEnviarState();
+    }
+
+    function __onTextKeydown(e) {
+      // Enter envia, Shift+Enter quebra linha
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!btnEnviar.disabled) enviarMensagem();
+        return false;
+      }
+      // qualquer tecla: está digitando
+      showTyping();
+    }
+
     async function enviarMensagem() {
       if (!selecionado) return;
       const texto = textarea.value.trim(); if (!texto) return;
@@ -1376,10 +1484,13 @@
         const body = { texto, phone_id: selecionado.phone_id, msg_id: respostaMsgId || null };
         const r = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
         const j = await r.json();
-        if (j.ok) { textarea.value = ""; textarea.style.height = "auto"; cancelarResposta(); await carregarMensagens(true); }
+        if (j.ok) {
+          textarea.value = ""; autoGrow(); cancelarResposta(); hideTyping();
+          await carregarMensagens(true);
+        }
         else { alert("Erro ao enviar: " + (j.erro || JSON.stringify(j))); }
       } catch (e) { alert("Erro ao enviar mensagem. Verifique rede/CORS."); }
-      finally { userTyping = false; btnEnviar.disabled = textarea.value.trim().length === 0; }
+      finally { userTyping = false; updateEnviarState(); }
     }
 
     // PDF upload -> presign + envio Meta
