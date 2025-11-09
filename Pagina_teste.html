@@ -1570,7 +1570,7 @@
         kpiEm.textContent = String(em);
         kpiConc.textContent = String(conc);
         kpiTma.textContent = fmtDurSec(resumo.tma_segundos);
-        kpiFRT.textContent = fmtDurSec(resumo.primeira_resposta_seg);
+        kpiFRT.textContent = fmtDurSec(resumo.tmr_segundos);
 
         // Status pie
         const ctxStatus = document.getElementById('pieStatus')?.getContext('2d');
