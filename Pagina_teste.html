@@ -699,7 +699,7 @@
       <div class="max-w-6xl mx-auto space-y-4">
         <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 class="text-xl font-semibold">Relatório — Atendimentos</h2>
+            <h2 class="text-xl font-semibold">Relatório Individual</h2>
             <div class="text-sm text-gray-500" id="relatorioPeriodo">Hoje</div>
           </div>
 
@@ -1504,6 +1504,7 @@
     /** ============== KPIs & Relatório (com filtros + agente fixo) ============== */
     function humanMin(seconds) { if (seconds === undefined || seconds === null) return '—'; const m = seconds / 60; return m < 1 ? m.toFixed(1) : Math.round(m) }
     function humanSeg(seconds) { if (seconds === undefined || seconds === null) return '—'; return Math.round(seconds) }
+    function fmtDurSec(s) { if (s == null) return "—"; const m = Math.floor(s / 60), sec = s % 60; if (m >= 60) { const h = Math.floor(m / 60), mm = m % 60; return `${h}h ${mm}m`; } return `${m}m ${sec}s`; }
 
     function buildRelQS() {
       const start = relStart.value || fmtYMD(new Date());
@@ -1568,8 +1569,8 @@
         const outros = Number(resumo.outros || Math.max(0, (resumo.total || 0) - em - conc));
         kpiEm.textContent = String(em);
         kpiConc.textContent = String(conc);
-        kpiTma.textContent = humanMin(resumo.tma_segundos);
-        kpiFRT.textContent = humanSeg(resumo.primeira_resposta_seg);
+        kpiTma.textContent = fmtDurSec(resumo.tma_segundos);
+        kpiFRT.textContent = fmtDurSec(resumo.primeira_resposta_seg);
 
         // Status pie
         const ctxStatus = document.getElementById('pieStatus')?.getContext('2d');
