@@ -33,13 +33,12 @@
       --font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
       --font-size: 14px;
       --chat-wallpaper-opacity: 0;
+      --hover: #f1f5f9;
+      --hover-strong: #e2e8f0;
+      --input-bg: #ffffff;
+      --input-fg: var(--text);
       --scrollbar: #cbd5e1;
       --ticket-selected-bg: #f0f9ff
-    
-      --hover: var(--ghost-bg);
-      --hover-strong: var(--ghost-bg);
-      --input-bg: var(--content-bg);
-      --input-fg: var(--text);
     }
 
     * {
@@ -349,19 +348,7 @@
       width: min(420px, 94%);
       box-shadow: 0 10px 30px rgba(0, 0, 0, .14)
     }
-  
-    .hover\:bg-gray-100:hover { background: var(--hover) !important }
-    .hover-soft:hover { background: var(--hover) !important }
-    .hover-strong:hover { background: var(--hover-strong) !important }
-    .chat-wrap { background-image: url('https://joubertcastro.github.io/ConnectZap/pattern.png'); background-repeat: repeat; background-size: auto; opacity: var(--chat-wallpaper-opacity); pointer-events: none; }
-    .chat-overlay { position:absolute; inset:0; background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%); pointer-events: none; }
-    input[type="text"], input[type="search"], input[type="color"], input[type="file"], textarea, select {
-      background: var(--input-bg);
-      color: var(--input-fg);
-      border-color: var(--border) !important;
-    }
-    input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted) 85%, var(--bg)); }
-</style>
+  </style>
 </head>
 
 <body class="h-screen flex with-mini">
@@ -414,8 +401,7 @@
                   <span id="toggleLabel">Ficar online</span>
                 </button>
                 <!-- Botão dinâmico: Login/Logout -->
-                <button id="btnTheme" class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200">🎨 Tema</button>
-                  <button id="btnLogout" class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200">Logout</button>
+                <button id="btnLogout" class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200">Logout</button>
               </div>
               <div id="homeAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
             </div>
@@ -462,7 +448,9 @@
                 </svg>
                 <span id="pegarLabel">Pegar próxima</span>
               </button>
-              <button id="btnPrioridade" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50"
+              <button id="btnPrioridade" class="btn px-3 py-2 text-sm rounded-md tex
+              <button id="btnTheme" class="mt-2 btn btn-ghost px-3 py-1 text-xs" aria-haspopup="true"
+              aria-controls="themeDrawer">🎨 Tema</button>t-white disabled:opacity-50"
                 disabled style="background: rebeccapurple">Pedir prioridade</button>
             </div>
           </div>
@@ -497,7 +485,7 @@
         </div>
 
         <div class="relative flex-1 overflow-hidden">
-          <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" style="background:transparent" role="log"
+          <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" role="log"
             aria-live="polite">
             <p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>
           </div>
@@ -566,105 +554,118 @@
 
       <!-- Theme Drawer -->
       <div id="themeDrawer" class="drawer" aria-hidden="true">
-        <div class="h-full flex flex-col">
-          <div class="p-4 border-b flex items-center justify-between">
-            <h3 class="font-semibold">🎨 Seu tema</h3>
-            <div class="flex items-center gap-2">
-              <button id="btnThemeExport" class="btn btn-ghost px-2 py-1 text-xs">Salvar no meu computador</button>
-              <label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">Importar um tema salvo <input
-                  id="importTheme" type="file" accept="application/json" class="hidden"></label>
-              <button id="btnThemeClose" class="btn btn-ghost px-2 py-1 text-xs" aria-label="Fechar">✖</button>
-            </div>
-          </div>
-          <div class="p-4 overflow-y-auto space-y-6">
-            <!-- Conteúdo de tema (como antes) -->
-            <section>
-              <div class="text-xs text-gray-500 mb-2">Temas rápidos</div>
-              <div class="grid grid-cols-2 gap-2">
-                <div class="preset" data-preset="corporate">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#0ea5e9,#2563eb)"></div>
-                  <div class="mt-1 text-xs">Corporate</div>
-                </div>
-                <div class="preset" data-preset="ocean">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#06b6d4,#10b981)"></div>
-                  <div class="mt-1 text-xs">Ocean</div>
-                </div>
-                <div class="preset" data-preset="sunset">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#fb923c,#ef4444)"></div>
-                  <div class="mt-1 text-xs">Sunset</div>
-                </div>
-                <div class="preset" data-preset="dark">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#0b1220,#374151)"></div>
-                  <div class="mt-1 text-xs">Dark</div>
-                </div>
-                <div class="preset" data-preset="minimal">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#f8fafc,#e2e8f0)"></div>
-                  <div class="mt-1 text-xs">Minimal</div>
-                </div>
-                <div class="preset" data-preset="funky">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#a78bfa,#ec4899)"></div>
-                  <div class="mt-1 text-xs">Funky</div>
-                </div>
-              </div>
-            </section>
-            <hr class="border-gray-200">
-            <section>
-              <div class="text-xs text-gray-500 mb-2">Personalizar</div>
-              <div class="grid grid-cols-2 gap-3">
-                <label class="block"><span class="text-xs text-gray-600">Botão PDF</span><input id="tPrimary"
-                    type="color" class="w-full h-10 border rounded" value="#3b82f6"></label>
-                <label class="block"><span class="text-xs text-gray-600">Botão Concluir</span><input id="tAccent"
-                    type="color" class="w-full h-10 border rounded" value="#22c55e"></label>
-                <label class="block"><span class="text-xs text-gray-600">Barra lateral</span><input id="tSidebar"
-                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
-                <label class="block"><span class="text-xs text-gray-600">Cabeçalho</span><input id="tContentBg"
-                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
-                <label class="block"><span class="text-xs text-gray-600">Cor de fundo</span><input id="tBg" type="color"
-                    class="w-full h-10 border rounded" value="#f3f4f6"></label>
-                <label class="block"><span class="text-xs text-gray-600">Texto</span><input id="tText" type="color"
-                    class="w-full h-10 border rounded" value="#0f172a"></label>
-              </div>
-              <div class="grid grid-cols-2 gap-3 mt-3">
-                <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 1</span><input id="tOutG1"
-                    type="color" class="w-full h-10 border rounded" value="#dcf8c6"></label>
-                <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 2</span><input id="tOutG2"
-                    type="color" class="w-full h-10 border rounded" value="#b8f0a4"></label>
-                <label class="block"><span class="text-xs text-gray-600">Cliente mensagem cor</span><input id="tInBg"
-                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
-                <label class="block"><span class="text-xs text-gray-600">Cliente mensagem bordas</span><input
-                    id="tInBorder" type="color" class="w-full h-10 border rounded" value="#e2e8f0"></label>
-                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos balões</span><input
-                    id="tRadius" type="range" min="8" max="28" value="18" class="w-full"></label>
-              </div>
-              <div class="grid grid-cols-1 gap-3 mt-3">
-                <label class="block"><span class="text-xs text-gray-600">Opacidade do fundo</span><input id="tBgOp"
-                    type="range" min="0" max="1" step="0.05" value="0"></label>
-              </div>
-              <div class="grid grid-cols-2 gap-3 mt-3">
-                <label class="block"><span class="text-xs text-gray-600">Tamanho base</span>
-                  <select id="tFontSize" class="w-full p-2 border rounded">
-                    <option value="13px">13px</option>
-                    <option value="14px" selected>14px</option>
-                    <option value="15px">15px</option>
-                    <option value="16px">16px</option>
-                  </select>
-                </label>
-                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos botões</span><input
-                    id="tBtnRadius" type="range" min="6" max="16" value="10" class="w-full"></label>
-                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos cards</span><input
-                    id="tCardRadius" type="range" min="10" max="24" value="16" class="w-full"></label>
-              </div>
-              <div class="flex items-center justify-between mt-4">
-                <div class="flex items-center gap-2">
-                  <button id="btnRandom" class="btn btn-ghost px-3 py-2">🎲 Surpreenda-me</button>
-                  <button id="btnReset" class="btn btn-ghost px-3 py-2">↺ Voltar ao padrão</button>
-                </div>
-                <button id="btnSaveTheme" class="btn btn-primary px-4 py-2">Salvar</button>
-              </div>
-            </section>
-          </div>
+    <div class="h-full flex flex-col">
+      <div class="p-4 border-b flex items-center justify-between">
+        <h3 class="font-semibold">🎨 Seu tema</h3>
+        <div class="flex items-center gap-2">
+          <button id="btnThemeExport" class="btn btn-ghost px-2 py-1 text-xs">Salvar no meu computador</button>
+          <label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">Importar um tema salvo <input id="importTheme"
+              type="file" accept="application/json" class="hidden"></label>
+          <button id="btnThemeClose" class="btn btn-ghost px-2 py-1 text-xs" aria-label="Fechar">✖</button>
         </div>
       </div>
+
+      <div class="p-4 overflow-y-auto space-y-6">
+        <!-- Temas rápidos -->
+        <section>
+          <div class="text-xs text-gray-500 mb-2">Temas rápidos</div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="preset" data-preset="corporate">
+              <div class="h-8 rounded" style="background:linear-gradient(90deg,#0ea5e9,#2563eb)"></div>
+              <div class="mt-1 text-xs">Corporate</div>
+            </div>
+            <div class="preset" data-preset="ocean">
+              <div class="h-8 rounded" style="background:linear-gradient(90deg,#06b6d4,#10b981)"></div>
+              <div class="mt-1 text-xs">Ocean</div>
+            </div>
+            <div class="preset" data-preset="sunset">
+              <div class="h-8 rounded" style="background:linear-gradient(90deg,#fb923c,#ef4444)"></div>
+              <div class="mt-1 text-xs">Sunset</div>
+            </div>
+            <div class="preset" data-preset="dark">
+              <div class="h-8 rounded" style="background:linear-gradient(90deg,#0b1220,#374151)"></div>
+              <div class="mt-1 text-xs">Dark</div>
+            </div>
+            <div class="preset" data-preset="minimal">
+              <div class="h-8 rounded" style="background:linear-gradient(90deg,#f8fafc,#e2e8f0)"></div>
+              <div class="mt-1 text-xs">Minimal</div>
+            </div>
+            <div class="preset" data-preset="funky">
+              <div class="h-8 rounded" style="background:linear-gradient(90deg,#a78bfa,#ec4899)"></div>
+              <div class="mt-1 text-xs">Funky</div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="border-gray-200">
+
+        <!-- Personalizar -->
+        <section>
+          <div class="text-xs text-gray-500 mb-2">Personalizar</div>
+
+          <!-- Cores principais -->
+          <div class="grid grid-cols-2 gap-3">
+            <label class="block"><span class="text-xs text-gray-600">Botão PDF</span><input id="tPrimary" type="color"
+                class="w-full h-10 border rounded" value="#3b82f6"></label>
+            <label class="block"><span class="text-xs text-gray-600">Botão Concluir</span><input id="tAccent"
+                type="color" class="w-full h-10 border rounded" value="#22c55e"></label>
+            <label class="block"><span class="text-xs text-gray-600">Barra lateral</span><input id="tSidebar"
+                type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
+            <label class="block"><span class="text-xs text-gray-600">Cabeçalho</span><input id="tContentBg" type="color"
+                class="w-full h-10 border rounded" value="#ffffff"></label>
+            <label class="block"><span class="text-xs text-gray-600">Cor de fundo</span><input id="tBg" type="color"
+                class="w-full h-10 border rounded" value="#f3f4f6"></label>
+            <label class="block"><span class="text-xs text-gray-600">Texto</span><input id="tText" type="color"
+                class="w-full h-10 border rounded" value="#0f172a"></label>
+          </div>
+
+          <!-- Balões -->
+          <div class="grid grid-cols-2 gap-3 mt-3">
+            <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 1</span><input id="tOutG1"
+                type="color" class="w-full h-10 border rounded" value="#dcf8c6"></label>
+            <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 2</span><input id="tOutG2"
+                type="color" class="w-full h-10 border rounded" value="#b8f0a4"></label>
+            <label class="block"><span class="text-xs text-gray-600">Cliente mensagem cor</span><input id="tInBg"
+                type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
+            <label class="block"><span class="text-xs text-gray-600">Cliente mensagem bordas</span><input id="tInBorder"
+                type="color" class="w-full h-10 border rounded" value="#e2e8f0"></label>
+            <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos balões</span><input
+                id="tRadius" type="range" min="8" max="28" value="18" class="w-full"></label>
+          </div>
+
+          <!-- Fundo -->
+          <div class="grid grid-cols-1 gap-3 mt-3">
+            <label class="block"><span class="text-xs text-gray-600">Opacidade do fundo</span><input id="tBgOp"
+                type="range" min="0" max="1" step="0.05" value="0"></label>
+          </div>
+
+          <!-- Tipografia/UI -->
+          <div class="grid grid-cols-2 gap-3 mt-3">
+            <label class="block"><span class="text-xs text-gray-600">Tamanho base</span>
+              <select id="tFontSize" class="w-full p-2 border rounded">
+                <option value="13px">13px</option>
+                <option value="14px" selected>14px</option>
+                <option value="15px">15px</option>
+                <option value="16px">16px</option>
+              </select>
+            </label>
+            <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos botões</span><input
+                id="tBtnRadius" type="range" min="6" max="16" value="10" class="w-full"></label>
+            <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos cards de aviso</span><input
+                id="tCardRadius" type="range" min="10" max="24" value="16" class="w-full"></label>
+          </div>
+
+          <div class="flex items-center justify-between mt-4">
+            <div class="flex items-center gap-2">
+              <button id="btnRandom" class="btn btn-ghost px-3 py-2">🎲 Surpreenda-me</button>
+              <button id="btnReset" class="btn btn-ghost px-3 py-2">↺ Voltar ao padrão</button>
+            </div>
+            <button id="btnSaveTheme" class="btn btn-primary px-4 py-2">Salvar</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
     </section>
 
     <!-- RELATÓRIO -->
@@ -873,11 +874,6 @@
       r.setProperty('--bubble-in-bg', x.inBg); r.setProperty('--bubble-in-border', x.inBorder); r.setProperty('--bubble-in-fg', x.inFg || '#0f172a');
       r.setProperty('--bubble-radius', x.bubbleRadius + 'px'); r.setProperty('--btn-radius', x.btnRadius + 'px'); r.setProperty('--card-radius', x.cardRadius + 'px');
       r.setProperty('--font-size', x.fontSize); r.setProperty('--chat-wallpaper-opacity', x.wallOp);
-      r.setProperty('--hover', (x.hover || 'var(--ghost-bg)'));
-      r.setProperty('--hover-strong', (x.hoverStrong || 'var(--ghost-bg)'));
-      r.setProperty('--input-bg', (x.inputBg || x.contentBg || '#ffffff'));
-      r.setProperty('--input-fg', (x.inputFg || x.text || '#0f172a'));
-
       r.setProperty('--scrollbar', x.scrollbar || '#cbd5e1'); r.setProperty('--primary', x.primary); r.setProperty('--accent', x.accent);
       inputs.tPrimary.value = x.primary; inputs.tAccent.value = x.accent; inputs.tSidebar.value = x.sidebar;
       inputs.tContentBg.value = x.contentBg; inputs.tBg.value = x.bg; inputs.tText.value = x.text;
@@ -915,23 +911,7 @@
       .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
     if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open'); });
     if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); });
-    if (btnRandom) btnRandom.addEventListener('click', () => { const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0'));
-    const presets = {
-      corporate: { primary: "#2563eb", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#0f172a", outG1: "#dcf8c6", outG2: "#b8f0a4", inBg: "#ffffff", inBorder: "#e2e8f0", link: "#2563eb", muted: "#6b7280", border: "#e5e7eb", ghostBg: "#f3f4f6" },
-      ocean: { primary: "#06b6d4", accent: "#10b981", sidebar: "#e0f7fa", contentBg: "#ecfeff", bg: "#e0f2f1", text: "#0e7490", outG1: "#d1fae5", outG2: "#a7f3d0", inBg: "#ffffff", inBorder: "#cbd5e1", link: "#0891b2", ghostBg: "#e2f2f3" },
-      sunset: { primary: "#f97316", accent: "#ef4444", sidebar: "#fff7ed", contentBg: "#ffedd5", bg: "#fff7ed", text: "#7c2d12", outG1: "#fed7aa", outG2: "#fdba74", inBg: "#ffffff", inBorder: "#fca5a5", link: "#ea580c", ghostBg: "#fff3e0" },
-      dark: { primary: "#60a5fa", accent: "#34d399", sidebar: "#111827", contentBg: "#1f2937", bg: "#0f172a", text: "#e5e7eb", outG1: "#1f2937", outG2: "#374151", inBg: "#111827", inBorder: "#374151", link: "#93c5fd", muted: "#9ca3af", border: "#374151", ghostBg: "#111827" },
-      minimal: { primary: "#111827", accent: "#10b981", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#111827", outG1: "#e5e7eb", outG2: "#cbd5e1", inBg: "#ffffff", inBorder: "#e5e7eb", link: "#111827", ghostBg: "#f3f4f6" },
-      funky: { primary: "#a78bfa", accent: "#ec4899", sidebar: "#fdf4ff", contentBg: "#fce7f3", bg: "#fef3c7", text: "#1f2937", outG1: "#f5d0fe", outG2: "#fbcfe8", inBg: "#ffffff", inBorder: "#f9a8d4", link: "#a855f7", ghostBg: "#fdf2f8" }
-    };
-    document.querySelectorAll('.preset').forEach(div => {
-      div.addEventListener('click', () => {
-        const key = div.getAttribute('data-preset');
-        const p = presets[key];
-        if (p) { const t = { ...defaultTheme(), ...p }; applyTheme(t); saveTheme(t); }
-      });
-    });
-     const b1 = rand(), b2 = rand(); const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; applyTheme(t); });
+    if (btnRandom) btnRandom.addEventListener('click', () => { const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')); const b1 = rand(), b2 = rand(); const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; applyTheme(t); });
 
     /** =================== LOGIN MODAL =================== */
     function isLogged() { try { return !!localStorage.getItem('agente_codigo'); } catch { return false; } }
@@ -1682,27 +1662,78 @@
       // Garante que o modal não esteja visível após F5 se logado
       if (isLogged()) fecharModalLogin();
     });
-  
-    if (btnThemeExport) btnThemeExport.addEventListener('click', () => {
-      try {
-        const data = JSON.stringify(loadTheme() || defaultTheme(), null, 2);
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = `connectzap-theme-${(agente?.codigo||'anon')}.json`;
-        document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
-      } catch (_) {}
+  </script>
+<script>
+const presets = {
+      corporate: { primary: "#2563eb", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", outG1: "#e0f2fe", outG2: "#bfdbfe", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6" },
+      ocean: { primary: "#06b6d4", accent: "#10b981", sidebar: "#f0fdff", contentBg: "#ecfeff", bg: "#f0fdfa", text: "#0b1320", outG1: "#cffafe", outG2: "#a7f3d0", inBg: "#ffffff", inBorder: "#cbd5e1", bubbleRadius: 18, btnRadius: 12, cardRadius: 18, wallOp: .05, fontSize: "14px", muted: "#475569", border: "#cbd5e1", link: "#0891b2", ghostBg: "#e2f2f3" },
+      sunset: { primary: "#f97316", accent: "#ef4444", sidebar: "#fff7ed", contentBg: "#fff7ed", bg: "#fff1f2", text: "#111827", outG1: "#fed7aa", outG2: "#fda4af", inBg: "#ffffff", inBorder: "#fecaca", bubbleRadius: 20, btnRadius: 12, cardRadius: 20, wallOp: .06, fontSize: "14px", muted: "#6b7280", border: "#f3d4cf", link: "#f97316", ghostBg: "#fff3e8" },
+      dark: { primary: "#60a5fa", accent: "#22c55e", sidebar: "#0b1220", contentBg: "#0b1220", bg: "#0a0f1a", text: "#e5e7eb", muted: "#94a3b8", border: "#1f2937", link: "#93c5fd", ghostBg: "#111827", outG1: "#1f2937", outG2: "#0f172a", outFg: "#e5e7eb", inBg: "#0e1726", inBorder: "#1f2937", inFg: "#e5e7eb", bubbleRadius: 16, btnRadius: 10, cardRadius: 16, wallOp: 1, fontSize: "14px", hover: "#111827", hoverStrong: "#0f172a", inputBg: "#0e1726", inputFg: "#e5e7eb", scrollbar: "#334155", ticketSelectedBg: "#111827" },
+      minimal: { primary: "#111827", accent: "#64748b", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#0f172a", outG1: "#f3f4f6", outG2: "#e5e7eb", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 14, btnRadius: 8, cardRadius: 16, wallOp: 0, fontSize: "15px", muted: "#6b7280", border: "#e5e7eb", link: "#111827", ghostBg: "#f3f4f6" },
+      funky: { primary: "#a78bfa", accent: "#ec4899", sidebar: "#faf5ff", contentBg: "#fff0f7", bg: "#fafafa", text: "#111827", outG1: "#e9d5ff", outG2: "#fecdd3", inBg: "#ffffff", inBorder: "#f5d0fe", bubbleRadius: 22, btnRadius: 14, cardRadius: 22, wallOp: .08, fontSize: "14px", muted: "#6b7280", border: "#e9d5ff", link: "#a78bfa", ghostBg: "#f5f3ff" },
+    };
+
+(function(){
+  const themeDrawer = document.getElementById('themeDrawer');
+  const btnTheme = document.getElementById('btnTheme');
+  const btnThemeClose = document.getElementById('btnThemeClose');
+  const btnThemeExport = document.getElementById('btnThemeExport');
+  const importTheme = document.getElementById('importTheme');
+  function openDrawer(){
+    if (!themeDrawer) return;
+    themeDrawer.classList.add('open');
+    themeDrawer.setAttribute('aria-hidden','false');
+  }
+  function closeDrawer(){
+    if (!themeDrawer) return;
+    themeDrawer.classList.remove('open');
+    themeDrawer.setAttribute('aria-hidden','true');
+  }
+  if (btnTheme) btnTheme.addEventListener('click', openDrawer);
+  if (btnThemeClose) btnThemeClose.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ closeDrawer(); } });
+
+  // Preset clicks
+  document.querySelectorAll('.preset').forEach(el => {
+    el.addEventListener('click', () => {
+      const name = el.dataset.preset;
+      const base = (typeof defaultTheme === 'function') ? defaultTheme() : {};
+      const t = Object.assign({}, base, presets[name] || {});
+      if (typeof applyTheme === 'function') applyTheme(t);
+      if (typeof saveTheme === 'function') saveTheme(t);
     });
-    if (importTheme) importTheme.addEventListener('change', (ev) => {
-      const f = ev.target.files?.[0]; if (!f) return;
+  });
+
+  // Export / Import
+  if (btnThemeExport && typeof loadTheme === 'function') {
+    btnThemeExport.addEventListener('click', () => {
+      const t = (typeof loadTheme === 'function') ? loadTheme() : {};
+      const blob = new Blob([JSON.stringify(t, null, 2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'connectzap_theme.json';
+      a.click();
+      setTimeout(()=> URL.revokeObjectURL(a.href), 500);
+    });
+  }
+  if (importTheme) {
+    importTheme.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
       const reader = new FileReader();
-      reader.onload = (e) => {
-        try { const obj = JSON.parse(String(e.target?.result||'')); if (obj && typeof obj === 'object') { applyTheme(obj); saveTheme(obj); } } catch {}
+      reader.onload = (ev) => {
+        try {
+          const t = JSON.parse(ev.target.result);
+          if (typeof applyTheme === 'function') applyTheme(t);
+          if (typeof saveTheme === 'function') saveTheme(t);
+        } catch(err){ console.error('Tema inválido', err); }
       };
-      reader.readAsText(f);
-      ev.target.value = '';
+      reader.readAsText(file);
+      e.target.value = '';
     });
-    </script>
+  }
+})();
+</script>
 </body>
 
 </html>
