@@ -232,7 +232,7 @@
       color: var(--reply-fg);
       border: 1px solid var(--reply-border);
       opacity: 0;
-      transition: opacity .15s ease, transform .06s ease;
+      transition: opacity .15s, transform .06s;
       font-size: 12px;
       line-height: 1;
       cursor: pointer
@@ -261,10 +261,12 @@
       color: color-mix(in srgb, var(--muted) 85%, var(--bg))
     }
 
+    /* inputs respeitam tema (inclui date) */
     input[type="text"],
     input[type="search"],
     input[type="color"],
     input[type="file"],
+    input[type="date"],
     select {
       background: var(--input-bg);
       color: var(--input-fg);
@@ -311,7 +313,7 @@
       place-items: center;
       border-radius: 12px;
       background: transparent;
-      transition: background .2s ease, transform .06s ease;
+      transition: background .2s, transform .06s;
       cursor: pointer
     }
 
@@ -380,33 +382,24 @@
       font-size: 12px
     }
 
-    /* ---- Gráficos compactos e responsivos ---- */
-    .chart-card {
-      display: flex;
-      flex-direction: column;
-      gap: .5rem
+    /* ==== Estilização suave para o Relatório (Dark-friendly) ==== */
+    .section-title {
+      color: var(--text)
     }
 
-    .chart-wrap {
-      width: 100%;
-      aspect-ratio: 16/9;
-      max-height: 240px
+    .muted {
+      color: var(--muted)
     }
 
-    @media (min-width:1280px) {
-      .chart-wrap {
-        aspect-ratio: 16/7;
-        max-height: 260px
-      }
-    }
-
-    /* ---- Acordeão do extrato (tema neutro/dark-friendly) ---- */
-    .extrato-item {
+    /* Acordeão do extrato */
+    .extrato {
       border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
-      background: var(--content-bg);
-      margin-bottom: 8px
+    }
+
+    .extrato-item+.extrato-item {
+      border-top: 1px solid var(--border)
     }
 
     .extrato-header {
@@ -414,9 +407,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
       padding: 10px 12px;
-      background: var(--ghost-bg)
+      background: transparent;
+      color: var(--text);
+      transition: background .15s ease;
+      text-align: left
     }
 
     .extrato-header:hover {
@@ -424,95 +419,38 @@
     }
 
     .extrato-meta {
-      font-size: .8rem;
+      font-size: 12px;
       color: var(--muted)
     }
 
     .extrato-chevron {
-      color: #94a3b8
-    }
-
-    .extrato-content {
-      padding: 10px 12px 12px
-    }
-
-    .muted {
       color: var(--muted)
     }
 
-    /* Mini medidor no cabeçalho (mix do dia) */
-    .meter {
-      display: flex;
-      gap: 2px;
-      height: 8px;
-      border: 1px solid var(--border);
-      background: var(--ghost-bg);
-      border-radius: 9999px;
-      overflow: hidden
+    .extrato-content {
+      padding: 0 12px 12px 12px
     }
 
-    .meter i {
-      display: block;
-      height: 100%
-    }
-
-    .m1 {
-      background: var(--accent)
-    }
-
-    /* Negociação */
-    .m2 {
-      background: #38bdf8
-    }
-
-    /* 2ª via */
-    .m3 {
-      background: #f59e0b
-    }
-
-    /* Recusou */
-    .m4 {
-      background: #0ea5e9
-    }
-
-    /* Dúvidas */
-    .m5 {
-      background: #94a3b8
-    }
-
-    /* Inativo */
-
-    /* Tabela do extrato */
     .table-soft {
       width: 100%;
-      font-size: .9rem;
-      border-collapse: separate;
-      border-spacing: 0;
       border: 1px solid var(--border);
       border-radius: 10px;
       overflow: hidden
     }
 
-    .table-soft thead th {
-      background: var(--ghost-bg);
-      color: var(--muted);
-      text-align: left;
-      padding: .5rem .6rem;
-      border-bottom: 1px solid var(--border)
-    }
-
+    .table-soft th,
     .table-soft td {
-      padding: .5rem .6rem;
-      border-bottom: 1px solid var(--border)
+      border: 1px solid var(--border);
+      padding: 8px
     }
 
-    .table-soft tr:last-child td {
-      border-bottom: 0
+    .table-soft thead tr {
+      background: var(--ghost-bg);
+      color: var(--muted)
     }
 
-    .table-soft td.text-right,
-    .table-soft th.text-right {
-      text-align: right
+    .table-soft tbody tr:hover {
+      background: color-mix(in srgb, var(--ghost-bg) 60%, transparent)
     }
   </style>
 </head>
@@ -523,7 +461,7 @@
     <button id="tabBtnHome" class="btn-mini active" title="Home" aria-label="Home">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
         <path
-          d="M12 3.172 2.293 12.88a1 1 0 0 0 1.414 1.415L5 13.001V20a1 1 0 0 0 1 1h5v-6h2v6h5a 1 1 0 0 0 1-1v-6.999l1.293 1.294a1 1 0 0 0 1.414-1.415L12 3.172z" />
+          d="M12 3.172 2.293 12.88a1 1 0 0 0 1.414 1.415L5 13.001V20a1 1 0 0 0 1 1h5v-6h2v6h5a1 1 0 0 0 1-1v-6.999l1.293 1.294a1 1 0 0 0 1.414-1.415L12 3.172z" />
       </svg>
     </button>
     <button id="tabBtnConversas" class="btn-mini" title="Conversas" aria-label="Conversas">
@@ -546,12 +484,12 @@
       <div class="max-w-4xl mx-auto">
         <div class="card p-6">
           <h1 class="text-2xl font-bold">Bem-vindo(a) 👋</h1>
-          <p class="text-gray-600 mt-2">Olá <span id="homeAgenteNome" class="font-semibold">—</span>!</p>
-          <p class="text-gray-600">Carteira: <span id="homeAgenteCarteira" class="font-semibold">—</span></p>
+          <p class="muted mt-2">Olá <span id="homeAgenteNome" class="font-semibold">—</span>!</p>
+          <p class="muted">Carteira: <span id="homeAgenteCarteira" class="font-semibold">—</span></p>
 
           <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div class="p-4 border rounded-lg">
-              <div class="text-sm text-gray-500 mb-1">Status</div>
+            <div class="p-4 border rounded-lg" style="border-color:var(--border)">
+              <div class="text-sm muted mb-1">Status</div>
               <div id="homeStatus" class="font-medium"><span class="dot offline"></span>Offline</div>
               <div class="mt-3 flex flex-wrap gap-2">
                 <button id="btnToggleOnline"
@@ -569,8 +507,8 @@
               <div id="homeAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
             </div>
 
-            <div class="p-4 border rounded-lg">
-              <div class="text-sm text-gray-500 mb-1">Atalhos</div>
+            <div class="p-4 border rounded-lg" style="border-color:var(--border)">
+              <div class="text-sm muted mb-1">Atalhos</div>
               <div class="flex flex-wrap gap-2">
                 <button id="goToConversas1" class="btn btn-primary px-4 py-2">Ir para Conversas</button>
                 <button id="goToRelatorio1" class="btn btn-neutral px-4 py-2">Ver Relatório</button>
@@ -589,15 +527,15 @@
         <div class="p-3 border-b topbar">
           <div class="flex items-start justify-between gap-2">
             <div class="min-w-0">
-              <div class="text-xs text-gray-500">Agente</div>
+              <div class="text-xs muted">Agente</div>
               <div id="agenteNome" class="font-semibold truncate">—</div>
-              <div class="text-xs text-gray-500">Carteira: <span id="agenteCarteira">—</span></div>
-              <div class="text-xs text-gray-500">Status: <span id="agenteStatus"><span
-                    class="dot offline"></span>Offline</span></div>
+              <div class="text-xs muted">Carteira: <span id="agenteCarteira">—</span></div>
+              <div class="text-xs muted">Status: <span id="agenteStatus"><span class="dot offline"></span>Offline</span>
+              </div>
               <div class="mt-1 text-xs">
-                <span class="text-gray-500">Tickets:</span>
+                <span class="muted">Tickets:</span>
                 <span id="badgeAtivos" class="badge">0</span>
-                <span class="text-gray-500 mx-1">/</span>
+                <span class="muted mx-1">/</span>
                 <span id="badgeLimite" class="badge" style="background:#64748b">∞</span>
               </div>
             </div>
@@ -624,7 +562,7 @@
 
         <ul id="listaTickets" class="flex-1 overflow-y-auto" aria-label="Minhas conversas"></ul>
 
-        <div class="p-2 text-xs text-gray-500 border-t topbar">
+        <div class="p-2 text-xs muted border-t topbar">
           Apenas conversas da sua carteira. “Pegar próxima” usa ordem por última mensagem <em>recebida</em>.
         </div>
       </aside>
@@ -634,7 +572,7 @@
         <div class="flex items-center justify-between p-3 border-b topbar">
           <div class="min-w-0">
             <div id="tituloConversa" class="font-bold text-lg truncate">Selecione um ticket</div>
-            <div id="subInfo" class="text-sm text-gray-500 truncate"></div>
+            <div id="subInfo" class="text-sm muted truncate"></div>
           </div>
           <div class="flex items-center gap-2">
             <button id="btnLiberar" class="btn btn-neutral px-3 py-2 text-sm disabled:opacity-50"
@@ -643,7 +581,7 @@
               <button id="btnConcluir" class="btn px-3 py-2 text-sm text-white disabled:opacity-50"
                 style="background:var(--accent)" disabled aria-haspopup="true" aria-expanded="false">Concluir</button>
               <div id="menuConcluir" class="hidden absolute right-0 mt-2 w-64 border rounded-lg shadow-lg z-20"
-                style="background: var(--content-bg);"></div>
+                style="background: var(--content-bg); border-color: var(--border)"></div>
             </div>
           </div>
         </div>
@@ -651,15 +589,16 @@
         <div class="relative flex-1 overflow-hidden">
           <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" role="log"
             aria-live="polite">
-            <p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>
+            <p id="loading" class="text-center muted">Pegue uma conversa para iniciar…</p>
           </div>
         </div>
 
-        <div id="digitando" class="px-4 text-left hidden text-sm text-gray-500" aria-live="polite">Digitando…</div>
+        <div id="digitando" class="px-4 text-left hidden text-sm muted" aria-live="polite">Digitando…</div>
 
-        <div id="respostaPreview" class="hidden px-3 py-2 border-t bar-soft text-sm flex justify-between items-center">
+        <div id="respostaPreview" class="hidden px-3 py-2 border-t bar-soft text-sm flex justify-between items-center"
+          style="border-color:var(--border)">
           <div class="truncate max-w-[80%]"><span class="font-semibold">Respondendo:</span> <span id="respostaTexto"
-              class="text-gray-600"></span></div>
+              class="muted"></span></div>
           <button onclick="cancelarResposta()" class="text-red-500 text-xs" aria-label="Cancelar resposta">✖</button>
         </div>
 
@@ -668,7 +607,7 @@
           <button onclick="document.getElementById('fileInput').click()" class="btn btn-primary px-3 py-2">📝
             PDF</button>
           <textarea id="textoMensagem" rows="1" class="flex-1 border rounded-md p-2 resize-none"
-            placeholder="Digite uma mensagem…" disabled></textarea>
+            style="border-color:var(--border)" placeholder="Digite uma mensagem…" disabled></textarea>
           <button id="btnEnviar" class="btn px-4 py-2 text-white disabled:opacity-50" style="background:var(--accent)"
             disabled>Enviar</button>
         </div>
@@ -686,20 +625,20 @@
       <div id="priorityModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
         <div class="absolute inset-0 bg-black/60" onclick="fecharPriorityModal()" aria-hidden="true"></div>
         <div class="relative mx-auto mt-24 w-[95%] max-w-md rounded-xl shadow-xl border"
-          style="background: var(--content-bg);">
-          <div class="p-4 border-b flex items-center justify-between">
+          style="background: var(--content-bg); border-color:var(--border)">
+          <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
             <h3 class="font-semibold">Pedir prioridade</h3>
-            <button class="text-gray-500" onclick="fecharPriorityModal()" aria-label="Fechar">✖</button>
+            <button class="muted" onclick="fecharPriorityModal()" aria-label="Fechar">✖</button>
           </div>
           <div class="p-4 space-y-3">
-            <label class="block text-sm text-gray-600">Telefone do cliente</label>
+            <label class="block text-sm muted">Telefone do cliente</label>
             <input id="priorityTelefone" class="w-full p-2 border rounded-md"
               placeholder="Ex: 61999999999 ou 5561999999999" autocomplete="off" inputmode="numeric" pattern="[0-9]*" />
-            <p class="text-xs text-gray-500">Atenção: informe um telefone válido DDD + 8/9 dígitos.</p>
-            <div id="priorityInfo" class="text-sm text-gray-700 hidden"></div>
+            <p class="text-xs muted">Atenção: informe um telefone válido DDD + 8/9 dígitos.</p>
+            <div id="priorityInfo" class="text-sm" style="color:var(--text)"></div>
             <div id="priorityErro" class="text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
           </div>
-          <div class="p-4 border-t flex items-center justify-end gap-2">
+          <div class="p-4 border-t flex items-center justify-end gap-2" style="border-color:var(--border)">
             <button class="btn btn-neutral px-3 py-2 text-sm" onclick="fecharPriorityModal()">Cancelar</button>
             <button id="btnPriorityBuscar"
               class="px-3 py-2 text-sm text-white rounded-md hover:bg-purple-700 flex items-center gap-2"
@@ -718,7 +657,7 @@
       <!-- Theme Drawer -->
       <div id="themeDrawer" class="drawer" aria-hidden="true">
         <div class="h-full flex flex-col">
-          <div class="p-4 border-b flex items-center justify-between">
+          <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
             <h3 class="font-semibold">🎨 Seu tema</h3>
             <div class="flex items-center gap-2">
               <button id="btnThemeExport" class="btn btn-ghost px-2 py-1 text-xs">Salvar no meu computador</button>
@@ -731,7 +670,7 @@
           <div class="p-4 overflow-y-auto space-y-6">
             <!-- Temas rápidos -->
             <section>
-              <div class="text-xs text-gray-500 mb-2">Temas rápidos</div>
+              <div class="text-xs muted mb-2">Temas rápidos</div>
               <div class="grid grid-cols-2 gap-2">
                 <div class="preset" data-preset="corporate">
                   <div class="h-8 rounded" style="background:linear-gradient(90deg,#0ea5e9,#2563eb)"></div>
@@ -760,47 +699,47 @@
               </div>
             </section>
 
-            <hr class="border-gray-200">
+            <hr style="border-color:var(--border)">
 
             <!-- Personalizar -->
             <section>
-              <div class="text-xs text-gray-500 mb-2">Personalizar</div>
+              <div class="text-xs muted mb-2">Personalizar</div>
 
               <div class="grid grid-cols-2 gap-3">
-                <label class="block"><span class="text-xs text-gray-600">Botão PDF</span><input id="tPrimary"
-                    type="color" class="w-full h-10 border rounded" value="#3b82f6"></label>
-                <label class="block"><span class="text-xs text-gray-600">Botão Concluir</span><input id="tAccent"
-                    type="color" class="w-full h-10 border rounded" value="#22c55e"></label>
-                <label class="block"><span class="text-xs text-gray-600">Barra lateral</span><input id="tSidebar"
-                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
-                <label class="block"><span class="text-xs text-gray-600">Cabeçalho</span><input id="tContentBg"
-                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
-                <label class="block"><span class="text-xs text-gray-600">Cor de fundo</span><input id="tBg" type="color"
+                <label class="block"><span class="text-xs muted">Botão PDF</span><input id="tPrimary" type="color"
+                    class="w-full h-10 border rounded" value="#3b82f6"></label>
+                <label class="block"><span class="text-xs muted">Botão Concluir</span><input id="tAccent" type="color"
+                    class="w-full h-10 border rounded" value="#22c55e"></label>
+                <label class="block"><span class="text-xs muted">Barra lateral</span><input id="tSidebar" type="color"
+                    class="w-full h-10 border rounded" value="#ffffff"></label>
+                <label class="block"><span class="text-xs muted">Cabeçalho</span><input id="tContentBg" type="color"
+                    class="w-full h-10 border rounded" value="#ffffff"></label>
+                <label class="block"><span class="text-xs muted">Cor de fundo</span><input id="tBg" type="color"
                     class="w-full h-10 border rounded" value="#f3f4f6"></label>
-                <label class="block"><span class="text-xs text-gray-600">Texto</span><input id="tText" type="color"
+                <label class="block"><span class="text-xs muted">Texto</span><input id="tText" type="color"
                     class="w-full h-10 border rounded" value="#0f172a"></label>
               </div>
 
               <div class="grid grid-cols-2 gap-3 mt-3">
-                <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 1</span><input id="tOutG1"
+                <label class="block"><span class="text-xs muted">Minha mensagem cor 1</span><input id="tOutG1"
                     type="color" class="w-full h-10 border rounded" value="#dcf8c6"></label>
-                <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 2</span><input id="tOutG2"
+                <label class="block"><span class="text-xs muted">Minha mensagem cor 2</span><input id="tOutG2"
                     type="color" class="w-full h-10 border rounded" value="#b8f0a4"></label>
-                <label class="block"><span class="text-xs text-gray-600">Cliente mensagem cor</span><input id="tInBg"
+                <label class="block"><span class="text-xs muted">Cliente mensagem cor</span><input id="tInBg"
                     type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
-                <label class="block"><span class="text-xs text-gray-600">Cliente mensagem bordas</span><input
-                    id="tInBorder" type="color" class="w-full h-10 border rounded" value="#e2e8f0"></label>
-                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos balões</span><input
-                    id="tRadius" type="range" min="8" max="28" value="18" class="w-full"></label>
+                <label class="block"><span class="text-xs muted">Cliente mensagem bordas</span><input id="tInBorder"
+                    type="color" class="w-full h-10 border rounded" value="#e2e8f0"></label>
+                <label class="block"><span class="text-xs muted">Canto arredondado dos balões</span><input id="tRadius"
+                    type="range" min="8" max="28" value="18" class="w-full"></label>
               </div>
 
               <div class="grid grid-cols-1 gap-3 mt-3">
-                <label class="block"><span class="text-xs text-gray-600">Opacidade do fundo</span><input id="tBgOp"
-                    type="range" min="0" max="1" step="0.05" value="0"></label>
+                <label class="block"><span class="text-xs muted">Opacidade do fundo</span><input id="tBgOp" type="range"
+                    min="0" max="1" step="0.05" value="0"></label>
               </div>
 
               <div class="grid grid-cols-2 gap-3 mt-3">
-                <label class="block"><span class="text-xs text-gray-600">Tamanho base</span>
+                <label class="block"><span class="text-xs muted">Tamanho base</span>
                   <select id="tFontSize" class="w-full p-2 border rounded">
                     <option value="13px">13px</option>
                     <option value="14px" selected>14px</option>
@@ -808,11 +747,10 @@
                     <option value="16px">16px</option>
                   </select>
                 </label>
-                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos botões</span><input
+                <label class="block"><span class="text-xs muted">Canto arredondado dos botões</span><input
                     id="tBtnRadius" type="range" min="6" max="16" value="10" class="w-full"></label>
-                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos cards de
-                    aviso</span><input id="tCardRadius" type="range" min="10" max="24" value="16"
-                    class="w-full"></label>
+                <label class="block"><span class="text-xs muted">Canto arredondado dos cards de aviso</span><input
+                    id="tCardRadius" type="range" min="10" max="24" value="16" class="w-full"></label>
               </div>
 
               <div class="flex items-center justify-between mt-4">
@@ -833,18 +771,18 @@
       <div class="max-w-6xl mx-auto space-y-4">
         <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 class="text-xl font-semibold">Relatório Individual</h2>
-            <div class="text-sm text-gray-500" id="relatorioPeriodo">Hoje</div>
+            <h2 class="text-xl font-semibold section-title">Relatório Individual</h2>
+            <div class="text-sm muted" id="relatorioPeriodo">Hoje</div>
           </div>
 
           <!-- Filtros -->
           <div class="flex flex-wrap gap-2 items-end">
             <div class="flex flex-col">
-              <label class="text-xs text-gray-500">Início</label>
+              <label class="text-xs muted">Início</label>
               <input id="relStart" type="date" class="border rounded px-2 py-1" />
             </div>
             <div class="flex flex-col">
-              <label class="text-xs text-gray-500">Fim</label>
+              <label class="text-xs muted">Fim</label>
               <input id="relEnd" type="date" class="border rounded px-2 py-1" />
             </div>
 
@@ -866,63 +804,46 @@
         <!-- KPIs -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div class="card p-4">
-            <div class="text-xs text-gray-500">Em atendimento</div>
+            <div class="text-xs muted">Em atendimento</div>
             <div id="kpiEm" class="text-2xl font-bold">0</div>
           </div>
           <div class="card p-4">
-            <div class="text-xs text-gray-500">Concluídos</div>
+            <div class="text-xs muted">Concluídos</div>
             <div id="kpiConc" class="text-2xl font-bold">0</div>
           </div>
           <div class="card p-4">
-            <div class="text-xs text-gray-500">TMA</div>
-            <div class="text-2xl font-bold"><span id="kpiTma">—</span><span class="text-sm text-gray-500"> min</span>
-            </div>
+            <div class="text-xs muted">TMA</div>
+            <div class="text-2xl font-bold"><span id="kpiTma">—</span><span class="text-sm muted"> min</span></div>
           </div>
           <div class="card p-4">
-            <div class="text-xs text-gray-500">1ª resposta</div>
-            <div class="text-2xl font-bold"><span id="kpiFRT">—</span><span class="text-sm text-gray-500"> seg</span>
-            </div>
+            <div class="text-xs muted">1ª resposta</div>
+            <div class="text-2xl font-bold"><span id="kpiFRT">—</span><span class="text-sm muted"> seg</span></div>
           </div>
         </div>
 
         <!-- Gráficos e Extrato -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          <!-- Gráfico Status -->
-          <div class="card p-4 chart-card">
+          <div class="card p-4">
             <div class="flex items-center justify-between">
               <div class="font-semibold">Distribuição por status</div>
-              <div class="flex gap-1">
-                <button class="btn btn-ghost px-2 py-1 text-xs" data-chart="status" data-type="pie">🍩 Pizza</button>
-                <button class="btn btn-ghost px-2 py-1 text-xs" data-chart="status" data-type="bar">▮▮ Barras</button>
-              </div>
             </div>
-            <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
+            <div class="mt-4"><canvas id="pieStatus" height="260"></canvas></div>
           </div>
 
-          <!-- Gráfico Motivos -->
-          <div class="card p-4 chart-card">
+          <div class="card p-4">
             <div class="flex items-center justify-between">
               <div class="font-semibold">Motivos de conclusão</div>
-              <div class="flex gap-1">
-                <button class="btn btn-ghost px-2 py-1 text-xs" data-chart="motivos" data-type="doughnut">🍩
-                  Pizza</button>
-                <button class="btn btn-ghost px-2 py-1 text-xs" data-chart="motivos" data-type="bar">▮▮ Barras</button>
-              </div>
             </div>
-            <div class="chart-wrap"><canvas id="chartMotivos"></canvas></div>
+            <div class="mt-4"><canvas id="pieMotivos" height="260"></canvas></div>
           </div>
 
-          <!-- Extrato em acordeão -->
+          <!-- Extrato -->
           <div class="card p-4 lg:col-span-2">
             <div class="flex items-center justify-between">
               <div class="font-semibold">Extrato de motivos (por dia)</div>
-              <div class="flex items-center gap-2">
-                <button id="btnExtratoExpand" class="btn btn-ghost px-3 py-1 text-xs">Expandir</button>
-                <button id="btnExtratoCollapse" class="btn btn-ghost px-3 py-1 text-xs">Recolher</button>
-                <button id="btnExtratoRefresh" class="btn btn-neutral px-3 py-1 text-xs">Atualizar extrato</button>
-              </div>
+              <button id="btnExtratoRefresh" class="btn btn-neutral px-3 py-1 text-xs">Atualizar extrato</button>
             </div>
-            <div id="extratoWrap" class="mt-3"></div>
+            <div id="extratoWrap" class="mt-3 extrato"></div>
           </div>
         </div>
       </div>
@@ -933,18 +854,18 @@
   <!-- MODAL DE LOGIN -->
   <div id="modalLogin" class="modal">
     <div class="modal-inner">
-      <div class="p-4 border-b flex items-center justify-between">
+      <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
         <h3 class="font-semibold">Identifique-se</h3>
         <button class="btn btn-ghost px-2 py-1 text-xs" onclick="fecharModalLogin()" aria-label="Fechar">✖</button>
       </div>
       <div class="p-4 space-y-3">
-        <label class="block text-sm text-gray-600">Informe seu código de agente</label>
+        <label class="block text-sm muted">Informe seu código de agente</label>
         <input id="loginCodigoAgente" inputmode="numeric" pattern="[0-9]*" class="w-full p-2 border rounded-md"
           placeholder="Ex: 101" />
-        <p class="text-xs text-gray-500">Usaremos este código para carregar seu nome, carteira e permissões.</p>
+        <p class="text-xs muted">Usaremos este código para carregar seu nome, carteira e permissões.</p>
         <div id="loginErro" class="text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
       </div>
-      <div class="p-4 border-t flex items-center justify-end gap-2">
+      <div class="p-4 border-t flex items-center justify-end gap-2" style="border-color:var(--border)">
         <button class="btn btn-neutral px-3 py-2 text-sm" onclick="fecharModalLogin()">Cancelar</button>
         <button id="btnDoLogin" class="px-3 py-2 text-sm text-white rounded-md"
           style="background:var(--primary)">Confirmar</button>
@@ -969,10 +890,8 @@
     let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
     let limitPerAgent = 0; let ativosCount = 0;
     let unreadCountByKey = {}; let lastContatoTsByKey = {};
-    let ordemCache = []; // gráficos controlados com chStatus/chMot
-    let chStatus = null, chMot = null; // charts
-    let lastStatus = { labels: ['Em atendimento', 'Concluídos', 'Outros'], data: [0, 0, 0] };
-    let lastMotivos = { labels: [], data: [] };
+    let ordemCache = []; let pieChart = null; // status
+    let chartMotivos = null; // motivos
     let typingTimer = null;
 
     /** ============== UTILS ============== */
@@ -995,7 +914,6 @@
     function keyFrom(remetente, phone_id) { return `${remetente}|${phone_id || ''}` }
     function schedulePolls() { if (pollingContatos) clearInterval(pollingContatos); if (pollingMensagens) clearInterval(pollingMensagens); const gap = document.hidden ? POLL_HIDDEN_MS : POLL_ACTIVE_MS; pollingContatos = setInterval(refreshOrdemCarteira, gap); if (selecionado) { pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true) }, gap) } }
     document.addEventListener('visibilitychange', schedulePolls);
-    function getCss(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
     /** ============== DOM ============== */
     // Home
@@ -1015,8 +933,6 @@
     const relPeriodo = document.getElementById('relatorioPeriodo');
     const relAgentePill = document.getElementById('relAgentePill');
     const btnExtratoRefresh = document.getElementById('btnExtratoRefresh');
-    const btnExtratoExpand = document.getElementById('btnExtratoExpand');
-    const btnExtratoCollapse = document.getElementById('btnExtratoCollapse');
     const extratoWrap = document.getElementById('extratoWrap');
 
     // Conversas
@@ -1057,8 +973,8 @@
     /** ============== MENU CONCLUIR ============== */
     const MOTIVOS_CONCLUSAO = ["Realizou negociação", "Solicitou 2ª via de boleto", "Recusou a proposta", "Dúvidas gerais", "Cliente ficou inativo"];
     function renderMenuConcluir() {
-      menuConcluir.innerHTML = MOTIVOS_CONCLUSAO.map(m => `<button type="button" data-motivo="${m}" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50">${m}</button>`).join("");
-      menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => { btn.onclick = async () => { await concluirAtendimento(btn.getAttribute("data-motivo")); fecharMenuConcluir(); }; });
+      menuConcluir.innerHTML = MOTIVOS_CONCLUSAO.map(m => `<button type="button" data-motivo="${m}" class="w-full text-left px-3 py-2 text-sm" style="border-bottom:1px solid var(--border)">${m}</button>`).join("");
+      menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => { btn.onmouseenter = () => btn.style.background = getCss('--hover'); btn.onmouseleave = () => btn.style.background = 'transparent'; btn.onclick = async () => { await concluirAtendimento(btn.getAttribute("data-motivo")); fecharMenuConcluir(); }; });
     }
     function abrirMenuConcluir() { if (!selecionado || btnConcluir.disabled) return; menuConcluir.classList.remove("hidden"); btnConcluir.setAttribute("aria-expanded", "true"); document.addEventListener("click", clickForaMenuConcluir, { capture: true }) }
     function fecharMenuConcluir() { menuConcluir.classList.add("hidden"); btnConcluir.setAttribute("aria-expanded", "false"); document.removeEventListener("click", clickForaMenuConcluir, { capture: true }) }
@@ -1089,6 +1005,8 @@
       inputs.tOutG1.value = x.outG1; inputs.tOutG2.value = x.outG2; inputs.tInBg.value = x.inBg; inputs.tInBorder.value = x.inBorder;
       inputs.tRadius.value = x.bubbleRadius; inputs.tBgOp.value = x.wallOp; inputs.tFontSize.value = x.fontSize;
       inputs.tBtnRadius.value = x.btnRadius; inputs.tCardRadius.value = x.cardRadius;
+      // Atualiza cor dos gráficos
+      setTimeout(() => refreshKPIs(), 0);
     }
     function readThemeFromInputs() { return { primary: inputs.tPrimary.value, accent: inputs.tAccent.value, sidebar: inputs.tSidebar.value, contentBg: inputs.tContentBg.value, bg: inputs.tBg.value, text: inputs.tText.value, outG1: inputs.tOutG1.value, outG2: inputs.tOutG2.value, inBg: inputs.tInBg.value, inBorder: inputs.tInBorder.value, bubbleRadius: Number(inputs.tRadius.value || 18), wallOp: Number(inputs.tBgOp.value || 0), fontSize: String(inputs.tFontSize.value || '14px'), btnRadius: Number(inputs.tBtnRadius.value || 10), cardRadius: Number(inputs.tCardRadius.value || 16) } }
     function saveTheme(t) { try { localStorage.setItem(themeKey(), JSON.stringify(t)); } catch { } }
@@ -1138,6 +1056,7 @@
     document.getElementById('loginCodigoAgente').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); login(); } });
 
     /** ============== BOOT ============== */
+    function getCss(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() }
     async function boot() {
       const savedT = loadTheme(); applyTheme(savedT || defaultTheme());
 
@@ -1176,8 +1095,8 @@
 
         try {
           const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
-          const r2 = await r(fetch(url)); if (r2?.ok) { tickets = await r2.json(); saveTickets(); }
-        } catch { /* silencioso */ }
+          const r2 = await fetch(url); if (r2.ok) { tickets = await r2.json(); saveTickets(); }
+        } catch { }
 
         renderTickets();
         schedulePolls();
@@ -1330,7 +1249,7 @@
       finally { spinner.classList.add('hidden'); label.textContent = 'Pegar próxima'; btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent); }
     };
 
-    // Prioridade (… mantido igual …)
+    // Prioridade (mantido)
     const priorityModal = document.getElementById('priorityModal');
     const priorityTelefone = document.getElementById('priorityTelefone');
     const priorityInfo = document.getElementById('priorityInfo');
@@ -1403,16 +1322,16 @@
       const q = (filtro || "").toLowerCase().trim(); const frag = document.createDocumentFragment(); elListaTickets.innerHTML = "";
       tickets.forEach(t => {
         const nome = t.nome_exibicao || t.remetente; const hay = `${nome} ${t.remetente}`.toLowerCase(); if (q && !hay.includes(q)) return;
-        const li = document.createElement("li"); li.className = "ticket-item relative flex items-center p-3 cursor-pointer border-b"; li.onclick = () => abrirTicket(t);
+        const li = document.createElement("li"); li.className = "ticket-item relative flex items-center p-3 cursor-pointer border-b"; li.style.borderColor = getCss('--border'); li.onclick = () => abrirTicket(t);
         const key = keyFrom(t.remetente, t.phone_id); const unread = unreadCountByKey[key] || 0; const badge = unread > 0 ? `<span class="badge absolute right-2 top-2">${unread}</span>` : "";
         const hora = t.data_hora ? fmtHoraBR.format(new Date(t.data_hora)) : "";
         li.innerHTML = `
           <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">${(nome || "U").charAt(0).toUpperCase()}</div>
           <div class="flex-1 min-w-0">
             <div class="font-semibold truncate">${escapeHtml(nome)}</div>
-            <div class="text-sm text-gray-600 truncate">${escapeHtml(t.mensagem_final ? t.mensagem_final.slice(0, 70) : "")}</div>
+            <div class="text-sm muted truncate">${escapeHtml(t.mensagem_final ? t.mensagem_final.slice(0, 70) : "")}</div>
           </div>
-          <div class="text-xs text-gray-400 pl-2">${hora}</div>
+          <div class="text-xs muted pl-2">${hora}</div>
           ${badge}
         `;
         if (selecionado && selecionado.remetente === t.remetente && selecionado.phone_id === t.phone_id) { li.classList.add("ticket-selected") }
@@ -1467,21 +1386,21 @@
       const div = document.createElement("div"); div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
 
       if (m.tipo === "imagem" || m.mensagem_final === "[image]") {
-        div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div><button class="btn-olhinho text-blue-600 underline mt-1">👁 Ver imagem</button><span class="hora">${hora}</span>`;
+        div.innerHTML = `<div class="muted italic">[imagem recebida]</div><button class="btn-olhinho underline mt-1" style="color:var(--link)">👁 Ver imagem</button><span class="hora">${hora}</span>`;
         const btn = div.querySelector(".btn-olhinho"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Imagem indisponível" } else btn.onclick = () => carregarImagem(div, btn, m.msg_id);
       } else if (m.tipo === "audio" || m.mensagem_final === "[audio]") {
-        div.innerHTML = `<div class="text-gray-600 italic">[áudio recebido]</div><button class="btn-audio text-blue-600 underline mt-1">▶ Reproduzir áudio</button><span class="hora">${hora}</span>`;
+        div.innerHTML = `<div class="muted italic">[áudio recebido]</div><button class="btn-audio underline mt-1" style="color:var(--link)">▶ Reproduzir áudio</button><span class="hora">${hora}</span>`;
         const btn = div.querySelector(".btn-audio"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Áudio indisponível" } else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
       } else if (m.tipo === "document" || m.mensagem_final === "[document]") {
-        div.innerHTML = `<div class="text-gray-600 italic">[documento recebido]</div><button class="btn-doc text-blue-600 underline mt-1">📎 Ver documento</button><span class="hora">${hora}</span>`;
+        div.innerHTML = `<div class="muted italic">[documento recebido]</div><button class="btn-doc underline mt-1" style="color:var(--link)">📎 Ver documento</button><span class="hora">${hora}</span>`;
         const btn = div.querySelector(".btn-doc"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Documento indisponível" } else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
       } else if (typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")) {
         const lines = m.mensagem_final.split("\n"); const filename = (lines[0] || "").replace("📎 PDF:", "").trim() || "Arquivo"; const link = (lines[1] || "").replace("🔗", "").trim();
-        div.innerHTML = `<div class="flex items-start gap-2"><div class="text-xl leading-none">📄</div><div class="min-w-0"><div class="font-semibold">${escapeHtml(filename)}</div>${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">Abrir/baixar</a>` : `<span class="text-slate-500">sem link</span>`}</div></div><span class="hora">${hora}</span>`;
+        div.innerHTML = `<div class="flex items-start gap-2"><div class="text-xl leading-none">📄</div><div class="min-w-0"><div class="font-semibold">${escapeHtml(filename)}</div>${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="underline break-all" style="color:var(--link)">Abrir/baixar</a>` : `<span class="muted">sem link</span>`}</div></div><span class="hora">${hora}</span>`;
       } else if (m.tipo === "emoji" || m.mensagem_final === "[reaction]") {
         const wrap = document.createElement("div"); wrap.className = "flex items-center gap-2";
         const emojiEl = document.createElement("span"); emojiEl.className = "text-2xl"; emojiEl.textContent = "🙂";
-        const label = document.createElement("span"); label.className = "text-gray-600 italic"; label.textContent = "enviou um emote";
+        const label = document.createElement("span"); label.className = "muted italic"; label.textContent = "enviou um emote";
         wrap.appendChild(emojiEl); wrap.appendChild(label); div.appendChild(wrap);
         const horaSpan = document.createElement("span"); horaSpan.className = "hora"; horaSpan.textContent = hora; div.appendChild(horaSpan);
         if (m.msg_id) {
@@ -1547,14 +1466,14 @@
         const filename = j.filename || "arquivo"; const mime = j.mime_type || "application/octet-stream"; const size = j.size_bytes ?? null;
         const box = document.createElement("div"); box.className = "mt-2 space-y-1";
         if (mime.startsWith("application/pdf") && j.data_uri && (size === null || size <= DOC_PREVIEW_MAX)) {
-          const preview = document.createElement("embed"); preview.src = j.data_uri; preview.type = mime; preview.className = "w-[260px] h-[200px] rounded border"; box.appendChild(preview);
-          const meta = document.createElement("div"); meta.className = "text-xs text-slate-600";
+          const preview = document.createElement("embed"); preview.src = j.data_uri; preview.type = mime; preview.className = "w-[260px] h-[200px] rounded border"; preview.style.borderColor = getCss('--border'); box.appendChild(preview);
+          const meta = document.createElement("div"); meta.className = "text-xs"; meta.style.color = getCss('--muted');
           const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
-          meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div><div>${size ? bytesToHuman(size) : ""}</div><a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">Abrir/baixar</a>`; box.appendChild(meta);
+          meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div><div>${size ? bytesToHuman(size) : ""}</div><a href="${link}" target="_blank" rel="noopener noreferrer" class="underline" style="color:var(--link)">Abrir/baixar</a>`; box.appendChild(meta);
         } else {
           const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
           const row = document.createElement("div"); row.className = "flex items-start gap-2";
-          row.innerHTML = `<div class="text-xl leading-none">📎</div><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(filename)}</div><div class="text-xs text-slate-600">${escapeHtml(mime)} ${size ? ("• " + bytesToHuman(size)) : ""}</div><a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">Baixar documento</a></div>`;
+          row.innerHTML = `<div class="text-xl leading-none">📎</div><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(filename)}</div><div class="text-xs" style="color:var(--muted)">${escapeHtml(mime)} ${size ? ("• " + bytesToHuman(size)) : ""}</div><a href="${link}" target="_blank" rel="noopener noreferrer" class="underline break-all" style="color:var(--link)">Baixar documento</a></div>`;
           box.appendChild(row);
         }
         div.insertBefore(box, btn); btn.remove();
@@ -1642,7 +1561,7 @@
       location.reload();
     }
 
-    function limparChat() { chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>' }
+    function limparChat() { chat.innerHTML = '<p id="loading" class="text-center muted">Pegue uma conversa para iniciar…</p>' }
 
     /** ============== KPIs & Relatório (com filtros + agente fixo) ============== */
     function fmtDurSec(s) { if (s == null) return "—"; const m = Math.floor(s / 60), sec = s % 60; if (m >= 60) { const h = Math.floor(m / 60), mm = m % 60; return `${h}h ${mm}m`; } return `${m}m ${sec}s`; }
@@ -1703,64 +1622,7 @@
       });
     }
 
-    // ====== NOVO: Charts compactos com toggle ======
-    function chartTextColor() { return getCss('--text') || '#0f172a' }
-    const baseOptions = (isBar = false) => ({
-      responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 1.6,
-      layout: { padding: 0 },
-      plugins: {
-        legend: { position: 'right', labels: { color: chartTextColor(), boxWidth: 10 } },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => {
-              const arr = ctx.dataset.data;
-              const total = Array.isArray(arr) ? arr.reduce((a, b) => a + b, 0) : 0;
-              const v = isBar ? ctx.raw : ctx.parsed;
-              const p = total ? Math.round(v / total * 100) : 0;
-              return `${ctx.label}: ${v} (${p}%)`;
-            }
-          }
-        }
-      },
-      scales: isBar ? {
-        x: { ticks: { color: chartTextColor() }, grid: { color: getCss('--border') } },
-        y: { ticks: { color: chartTextColor() }, grid: { color: getCss('--border') } }
-      } : {}
-    });
-
-    function renderStatus(type = 'pie') {
-      const el = document.getElementById('chartStatus'); if (!el) return;
-      if (chStatus) chStatus.destroy();
-      const isBar = (type === 'bar');
-      chStatus = new Chart(el.getContext('2d'), {
-        type: isBar ? 'bar' : (type || 'pie'),
-        data: { labels: lastStatus.labels, datasets: [{ data: lastStatus.data }] },
-        options: baseOptions(isBar)
-      });
-    }
-
-    function renderMotivos(type = 'doughnut') {
-      const el = document.getElementById('chartMotivos'); if (!el) return;
-      if (chMot) chMot.destroy();
-      const preferBar = lastMotivos.labels.length > 6;
-      const finalType = (type === 'bar' || preferBar) ? 'bar' : (type || 'doughnut');
-      const isBar = finalType === 'bar';
-      chMot = new Chart(el.getContext('2d'), {
-        type: finalType,
-        data: { labels: lastMotivos.labels, datasets: [{ data: lastMotivos.data }] },
-        options: baseOptions(isBar)
-      });
-    }
-
-    document.querySelectorAll('[data-chart][data-type]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const chart = btn.dataset.chart, type = btn.dataset.type;
-        if (chart === 'status') renderStatus(type);
-        if (chart === 'motivos') renderMotivos(type);
-      });
-    });
+    function chartTextColor() { return getCss('--text') || '#e5e7eb' }
 
     async function refreshKPIs() {
       updatePeriodoLabel();
@@ -1781,18 +1643,28 @@
         kpiTma.textContent = fmtDurSec(resumo.tma_segundos);
         kpiFRT.textContent = fmtDurSec(resumo.tmr_segundos);
 
-        // Status (render compacto)
-        lastStatus = { labels: ['Em atendimento', 'Concluídos', 'Outros'], data: [em, conc, outros] };
-        renderStatus('pie');
+        // Status pie
+        const ctxStatus = document.getElementById('pieStatus')?.getContext('2d');
+        if (ctxStatus) {
+          if (pieChart) pieChart.destroy();
+          pieChart = new Chart(ctxStatus, {
+            type: 'pie',
+            data: { labels: ['Em atendimento', 'Concluídos', 'Outros'], datasets: [{ data: [em, conc, outros] }] },
+            options: { responsive: true, plugins: { legend: { labels: { color: chartTextColor() } } } }
+          });
+        }
 
-        // Motivos (pizza/barras compacto)
+        // Motivos (pizza)
         try {
           const rMot = await fetch(urlMotivos);
           const motivos = rMot.ok ? await rMot.json() : [];
           const labels = Array.isArray(motivos) ? motivos.map(m => m.motivo || m.label || '—') : [];
           const vals = Array.isArray(motivos) ? motivos.map(m => Number(m.qtd || m.total || 0)) : [];
-          lastMotivos = { labels, data: vals };
-          renderMotivos('doughnut');
+          const ctxMot = document.getElementById('pieMotivos')?.getContext('2d');
+          if (ctxMot) {
+            if (chartMotivos) chartMotivos.destroy();
+            chartMotivos = new Chart(ctxMot, { type: 'pie', data: { labels, datasets: [{ data: vals }] }, options: { plugins: { legend: { labels: { color: chartTextColor() } } } } });
+          }
         } catch { /* silencioso */ }
 
         // Extrato (acordeão)
@@ -1803,7 +1675,7 @@
       }
     }
 
-    // ------- Extrato (acordeão com “termômetro” e expand/recolhe) -------
+    // ------- Extrato (acordeão) -------
     function normalizeExtratoRow(row) {
       if (!row) return null;
       if (Array.isArray(row)) {
@@ -1828,7 +1700,7 @@
       };
     }
 
-    function pct(v, tot) { if (!tot) return '0%'; return Math.round((v / tot) * 100) + '%' }
+    function pct(v, tot) { if (!tot) return '0%'; return Math.round((v / tot) * 100) + '%'; }
 
     function renderExtrato(rows) {
       extratoWrap.innerHTML = '';
@@ -1843,12 +1715,6 @@
         const label = dt ? fmtDataBR.format(dt) : String(r.data || '—');
         const total = r.atendimentos || 0;
 
-        const pNeg = total ? Math.round((r.negociacao / total) * 100) : 0;
-        const p2via = total ? Math.round((r.segunda_via / total) * 100) : 0;
-        const pRec = total ? Math.round((r.recusou / total) * 100) : 0;
-        const pDuv = total ? Math.round((r.duvidas / total) * 100) : 0;
-        const pIna = total ? Math.round((r.inativo / total) * 100) : 0;
-
         const item = document.createElement('div');
         item.className = 'extrato-item';
 
@@ -1857,19 +1723,10 @@
         header.className = 'extrato-header';
         header.setAttribute('aria-expanded', 'false');
         header.innerHTML = `
-          <div class="flex flex-col gap-1 text-left">
-            <div class="flex items-center gap-3">
-              <span class="font-medium">${escapeHtml(label)}</span>
-              <span class="extrato-meta">Total: <strong style="color:var(--text)">${total}</strong></span>
-              <span class="extrato-meta">Negociações: <strong style="color:var(--text)">${r.negociacao}</strong> (${pct(r.negociacao, total)})</span>
-            </div>
-            <div class="meter" title="Distribuição do dia">
-              <i class="m1" style="width:${pNeg}%"></i>
-              <i class="m2" style="width:${p2via}%"></i>
-              <i class="m3" style="width:${pRec}%"></i>
-              <i class="m4" style="width:${pDuv}%"></i>
-              <i class="m5" style="width:${pIna}%"></i>
-            </div>
+          <div class="flex items-center gap-3">
+            <span class="font-medium">${escapeHtml(label)}</span>
+            <span class="extrato-meta">Total: <strong style="color:var(--text)">${total}</strong></span>
+            <span class="extrato-meta">Negociações: <strong style="color:var(--text)">${r.negociacao}</strong> (${pct(r.negociacao, total)})</span>
           </div>
           <span class="extrato-chevron">▼</span>
         `;
@@ -1880,7 +1737,11 @@
           <div class="overflow-x-auto">
             <table class="table-soft">
               <thead>
-                <tr><th class="text-left">Motivo</th><th class="text-right">Qtd</th><th class="text-right">% do dia</th></tr>
+                <tr>
+                  <th class="text-left">Motivo</th>
+                  <th class="text-right">Qtd</th>
+                  <th class="text-right">% do dia</th>
+                </tr>
               </thead>
               <tbody>
                 ${[
@@ -1894,7 +1755,8 @@
                     <td>${escapeHtml(mot)}</td>
                     <td class="text-right">${v}</td>
                     <td class="text-right">${pct(v, total)}</td>
-                  </tr>`).join('')}
+                  </tr>
+                `).join('')}
                 <tr class="font-medium">
                   <td class="text-right">Total do dia</td>
                   <td class="text-right">${total}</td>
@@ -1916,24 +1778,6 @@
         item.appendChild(content);
         extratoWrap.appendChild(item);
       });
-
-      // Expandir/Recolher todos
-      if (btnExtratoExpand) btnExtratoExpand.onclick = () => {
-        extratoWrap.querySelectorAll('.extrato-content').forEach(c => {
-          c.classList.remove('hidden');
-          const h = c.previousElementSibling;
-          h?.setAttribute('aria-expanded', 'true');
-          h?.querySelector('.extrato-chevron')?.textContent = '▲';
-        });
-      };
-      if (btnExtratoCollapse) btnExtratoCollapse.onclick = () => {
-        extratoWrap.querySelectorAll('.extrato-content').forEach(c => {
-          c.classList.add('hidden');
-          const h = c.previousElementSibling;
-          h?.setAttribute('aria-expanded', 'false');
-          h?.querySelector('.extrato-chevron')?.textContent = '▼';
-        });
-      };
     }
 
     async function refreshExtrato() {
@@ -1970,7 +1814,7 @@
       ocean: { primary: "#06b6d4", accent: "#10b981", sidebar: "#f0fdff", contentBg: "#ecfeff", bg: "#f0fdfa", text: "#0b1320", outG1: "#cffafe", outG2: "#a7f3d0", inBg: "#ffffff", inBorder: "#cbd5e1", bubbleRadius: 18, btnRadius: 12, cardRadius: 18, wallOp: .05, fontSize: "14px", muted: "#475569", border: "#cbd5e1", link: "#0891b2", ghostBg: "#e2f2f3" },
       sunset: { primary: "#f97316", accent: "#ef4444", sidebar: "#fff7ed", contentBg: "#fff7ed", bg: "#fff1f2", text: "#111827", outG1: "#fed7aa", outG2: "#fda4af", inBg: "#ffffff", inBorder: "#fecaca", bubbleRadius: 20, btnRadius: 12, cardRadius: 20, wallOp: .06, fontSize: "14px", muted: "#6b7280", border: "#f3d4cf", link: "#f97316", ghostBg: "#fff3e8" },
       dark: { primary: "#60a5fa", accent: "#22c55e", sidebar: "#0b1220", contentBg: "#0b1220", bg: "#0a0f1a", text: "#e5e7eb", muted: "#94a3b8", border: "#1f2937", link: "#93c5fd", ghostBg: "#111827", outG1: "#1f2937", outG2: "#0f172a", outFg: "#e5e7eb", inBg: "#0e1726", inBorder: "#1f2937", inFg: "#e5e7eb", bubbleRadius: 16, btnRadius: 10, cardRadius: 16, wallOp: 1, fontSize: "14px", hover: "#111827", hoverStrong: "#0f172a", inputBg: "#0e1726", inputFg: "#e5e7eb", scrollbar: "#334155", ticketSelectedBg: "#111827", replyBg: "rgba(255,255,255,.08)", replyBorder: "rgba(255,255,255,.12)", replyFg: "#e5e7eb" },
-      minimal: { primary: "#111827", accent: "#64748b", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#0f172a", outG1: "#f3f4f6", outG2: "#e5e7eb", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 14, btnRadius: 8, cardRadius: 16, wallOp: 0, fontSize: "15px", muted: "#6b7280", border: "#e2e8f0", link: "#111827", ghostBg: "#f3f4f6" },
+      minimal: { primary: "#111827", accent: "#64748b", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#0f172a", outG1: "#f3f4f6", outG2: "#e5e7eb", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 14, btnRadius: 8, cardRadius: 16, wallOp: 0, fontSize: "15px", muted: "#6b7280", border: "#e5e7eb", link: "#111827", ghostBg: "#f3f4f6" },
       funky: { primary: "#a78bfa", accent: "#ec4899", sidebar: "#faf5ff", contentBg: "#fff0f7", bg: "#fafafa", text: "#111827", outG1: "#e9d5ff", outG2: "#fecdd3", inBg: "#ffffff", inBorder: "#f5d0fe", bubbleRadius: 22, btnRadius: 14, cardRadius: 22, wallOp: .08, fontSize: "14px", muted: "#6b7280", border: "#e9d5ff", link: "#a78bfa", ghostBg: "#f5f3ff" }
     };
 
