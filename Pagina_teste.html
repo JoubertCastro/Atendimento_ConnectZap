@@ -325,13 +325,13 @@
       transform: translateX(0)
     }
 
-    /* FIX: modal não deve aparecer ao dar F5; começa escondida */
     .modal {
       display: none;
       position: fixed;
       z-index: 100;
       inset: 0;
       background: rgba(0, 0, 0, .6);
+      display: flex;
       align-items: center;
       justify-content: center
     }
@@ -395,7 +395,6 @@
                   </svg>
                   <span id="toggleLabel">Ficar online</span>
                 </button>
-                <!-- Botão contextual: "Logout" quando logado / "Login" quando deslogado -->
                 <button id="btnLogout" class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200">Logout</button>
               </div>
               <div id="homeAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
@@ -406,9 +405,10 @@
               <div class="flex flex-wrap gap-2">
                 <button id="goToConversas1" class="btn btn-primary px-4 py-2">Ir para Conversas</button>
                 <button id="goToRelatorio1" class="btn px-4 py-2 bg-gray-100 hover:bg-gray-200">Ver Relatório</button>
+                <button id="btnAbrirLogin" class="btn px-4 py-2 bg-gray-100 hover:bg-gray-200">Entrar (alterar
+                  código)</button>
               </div>
-              <p class="mt-3 text-xs text-gray-500">Use “Login” apenas quando precisar informar/trocar o código de
-                agente.</p>
+              <p class="mt-3 text-xs text-gray-500">Use “Entrar” apenas quando precisar trocar o código de agente.</p>
             </div>
           </div>
         </div>
@@ -560,6 +560,7 @@
             </div>
           </div>
           <div class="p-4 overflow-y-auto space-y-6">
+            <!-- (mesmo conteúdo de tema do arquivo anterior) -->
             <section>
               <div class="text-xs text-gray-500 mb-2">Temas rápidos</div>
               <div class="grid grid-cols-2 gap-2">
@@ -784,6 +785,7 @@
     const elHomeCart = document.getElementById('homeAgenteCarteira');
     const elHomeStatus = document.getElementById('homeStatus');
     const elHomeAviso = document.getElementById('homeAviso');
+    const btnAbrirLogin = document.getElementById('btnAbrirLogin');
 
     // Relatório
     const kpiEm = document.getElementById('kpiEm');
@@ -826,6 +828,7 @@
     const tabRelatorio = document.getElementById('tabRelatorio');
     document.getElementById('goToConversas1').onclick = () => switchTab('conversas');
     document.getElementById('goToRelatorio1').onclick = () => switchTab('relatorio');
+    btnAbrirLogin.onclick = () => abrirModalLogin();
 
     /** =================== MENU CONCLUIR =================== */
     const MOTIVOS_CONCLUSAO = ["Realizou negociação", "Solicitou 2ª via de boleto", "Recusou a proposta", "Dúvidas gerais", "Cliente ficou inativo"];
@@ -841,7 +844,7 @@
     btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir(); };
     renderMenuConcluir();
 
-    /** =================== THEME (igual antes) =================== */
+    /** =================== THEME (mesmo do arquivo anterior) =================== */
     function themeKey() { return `cz:theme:${agente.codigo || 'anon'}`; }
     function defaultTheme() { return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff" }; }
     function applyTheme(t) {
@@ -856,25 +859,48 @@
       r.setProperty('--bubble-radius', x.bubbleRadius + 'px'); r.setProperty('--btn-radius', x.btnRadius + 'px'); r.setProperty('--card-radius', x.cardRadius + 'px');
       r.setProperty('--font-size', x.fontSize); r.setProperty('--chat-wallpaper-opacity', x.wallOp);
       r.setProperty('--scrollbar', x.scrollbar || '#cbd5e1'); r.setProperty('--primary', x.primary); r.setProperty('--accent', x.accent);
-      // (inputs do drawer só existem no drawer)
-      const inputs = {
-        tPrimary: document.getElementById('tPrimary'), tAccent: document.getElementById('tAccent'),
-        tSidebar: document.getElementById('tSidebar'), tContentBg: document.getElementById('tContentBg'),
-        tBg: document.getElementById('tBg'), tText: document.getElementById('tText'),
-        tOutG1: document.getElementById('tOutG1'), tOutG2: document.getElementById('tOutG2'),
-        tInBg: document.getElementById('tInBg'), tInBorder: document.getElementById('tInBorder'),
-        tRadius: document.getElementById('tRadius'), tBgOp: document.getElementById('tBgOp'),
-        tFontSize: document.getElementById('tFontSize'), tBtnRadius: document.getElementById('tBtnRadius'),
-        tCardRadius: document.getElementById('tCardRadius')
-      };
-      Object.entries(inputs).forEach(([k, el]) => { if (el && x) { if (k === 'tRadius') el.value = x.bubbleRadius; else if (k === 'tBgOp') el.value = x.wallOp; else if (k === 'tFontSize') el.value = x.fontSize; else if (k === 'tBtnRadius') el.value = x.btnRadius; else if (k === 'tCardRadius') el.value = x.cardRadius; else el.value = x[{ tPrimary: 'primary', tAccent: 'accent', tSidebar: 'sidebar', tContentBg: 'contentBg', tBg: 'bg', tText: 'text', tOutG1: 'outG1', tOutG2: 'outG2', tInBg: 'inBg', tInBorder: 'inBorder' }[k]]; } });
+      inputs.tPrimary.value = x.primary; inputs.tAccent.value = x.accent; inputs.tSidebar.value = x.sidebar;
+      inputs.tContentBg.value = x.contentBg; inputs.tBg.value = x.bg; inputs.tText.value = x.text;
+      inputs.tOutG1.value = x.outG1; inputs.tOutG2.value = x.outG2; inputs.tInBg.value = x.inBg; inputs.tInBorder.value = x.inBorder;
+      inputs.tRadius.value = x.bubbleRadius; inputs.tBgOp.value = x.wallOp; inputs.tFontSize.value = x.fontSize;
+      inputs.tBtnRadius.value = x.btnRadius; inputs.tCardRadius.value = x.cardRadius;
     }
+    function readThemeFromInputs() { return { primary: inputs.tPrimary.value, accent: inputs.tAccent.value, sidebar: inputs.tSidebar.value, contentBg: inputs.tContentBg.value, bg: inputs.tBg.value, text: inputs.tText.value, outG1: inputs.tOutG1.value, outG2: inputs.tOutG2.value, inBg: inputs.tInBg.value, inBorder: inputs.tInBorder.value, bubbleRadius: Number(inputs.tRadius.value || 18), wallOp: Number(inputs.tBgOp.value || 0), fontSize: String(inputs.tFontSize.value || '14px'), btnRadius: Number(inputs.tBtnRadius.value || 10), cardRadius: Number(inputs.tCardRadius.value || 16) }; }
+    function saveTheme(t) { try { localStorage.setItem(themeKey(), JSON.stringify(t)); } catch { } }
     function loadTheme() { try { return JSON.parse(localStorage.getItem(themeKey()) || 'null'); } catch { return null; } }
+
+    // refs de Theme
+    const themeDrawer = document.getElementById('themeDrawer');
+    const btnTheme = document.getElementById('btnTheme');
+    const btnThemeClose = document.getElementById('btnThemeClose');
+    const btnSaveTheme = document.getElementById('btnSaveTheme');
+    const btnRandom = document.getElementById('btnRandom');
+    const btnReset = document.getElementById('btnReset');
+    const btnThemeExport = document.getElementById('btnThemeExport');
+    const importTheme = document.getElementById('importTheme');
+    const inputs = {
+      tPrimary: document.getElementById('tPrimary'), tAccent: document.getElementById('tAccent'),
+      tSidebar: document.getElementById('tSidebar'), tContentBg: document.getElementById('tContentBg'),
+      tBg: document.getElementById('tBg'), tText: document.getElementById('tText'),
+      tOutG1: document.getElementById('tOutG1'), tOutG2: document.getElementById('tOutG2'),
+      tInBg: document.getElementById('tInBg'), tInBorder: document.getElementById('tInBorder'),
+      tRadius: document.getElementById('tRadius'), tBgOp: document.getElementById('tBgOp'),
+      tFontSize: document.getElementById('tFontSize'), tBtnRadius: document.getElementById('tBtnRadius'),
+      tCardRadius: document.getElementById('tCardRadius')
+    };
+    if (btnTheme) btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
+    if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open'); });
+    [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs.tBorder, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
+      .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
+    if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open'); });
+    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); });
+    if (btnRandom) btnRandom.addEventListener('click', () => { const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')); const b1 = rand(), b2 = rand(); const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; applyTheme(t); });
 
     /** =================== LOGIN MODAL (abre só quando clicar) =================== */
     function isLogged() { try { return !!localStorage.getItem('agente_codigo'); } catch { return false; } }
-    function abrirModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'flex'; setTimeout(() => document.getElementById('loginCodigoAgente').focus(), 50); isModalOpen = true; }
-    function fecharModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'none'; const e = document.getElementById('loginErro'); e.textContent = ''; e.classList.add('hidden'); isModalOpen = false; }
+    function abrirModalLogin() { document.getElementById('modalLogin').style.display = 'flex'; setTimeout(() => document.getElementById('loginCodigoAgente').focus(), 50); isModalOpen = true; }
+    function fecharModalLogin() { document.getElementById('modalLogin').style.display = 'none'; const e = document.getElementById('loginErro'); e.textContent = ''; e.classList.add('hidden'); isModalOpen = false; }
     async function login() {
       const codigo = (document.getElementById('loginCodigoAgente').value || '').trim();
       const erro = document.getElementById('loginErro');
@@ -887,7 +913,7 @@
         localStorage.setItem("agente_nome", j.agente?.nome || `Agente ${codigo}`);
         localStorage.setItem("agente_carteira", j.agente?.carteira || 'ConnectZap');
         fecharModalLogin();
-        await boot();
+        await boot(); // mantém-se na HOME; usuário decide ir para conversas
         switchTab('home');
       } catch (e) {
         erro.textContent = e?.message || 'Falha ao validar código.';
@@ -901,13 +927,12 @@
     async function boot() {
       const savedT = loadTheme(); applyTheme(savedT || defaultTheme());
 
-      // agente de localStorage / QS (sem abrir modal automaticamente)
+      // carrega agente de localStorage / QS (sem abrir modal automaticamente)
       agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
       agente.origem = localStorage.getItem("agente_origem") || qsParam("origem") || 'web';
-      setAuthButton(); // configura botão Logout/Login conforme estado
 
       if (!agente.codigo) {
-        // Primeiro acesso / sem login: mostra HOME limpa
+        // Primeiro acesso / sem login: mostra HOME limpa e botão “Entrar”
         elHomeNome.textContent = '—';
         elHomeCart.textContent = '—';
         setStatus(false);
@@ -947,7 +972,7 @@
 
         await refreshKPIs();
 
-        wireComposer();
+        wireComposer(); // garante eventos do composer
       } catch (e) {
         elHomeAviso.classList.remove("hidden");
         elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
@@ -969,7 +994,7 @@
     /** =================== ONLINE/OFFLINE, LIMITES E FILA =================== */
     async function verificarOnline() {
       try {
-        const r = await fetch(`${FILA_API}/fila/status?carteira=${encodeURIComponent(agente.carteira || '')}`);
+        const r = await fetch(`${FILA_API}/fila/status?carteira=${encodeURIComponent(agente.carteira)}`);
         const lista = await r.json();
         const achou = Array.isArray(lista) && lista.some(x => String(x.codigo_do_agente) === String(agente.codigo));
         setStatus(achou);
@@ -979,10 +1004,14 @@
     }
     function setStatus(online) {
       agente.online = !!online;
+      // Conversas (indicador)
       if (elAgenteStatus) elAgenteStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
+      // Home (indicador)
       if (elHomeStatus) elHomeStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
+      // Botões dependentes
       btnPegarProxima.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
       btnPrioridade.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+      // Toggle label/cores
       const toggleLabel = document.getElementById("toggleLabel");
       if (btnToggleOnline) {
         btnToggleOnline.disabled = false;
@@ -1078,33 +1107,391 @@
       }
     };
 
-    /** =================== Pegar próxima / Prioridade (inalterados) =================== */
-    // (mesmo código das funções relacionadas, omitido aqui por brevidade — continua igual ao anterior)
-    // ... (mantido do arquivo anterior: prioridade, renderTickets, abrirTicket, mensagens, enviar, PDF, etc.)
-    // Para manter tudo funcional, o restante do código é o mesmo da versão anterior até as funções de concluir/liberar.
+    // Pegar próxima / Prioridade
+    btnPegarProxima.onclick = async () => {
+      if (!agente.online) { alert("Você está offline. Vá na Home e clique em “Ficar online”."); return; }
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) {
+        elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de pegar outro.`;
+        elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return;
+      }
+      const spinner = document.getElementById('pegarSpinner'); const label = document.getElementById('pegarLabel');
+      btnPegarProxima.disabled = true; spinner.classList.remove('hidden'); label.textContent = 'Buscando…';
+      try {
+        const r = await fetch(`${CONV_API}/api/tickets/claim`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira })
+        });
+        const j = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
+        if (r.status === 409 && j && (j.limit_per_agent !== undefined)) {
+          limitPerAgent = Number(j.limit_per_agent || 0); ativosCount = Number(j.ativos || ativosCount);
+          elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosELimite(); return;
+        }
+        if (!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
+        if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) { tickets.unshift(j.ticket); saveTickets(); }
+        renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosLimiteUI();
+      } catch (e) { alert("Falha ao pegar próxima."); }
+      finally {
+        spinner.classList.add('hidden'); label.textContent = 'Pegar próxima';
+        btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+      }
+    };
 
-    /** =================== LIBERAR / CONCLUIR =================== */
-    async function concluirAtendimento(motivo) { /* ... já implementado acima na versão anterior ... */ }
-    async function carregarMensagens(incremental = true) { /* ... idem ... */ }
-    function renderTickets(f = "") { /* ... idem ... */ }
-    function abrirTicket(t) { /* ... idem ... */ }
+    // Prioridade
+    const priorityModal = document.getElementById('priorityModal');
+    const priorityTelefone = document.getElementById('priorityTelefone');
+    const priorityInfo = document.getElementById('priorityInfo');
+    const priorityErro = document.getElementById('priorityErro');
+    const btnPriorityBuscar = document.getElementById('btnPriorityBuscar');
+    const prioritySpinner = document.getElementById('prioritySpinner');
+    const priorityBtnLabel = document.getElementById('priorityBtnLabel');
+    btnPrioridade.onclick = () => {
+      if (!agente.online) { alert('Você está offline. Vá na Home e clique em “Ficar online”.'); return; }
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); return; }
+      abrirPriorityModal();
+    };
+    function abrirPriorityModal() { isModalOpen = true; priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden'); priorityTelefone.value = ''; priorityModal.classList.remove('hidden'); setTimeout(() => priorityTelefone.focus(), 50); }
+    function fecharPriorityModal() { isModalOpen = false; priorityModal.classList.add('hidden'); }
+    priorityTelefone.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); btnPriorityBuscar.click(); } });
+    function normalizarTelefone(raw) {
+      let d = String(raw || '').replace(/\D/g, ''); if (!d) return '';
+      if (!d.startsWith('55')) d = '55' + d;
+      const m = d.match(/^55(\d{2})(\d{8,9})(.*)$/);
+      if (m) {
+        const ddd = m[1]; let numero = m[2]; const tail = m[3] || '';
+        if (numero.length === 9 && numero.startsWith('9')) numero = numero.slice(1);
+        d = '55' + ddd + numero + tail;
+      }
+      return d;
+    }
+    function phoneIdsForCarteira() { return (carteiraToPhoneIds[agente.carteira] || []).map(String); }
+    function dedupe(arr) { return Array.from(new Set(arr.filter(Boolean))); }
+    async function preferPhoneIdDoContato(remetente) {
+      const hit = (ordemCache || []).find(x => String(x.remetente) === String(remetente));
+      if (hit && hit.phone_id) return String(hit.phone_id);
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/contatos`);
+        const all = await r.json();
+        const ids = phoneIdsForCarteira();
+        const c = (all || []).find(x => ids.includes(String(x.phone_id)) && String(x.remetente) === String(remetente));
+        return c ? String(c.phone_id) : null;
+      } catch { return null; }
+    }
+    async function tentarClaimComIds(remetente, ids) {
+      const candidatos = [];
+      if (ids && ids.length) {
+        candidatos.push(ids);
+        ids.forEach(id => candidatos.push([id]));
+      } else {
+        candidatos.push([]);
+      }
+      for (const arr of candidatos) {
+        const body = { codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira, remetente, ...(arr.length ? { phone_id: arr } : {}), prioridade: true };
+        const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
+        if (r.status === 404) continue;
+        return data;
+      }
+      return { ok: false, erro: 'Contato não está na fila desta carteira.' };
+    }
+    btnPriorityBuscar.onclick = async () => {
+      priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden');
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) {
+        priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; priorityErro.classList.remove('hidden'); return;
+      }
+      const nrm = normalizarTelefone(priorityTelefone.value);
+      if (nrm.length < 11) { priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).'; priorityErro.classList.remove('hidden'); return; }
+      priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`; priorityInfo.classList.remove('hidden');
+      const preferido = await preferPhoneIdDoContato(nrm);
+      const ordemIds = dedupe([preferido, ...phoneIdsForCarteira()]);
+      btnPriorityBuscar.disabled = true; prioritySpinner.classList.remove('hidden'); priorityBtnLabel.textContent = 'Solicitando…';
+      try {
+        const data = await tentarClaimComIds(nrm, ordemIds);
+        if (data && data.limit_per_agent !== undefined) {
+          limitPerAgent = Number(data.limit_per_agent || 0); ativosCount = Number(data.ativos || ativosCount);
+          priorityErro.textContent = data.erro || `Limite de ${limitPerAgent} atingido.`; priorityErro.classList.remove('hidden'); await refreshAtivosELimite(); return;
+        }
+        if (data && data.ok && data.ticket) {
+          priorityInfo.innerHTML = `<span class="text-emerald-700 font-medium">Prioridade concedida.</span> Abrindo o ticket…`;
+          if (!tickets.find(t => t.remetente === data.ticket.remetente && t.phone_id === data.ticket.phone_id)) { tickets.unshift(data.ticket); saveTickets(); renderTickets(); }
+          fecharPriorityModal(); abrirTicket(data.ticket);
+          ativosCount++; renderAtivosLimiteUI(); return;
+        }
+        if (data && (data.assigned_to || data.atendimento)) {
+          const owner = data.assigned_to || data.atendimento;
+          priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome || '—')}</strong> (#${escapeHtml(String(owner.codigo || '—'))}).`;
+          priorityErro.classList.remove('hidden'); return;
+        }
+        priorityErro.textContent = (data && (data.erro || data.message)) || 'Não foi possível conceder prioridade.';
+        priorityErro.classList.remove('hidden');
+      } catch (e) {
+        priorityErro.textContent = 'Falha ao solicitar prioridade.'; priorityErro.classList.remove('hidden');
+      } finally {
+        btnPriorityBuscar.disabled = false; prioritySpinner.classList.add('hidden'); priorityBtnLabel.textContent = 'Buscar e solicitar';
+      }
+    };
+
+    /** =================== LISTA / CHAT =================== */
+    function renderTickets(filtro = "") {
+      const q = (filtro || "").toLowerCase().trim();
+      const frag = document.createDocumentFragment();
+      elListaTickets.innerHTML = "";
+      tickets.forEach(t => {
+        const nome = t.nome_exibicao || t.remetente;
+        const hay = `${nome} ${t.remetente}`.toLowerCase();
+        if (q && !hay.includes(q)) return;
+        const li = document.createElement("li");
+        li.className = "relative flex items-center p-3 hover:bg-gray-50 cursor-pointer border-b";
+        li.onclick = () => abrirTicket(t);
+        const key = keyFrom(t.remetente, t.phone_id);
+        const unread = unreadCountByKey[key] || 0;
+        const badge = unread > 0 ? `<span class="badge absolute right-2 top-2">${unread}</span>` : "";
+        const hora = t.data_hora ? fmtHoraBR.format(new Date(t.data_hora)) : "";
+        li.innerHTML = `
+          <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">${(nome || "U").charAt(0).toUpperCase()}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold truncate">${escapeHtml(nome)}</div>
+            <div class="text-sm text-gray-600 truncate">${escapeHtml(t.mensagem_final ? t.mensagem_final.slice(0, 70) : "")}</div>
+          </div>
+          <div class="text-xs text-gray-400 pl-2">${hora}</div>
+          ${badge}
+        `;
+        if (selecionado && selecionado.remetente === t.remetente && selecionado.phone_id === t.phone_id) { li.classList.add("ticket-selected"); }
+        frag.appendChild(li);
+      });
+      elListaTickets.appendChild(frag);
+    }
+
+    async function abrirTicket(t) {
+      selecionado = t;
+      try {
+        const k = keyFrom(t.remetente, t.phone_id);
+        unreadCountByKey[k] = 0; lastContatoTsByKey[k] = Date.now(); persistUnread();
+      } catch { }
+      renderTickets();
+      elTitulo.textContent = t.nome_exibicao ? `${t.nome_exibicao} (${t.remetente})` : t.remetente;
+      elSubInfo.textContent = `conta: ${phoneIdMap[t.phone_id] || t.phone_id}`;
+      textarea.disabled = false; textarea.focus(); btnEnviar.disabled = true; btnLiberar.disabled = false; btnConcluir.disabled = false;
+
+      if (msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+      msgsCtrl = new AbortController();
+
+      lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); chat.innerHTML = "";
+      await carregarMensagens(false);
+      startMensagensPoll();
+      wireComposer();
+    }
+
     function startMensagensPoll() { schedulePolls(); }
+
     let msgsCtrl = null;
-    function renderMsg(m, inc) { /* ... idem ... */ }
-    async function carregarImagem(div, btn, id) { /* ... idem ... */ }
-    async function carregarAudio(div, btn, id) { /* ... idem ... */ }
-    async function carregarDocumento(div, btn, id) { /* ... idem ... */ }
-    function responderMensagem(id, c) { /* ... idem ... */ }
-    function cancelarResposta() { /* ... idem ... */ }
-    function wireComposer() { /* ... idem ... */ }
-    function autoGrow() { /* ... idem ... */ }
-    function updateEnviarState() { /* ... idem ... */ }
-    function showTyping() { /* ... idem ... */ }
-    function hideTyping() { /* ... idem ... */ }
-    function __onTextInput() { /* ... idem ... */ }
-    function __onTextKeydown(e) { /* ... idem ... */ }
-    async function enviarMensagem() { /* ... idem ... */ }
-    async function enviarPDF(e) { /* ... idem ... */ }
+    async function carregarMensagens(incremental = true) {
+      if (!selecionado) return;
+      let url = `${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`;
+      if (selecionado.phone_id) url += `?phone_id=${encodeURIComponent(selecionado.phone_id)}`;
+      try {
+        const r = await fetch(url, { signal: msgsCtrl?.signal }); if (!r.ok) throw new Error("Erro histórico");
+        const msgs = await r.json(); msgs.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
+        if (!incremental) { chat.innerHTML = ""; lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); }
+        const isNearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 200;
+        msgs.forEach(m => renderMsg(m, incremental));
+        if (isNearBottom) requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" }));
+      } catch (e) { if (String(e?.name) !== "AbortError") console.error(e); }
+    }
+
+    function renderMsg(m, incremental) {
+      const tMs = new Date(m.data_hora).getTime();
+      const key = `${m.data_hora}|${m.status}|${m.mensagem_final || m.tipo || ""}`;
+      if (renderedKeys.has(key)) return;
+      if (incremental && lastTimestampMs !== null && tMs <= lastTimestampMs) return;
+
+      const dia = fmtDataBR.format(new Date(m.data_hora));
+      const hora = fmtHoraBR.format(new Date(m.data_hora));
+      if (!lastDayRendered || lastDayRendered !== dia) {
+        const sep = document.createElement("div"); sep.className = "dia"; sep.textContent = `— ${dia} —`; chat.appendChild(sep); lastDayRendered = dia;
+      }
+
+      const incoming = isIncoming(m);
+      const div = document.createElement("div"); div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
+
+      if (m.tipo === "imagem" || m.mensagem_final === "[image]") {
+        div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div><button class="btn-olhinho text-blue-600 underline mt-1">👁 Ver imagem</button><span class="hora">${hora}</span>`;
+        const btn = div.querySelector(".btn-olhinho"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Imagem indisponível"; } else btn.onclick = () => carregarImagem(div, btn, m.msg_id);
+      } else if (m.tipo === "audio" || m.mensagem_final === "[audio]") {
+        div.innerHTML = `<div class="text-gray-600 italic">[áudio recebido]</div><button class="btn-audio text-blue-600 underline mt-1">▶ Reproduzir áudio</button><span class="hora">${hora}</span>`;
+        const btn = div.querySelector(".btn-audio"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Áudio indisponível"; } else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
+      } else if (m.tipo === "document" || m.mensagem_final === "[document]") {
+        div.innerHTML = `<div class="text-gray-600 italic">[documento recebido]</div><button class="btn-doc text-blue-600 underline mt-1">📎 Ver documento</button><span class="hora">${hora}</span>`;
+        const btn = div.querySelector(".btn-doc"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Documento indisponível"; } else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
+      } else if (typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")) {
+        const lines = m.mensagem_final.split("\n"); const filename = (lines[0] || "").replace("📎 PDF:", "").trim() || "Arquivo"; const link = (lines[1] || "").replace("🔗", "").trim();
+        div.innerHTML = `<div class="flex items-start gap-2"><div class="text-xl leading-none">📄</div><div class="min-w-0">
+          <div class="font-semibold">${escapeHtml(filename)}</div>${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">Abrir/baixar</a>` : `<span class="text-slate-500">sem link</span>`}
+        </div></div><span class="hora">${hora}</span>`;
+      } else if (m.tipo === "emoji" || m.mensagem_final === "[reaction]") {
+        const wrap = document.createElement("div"); wrap.className = "flex items-center gap-2";
+        const emojiEl = document.createElement("span"); emojiEl.className = "text-2xl"; emojiEl.textContent = "🙂";
+        const label = document.createElement("span"); label.className = "text-gray-600 italic"; label.textContent = "enviou um emote";
+        wrap.appendChild(emojiEl); wrap.appendChild(label); div.appendChild(wrap);
+        const horaSpan = document.createElement("span"); horaSpan.className = "hora"; horaSpan.textContent = hora; div.appendChild(horaSpan);
+        if (m.msg_id) {
+          fetch(`${CONV_API}/api/conversas/emoji/${encodeURIComponent(m.msg_id)}`).then(r => r.json())
+            .then(j => { if (j.ok && j.emoji) emojiEl.textContent = j.emoji; else label.textContent = "emoji não carregado"; })
+            .catch(() => label.textContent = "falha ao carregar emoji");
+        }
+      } else if (m.tipo === "system" || m.mensagem_final === "[system]") {
+        div.className = "msg system";
+        div.innerHTML = `<div class="sys-title"><span>ℹ️ Evento do sistema</span> <span class="sys-pill">carregando…</span></div>
+          <div class="sys-body mt-1">Obtendo detalhes…</div><div class="sys-meta mt-1"></div><span class="hora">${hora}</span>`;
+        if (!m.msg_id) {
+          div.querySelector(".sys-body").textContent = "Detalhes indisponíveis (sem msg_id).";
+          const pill = div.querySelector(".sys-pill"); if (pill) pill.textContent = "indisponível";
+        } else {
+          (async () => {
+            try {
+              const r = await fetch(`${CONV_API}/api/conversas/system/${encodeURIComponent(m.msg_id)}`); const j = await r.json();
+              const pill = div.querySelector(".sys-pill"); const bodyEl = div.querySelector(".sys-body"); const metaEl = div.querySelector(".sys-meta");
+              if (!j.ok) { if (pill) pill.textContent = "erro"; bodyEl.textContent = j.erro || "Falha ao obter detalhes do evento."; return; }
+              if (pill) pill.textContent = j.type || "system";
+              if (j.type === "user_changed_number" && j.old_wa_id && j.wa_id) {
+                bodyEl.innerHTML = `O cliente alterou o número:<br><span class="font-semibold">${escapeHtml(j.old_wa_id)}</span> <span class="mx-1">→</span> <span class="font-semibold">${escapeHtml(j.wa_id)}</span>`;
+              } else { bodyEl.textContent = j.body || "Evento de sistema recebido."; }
+              const src = j.from || j.old_wa_id || ""; const pid = j.phone_id ? ` • conta: ${escapeHtml(j.phone_id)}` : ""; metaEl.textContent = `${src ? ("Origem: " + src) : ""}${pid}`;
+            } catch (e) { const pill = div.querySelector(".sys-pill"); if (pill) pill.textContent = "erro"; div.querySelector(".sys-body").textContent = "Falha ao carregar detalhes do evento."; }
+          })();
+        }
+      } else {
+        div.innerHTML = `<div>${escapeHtml(m.mensagem_final || "")}</div><span class="hora">${hora}</span>`;
+      }
+
+      if (incoming && !(m.tipo === "system" || m.mensagem_final === "[system]")) {
+        const btn = document.createElement("button");
+        btn.className = "reply-btn";
+        btn.title = "Responder";
+        btn.setAttribute("aria-label", "Responder");
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 8V5l-7 7 7 7v-3h4c3.314 0 6 2.686 6 6v-2c0-4.418-3.582-8-8-8h-2z"/></svg>`;
+        btn.onclick = (ev) => { ev.stopPropagation(); responderMensagem(m.msg_id, m.mensagem_final || ""); };
+        div.appendChild(btn);
+      }
+      chat.appendChild(div); renderedKeys.add(key); if (lastTimestampMs === null || tMs > lastTimestampMs) lastTimestampMs = tMs;
+    }
+
+    async function carregarImagem(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/image/${encodeURIComponent(msg_id)}`); const j = await r.json();
+        if (j.ok && j.data_uri) {
+          const img = document.createElement("img"); img.src = j.data_uri; img.alt = "Imagem"; img.className = "thumb mt-2"; img.loading = "lazy"; img.decoding = "async";
+          img.onclick = () => abrirModalImagem(j.data_uri); div.insertBefore(img, btn); btn.remove();
+        } else throw new Error(j.erro || "Resposta inválida");
+      } catch { alert("Erro ao carregar imagem"); btn.disabled = false; btn.textContent = "👁 Ver imagem"; }
+    }
+    async function carregarAudio(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/audio/${encodeURIComponent(msg_id)}`); const j = await r.json();
+        if (j.ok && j.data_uri) {
+          const audio = document.createElement("audio"); audio.src = j.data_uri; audio.controls = true; audio.preload = "metadata"; audio.className = "mt-2";
+          div.insertBefore(audio, btn); btn.remove();
+        } else throw new Error(j.erro || "Resposta inválida");
+      } catch { alert("Erro ao carregar áudio"); btn.disabled = false; btn.textContent = "▶ Reproduzir áudio"; }
+    }
+    async function carregarDocumento(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}`); const j = await r.json();
+        if (!j.ok) throw new Error(j.erro || "Falha no backend");
+        const filename = j.filename || "arquivo"; const mime = j.mime_type || "application/octet-stream"; const size = j.size_bytes ?? null;
+        const box = document.createElement("div"); box.className = "mt-2 space-y-1";
+        if (mime.startsWith("application/pdf") && j.data_uri && (size === null || size <= DOC_PREVIEW_MAX)) {
+          const preview = document.createElement("embed"); preview.src = j.data_uri; preview.type = mime; preview.className = "w-[260px] h-[200px] rounded border"; box.appendChild(preview);
+          const meta = document.createElement("div"); meta.className = "text-xs text-slate-600";
+          const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+          meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div><div>${size ? bytesToHuman(size) : ""}</div>
+            <a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">Abrir/baixar</a>`; box.appendChild(meta);
+        } else {
+          const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+          const row = document.createElement("div"); row.className = "flex items-start gap-2";
+          row.innerHTML = `<div class="text-xl leading-none">📎</div><div class="min-w-0">
+            <div class="font-semibold truncate">${escapeHtml(filename)}</div>
+            <div class="text-xs text-slate-600">${escapeHtml(mime)} ${size ? ("• " + bytesToHuman(size)) : ""}</div>
+            <a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">Baixar documento</a></div>`;
+          box.appendChild(row);
+        }
+        div.insertBefore(box, btn); btn.remove();
+      } catch (e) { console.error(e); alert("Erro ao carregar documento"); btn.disabled = false; btn.textContent = "📎 Ver documento"; }
+    }
+
+    function responderMensagem(msgId, conteudo) {
+      respostaMsgId = msgId || null;
+      document.getElementById("respostaPreview").classList.remove("hidden");
+      document.getElementById("respostaTexto").innerText = (conteudo || "").slice(0, 50);
+      textarea.focus();
+    }
+    function cancelarResposta() { respostaMsgId = null; document.getElementById("respostaPreview").classList.add("hidden"); document.getElementById("respostaTexto").innerText = ""; }
+
+    // Composer
+    function wireComposer() {
+      textarea.removeEventListener('input', __onTextInput);
+      textarea.removeEventListener('keydown', __onTextKeydown);
+      btnEnviar.removeEventListener('click', enviarMensagem);
+      textarea.addEventListener('input', __onTextInput);
+      textarea.addEventListener('keydown', __onTextKeydown);
+      btnEnviar.addEventListener('click', enviarMensagem);
+      updateEnviarState();
+    }
+    function autoGrow() { textarea.style.height = 'auto'; textarea.style.height = Math.min(180, Math.max(38, textarea.scrollHeight)) + 'px'; }
+    function updateEnviarState() {
+      const hasText = !!textarea.value.trim();
+      btnEnviar.disabled = !hasText || !selecionado;
+      if (hasText && selecionado) { showTyping(); } else { hideTyping(); }
+    }
+    function showTyping() { digitando.classList.remove('hidden'); if (typingTimer) clearTimeout(typingTimer); typingTimer = setTimeout(hideTyping, 1200); }
+    function hideTyping() { digitando.classList.add('hidden'); if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; } }
+    function __onTextInput() { autoGrow(); updateEnviarState(); }
+    function __onTextKeydown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!btnEnviar.disabled) enviarMensagem(); return false; } showTyping(); }
+    async function enviarMensagem() {
+      if (!selecionado) return;
+      const texto = textarea.value.trim(); if (!texto) return;
+      userTyping = true; btnEnviar.disabled = true;
+      try {
+        const body = { texto, phone_id: selecionado.phone_id, msg_id: respostaMsgId || null };
+        const r = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        const j = await r.json();
+        if (j.ok) {
+          textarea.value = ""; autoGrow(); cancelarResposta(); hideTyping();
+          await carregarMensagens(true);
+        } else { alert("Erro ao enviar: " + (j.erro || JSON.stringify(j))); }
+      } catch (e) { alert("Erro ao enviar mensagem. Verifique rede/CORS."); }
+      finally { userTyping = false; updateEnviarState(); }
+    }
+
+    // PDF upload
+    async function enviarPDF(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!selecionado) { alert("Abra um ticket antes de enviar PDF."); event.target.value = ""; return; }
+      if (file.type !== "application/pdf") { alert("Somente arquivos PDF são permitidos."); event.target.value = ""; return; }
+      try {
+        const res = await fetch(`${CONV_API}/api/upload/pdf`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ filename: file.name }) });
+        const j = await res.json();
+        if (!j.ok) { console.error("Presign falhou:", j); alert("Erro ao gerar URL: " + j.erro); return; }
+        const putResp = await fetch(j.upload_url, { method: "PUT", headers: { "Content-Type": "application/pdf" }, body: file });
+        if (!putResp.ok) {
+          const txt = await putResp.text().catch(() => ""); console.error("S3 PUT falhou", putResp.status, txt);
+          alert(`Falha no upload (S3): HTTP ${putResp.status}\n${txt.slice(0, 300)}`); return;
+        }
+        const send = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone_id: selecionado.phone_id, file_url: j.file_url, original_filename: file.name })
+        });
+        const sj = await send.json().catch(() => ({ ok: false, erro: "resposta inválida" }));
+        if (sj.ok) { await carregarMensagens(true); }
+        else { console.error("Erro ao enviar PDF para WhatsApp:", sj); alert("Erro ao enviar PDF (API META): " + (sj.erro || JSON.stringify(sj))); }
+      } catch (e) { console.error("Erro geral ao enviar PDF:", e); alert("Erro ao enviar PDF (rede)."); }
+      finally { event.target.value = ""; }
+    }
+
+    /** =================== MODAL IMAGEM =================== */
     const imageModal = document.getElementById("imageModal");
     const modalImg = document.getElementById("modalImg");
     const closeModal = document.getElementById("closeModal");
@@ -1112,43 +1499,62 @@
     closeModal.onclick = fecharModal; imageModal.onclick = e => { if (e.target === imageModal) fecharModal(); };
     function fecharModal() { imageModal.classList.add("hidden"); modalImg.src = ""; isModalOpen = false; }
 
-    /** =================== LOGOUT/LOGIN: botão contextual + refresh =================== */
-    function setAuthButton() {
-      if (isLogged()) {
-        btnLogout.textContent = "Logout";
-        btnLogout.onclick = handleLogout;
-        btnToggleOnline.disabled = false; // habilita controle de fila
-      } else {
-        btnLogout.textContent = "Login";
-        btnLogout.onclick = abrirModalLogin;
-        setStatus(false);
-        btnToggleOnline.disabled = true;
-      }
+    /** =================== LIBERAR / CONCLUIR / LOGOUT =================== */
+    btnLiberar.onclick = async () => {
+      if (!selecionado) return;
+      try {
+        const r = await fetch(`${CONV_API}/api/tickets/liberar`, {
+          method: "DELETE", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id })
+        });
+        const j = await r.json();
+        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível liberar."); return; }
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id);
+        delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
+        tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
+        saveTickets(); renderTickets(); limparChat();
+        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+      } catch (e) { alert("Erro ao liberar."); }
+    };
+
+    async function concluirAtendimento(motivo) {
+      if (!selecionado) return;
+      try {
+        btnConcluir.disabled = true;
+        const r = await fetch(`${CONV_API}/api/tickets/concluir`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id, motivo })
+        });
+        const j = await r.json();
+        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível concluir."); btnConcluir.disabled = false; return; }
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id);
+        delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
+        tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
+        saveTickets(); renderTickets(); limparChat();
+        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+      } catch (e) { alert("Erro ao concluir."); btnConcluir.disabled = false; }
     }
 
-    async function handleLogout() {
+    btnLogout.onclick = async () => {
       try {
-        await fetch(`${FILA_API}/fila/offline`, {
-          method: "DELETE", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ codigo_do_agente: parseInt(localStorage.getItem("agente_codigo") || '0', 10), carteira: localStorage.getItem("agente_carteira") || '' })
-        }).catch(() => { });
+        await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), carteira: agente.carteira || '' }) }).catch(() => { });
       } catch (_) { }
       try {
-        localStorage.removeItem("agente_codigo");
-        localStorage.removeItem("agente_nome");
-        localStorage.removeItem("agente_carteira");
-        localStorage.removeItem("agente_origem");
-        Object.keys(localStorage).forEach(k => {
-          if (k.startsWith("cz:tickets:") || k.startsWith("cz:unreadCount:") || k.startsWith("cz:lastContatoTs:") || k.startsWith("cz:theme:")) {
-            localStorage.removeItem(k);
-          }
-        });
+        localStorage.removeItem("agente_codigo"); localStorage.removeItem("agente_nome"); localStorage.removeItem("agente_carteira"); localStorage.removeItem("agente_origem");
+        Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:") || k.startsWith("cz:unreadCount:") || k.startsWith("cz:lastContatoTs:")) localStorage.removeItem(k); });
       } catch (_) { }
-      // Atualiza UI do botão para "Login" (caso o refresh seja impedido por navegador, ainda fica consistente)
-      setAuthButton();
-      // Faz refresh da página para limpar completamente os estados visuais e caches em memória
-      location.reload();
-    }
+      if (pollingContatos) clearInterval(pollingContatos);
+      if (pollingMensagens) clearInterval(pollingMensagens);
+      setStatus(false); tickets = []; renderTickets(); limparChat();
+      elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = "";
+      switchTab('home');
+      // Mostra o modal APENAS agora (pedido do usuário)
+      abrirModalLogin();
+    };
+
+    function limparChat() { chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>'; }
 
     /** =================== KPIs & Relatório =================== */
     function humanMin(seconds) { if (!seconds && seconds !== 0) return '—'; const m = seconds / 60; return m < 1 ? m.toFixed(1) : Math.round(m); }
@@ -1172,15 +1578,14 @@
         }
       } catch (e) { /* silencioso */ }
     }
-    document.getElementById('btnRefreshRel')?.addEventListener('click', refreshKPIs);
+    if (btnRefreshRel) btnRefreshRel.onclick = refreshKPIs;
 
     /** =================== Navegação inicial =================== */
     window.addEventListener('load', async () => {
       const saved = loadTheme(); applyTheme(saved || defaultTheme());
+      // NÃO abre modal automaticamente mais. Só quando o usuário clicar em Logout (ou “Entrar”).
       await boot();
       switchTab('home');
-      // Importante: não abrir modal automaticamente em nenhum cenário de F5.
-      // O modal só abre ao clicar no botão "Login".
     });
   </script>
 </body>
