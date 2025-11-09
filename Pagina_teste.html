@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ConnectZap — Agentes</title>
+  <title>ConnectZap — Agentes (Página de Teste)</title>
   <link rel="icon" href="https://joubertcastro.github.io/ConnectZap/favicon.ico" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -33,12 +33,8 @@
       --font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
       --font-size: 14px;
       --chat-wallpaper-opacity: 0;
-      --hover: #f1f5f9;
-      --hover-strong: #e2e8f0;
-      --input-bg: #ffffff;
-      --input-fg: var(--text);
       --scrollbar: #cbd5e1;
-      --ticket-selected-bg: #f0f9ff
+      --ticket-selected-bg: #f0f9ff;
     }
 
     * {
@@ -59,6 +55,64 @@
       background: var(--content-bg);
       border: 1px solid var(--border);
       border-radius: var(--card-radius)
+    }
+
+    .btn {
+      border-radius: var(--btn-radius)
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff
+    }
+
+    .btn-primary:hover {
+      filter: brightness(.95)
+    }
+
+    .btn-ghost {
+      background: var(--ghost-bg)
+    }
+
+    .sidebar {
+      background: var(--sidebar-bg);
+      border-color: var(--border)
+    }
+
+    .topbar {
+      background: var(--content-bg);
+      border-color: var(--border)
+    }
+
+    .ticket-selected {
+      background: var(--ticket-selected-bg) !important
+    }
+
+    .badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 9999px;
+      padding: 2px 6px;
+      min-width: 18px;
+      text-align: center
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 9999px;
+      display: inline-block;
+      margin-right: 6px
+    }
+
+    .dot.online {
+      background: #16a34a
+    }
+
+    .dot.offline {
+      background: #9ca3af
     }
 
     .msg {
@@ -124,20 +178,6 @@
       border-bottom: 1px solid var(--bubble-in-border)
     }
 
-    .msg .btn-responder {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      font-size: 14px;
-      color: var(--muted);
-      opacity: 0;
-      transition: opacity .2s
-    }
-
-    .msg.recebida:hover .btn-responder {
-      opacity: 1
-    }
-
     .msg img.thumb {
       max-width: 280px;
       height: auto;
@@ -147,18 +187,8 @@
     }
 
     .msg audio {
-      width: 260px;
+      width: 320px;
       display: block
-    }
-
-    @media(min-width:640px) {
-      .msg audio {
-        width: 320px
-      }
-    }
-
-    .msg audio::-webkit-media-controls-panel {
-      padding: 6px 8px
     }
 
     .dia {
@@ -168,201 +198,20 @@
       color: var(--muted)
     }
 
-    .ticket-selected {
-      background: var(--ticket-selected-bg) !important
-    }
-
-    .badge {
-      background: var(--accent);
-      color: #fff;
-      font-size: 10px;
-      font-weight: 700;
-      border-radius: 9999px;
-      padding: 2px 6px;
-      min-width: 18px;
-      text-align: center
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 9999px;
-      display: inline-block;
-      margin-right: 6px
-    }
-
-    .dot.online {
-      background: #16a34a
-    }
-
-    .dot.offline {
-      background: #9ca3af
-    }
-
-    .msg.system {
-      background: #f8fafc;
-      border: 1px dashed var(--border);
-      align-self: center;
-      max-width: 80%
-    }
-
-    .msg.system::after {
-      display: none
-    }
-
-    .sys-title {
-      font-weight: 700;
-      font-size: .9rem;
-      display: flex;
-      align-items: center;
-      gap: .5rem
-    }
-
-    .sys-body {
-      font-size: .92rem;
-      color: var(--text)
-    }
-
-    .sys-meta {
-      font-size: .75rem;
-      color: var(--muted)
-    }
-
-    .sys-pill {
-      display: inline-block;
-      font-size: .7rem;
-      font-weight: 700;
-      padding: .1rem .4rem;
-      border-radius: 9999px;
-      background: #eef2ff;
-      color: #3730a3
-    }
-
-    .chat-wrap {
-      background: var(--bg)
-    }
-
-    .chat-overlay {
-      position: absolute;
-      inset: 0;
-      background: var(--bg);
-      opacity: var(--chat-wallpaper-opacity);
-      pointer-events: none
-    }
-
-    .btn {
-      border-radius: var(--btn-radius)
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #fff
-    }
-
-    .btn-primary:hover {
-      filter: brightness(.95)
-    }
-
-    .btn-ghost {
-      background: var(--ghost-bg)
-    }
-
-    .kbd {
-      border: 1px solid var(--border);
-      border-bottom-width: 2px;
-      border-radius: 8px;
-      padding: .05rem .35rem
-    }
-
-    .drawer {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: min(430px, 96%);
-      height: 100%;
-      background: var(--content-bg);
-      border-left: 1px solid var(--border);
-      box-shadow: -12px 0 24px rgba(0, 0, 0, .08);
-      transform: translateX(100%);
-      transition: transform .25s ease;
-      z-index: 60
-    }
-
-    .drawer.open {
-      transform: translateX(0)
-    }
-
-    .preset {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: .5rem;
-      cursor: pointer
-    }
-
-    .preset:hover {
-      box-shadow: 0 2px 10px rgba(0, 0, 0, .06)
-    }
-
-    .topbar {
-      background: var(--content-bg);
-      border-color: var(--border)
-    }
-
-    .sidebar {
-      background: var(--sidebar-bg);
-      border-color: var(--border)
-    }
-
-    a {
-      color: var(--link)
-    }
-
-    .text-gray-500 {
-      color: var(--muted) !important
-    }
-
-    .text-gray-600 {
-      color: color-mix(in srgb, var(--text) 70%, var(--content-bg)) !important
-    }
-
-    .text-gray-400 {
-      color: color-mix(in srgb, var(--muted) 65%, var(--content-bg)) !important
-    }
-
-    .bg-gray-50 {
-      background: color-mix(in srgb, var(--content-bg) 90%, var(--bg)) !important
-    }
-
-    .hover\:bg-gray-100:hover {
-      background: var(--hover) !important
-    }
-
-    .hover-soft:hover {
-      background: var(--hover) !important
-    }
-
-    .hover-strong:hover {
-      background: var(--hover-strong) !important
-    }
-
     input[type="text"],
     input[type="search"],
     input[type="color"],
     input[type="file"],
     textarea,
     select {
-      background: var(--input-bg);
-      color: var(--input-fg);
+      background: var(--content-bg);
+      color: var(--text);
       border-color: var(--border) !important
     }
 
     input::placeholder,
     textarea::placeholder {
       color: color-mix(in srgb, var(--muted) 85%, var(--bg))
-    }
-
-    #listaTickets li {
-      border-color: var(--border) !important
     }
 
     *::-webkit-scrollbar {
@@ -381,51 +230,69 @@
       background: transparent
     }
 
-    /* Mini-rail (novo) */
-    .rail {
+    /* Mini Sidebar */
+    .mini-sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
       width: 56px;
-      background: var(--content-bg);
-      border-right: 1px solid var(--border);
-    }
-
-    .rail button {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      margin: 6px auto;
-      color: var(--text)
+      gap: 12px;
+      padding: 10px 6px;
+      background: #0b1220;
+      color: #e5e7eb;
+      z-index: 70;
+      border-right: 1px solid #111827
     }
 
-    .rail button[aria-current="page"] {
-      background: var(--ghost-bg)
+    .mini-sidebar .btn-mini {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: transparent;
+      transition: background .2s ease, transform .06s ease;
+      cursor: pointer
     }
 
-    .rail svg {
-      width: 22px;
-      height: 22px
+    .mini-sidebar .btn-mini:hover {
+      background: #111827
     }
 
-    /* Modal login (novo) */
+    .mini-sidebar .btn-mini.active {
+      background: #2563eb;
+      color: #fff
+    }
+
+    .with-mini {
+      margin-left: 56px
+    }
+
+    /* Modal */
     .modal {
       display: none;
       position: fixed;
       z-index: 100;
-      inset: 0;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
       background: rgba(0, 0, 0, .5);
       justify-content: center;
-      align-items: center;
+      align-items: center
     }
 
     .modal-content {
-      background: white;
+      background: #fff;
       padding: 24px;
       border-radius: 12px;
       width: 320px;
       position: relative;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border)
     }
 
     .modal-close {
@@ -433,308 +300,438 @@
       top: 10px;
       right: 12px;
       cursor: pointer;
-      font-size: 1.2rem;
-      color: #555;
+      font-size: 1.1rem;
+      color: #555
+    }
+
+    /* Drawer */
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(430px, 96%);
+      height: 100%;
+      background: var(--content-bg);
+      border-left: 1px solid var(--border);
+      box-shadow: -12px 0 24px rgba(0, 0, 0, .08);
+      transform: translateX(100%);
+      transition: transform .25s ease;
+      z-index: 60
+    }
+
+    .drawer.open {
+      transform: translateX(0)
     }
   </style>
 </head>
 
-<body class="h-screen flex" style="background:var(--bg)">
-  <!-- MINI SIDEBAR (novo) -->
-  <nav class="rail hidden sm:flex flex-col items-center py-3">
-    <button id="navHome" title="Home" aria-label="Home" aria-current="page">
-      <!-- home icon -->
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5z" />
+<body class="h-screen flex with-mini">
+
+  <!-- Mini Sidebar -->
+  <nav class="mini-sidebar select-none">
+    <div class="text-xs font-semibold mt-1">CZ</div>
+    <button id="tabBtnHome" class="btn-mini active" title="Home" aria-label="Home">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+        <path
+          d="M12 3.172 2.293 12.88a1 1 0 0 0 1.414 1.415L5 13.001V20a1 1 0 0 0 1 1h5v-6h2v6h5a 1 1 0 0 0 1-1v-6.999l1.293 1.294a1 1 0 0 0 1.414-1.415L12 3.172z" />
       </svg>
     </button>
-    <button id="navConversas" title="Conversas" aria-label="Conversas">
-      <!-- chat bubble icon -->
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+    <button id="tabBtnConversas" class="btn-mini" title="Conversas" aria-label="Conversas">
+      <svg xmlns="http://www.w33.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
       </svg>
     </button>
-    <button id="navRelatorio" title="Relatório" aria-label="Relatório">
-      <!-- pie chart icon -->
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21.21 15.89A10 10 0 1 1 12 2v10l9.21 3.89z" />
+    <button id="tabBtnRelatorio" class="btn-mini" title="Relatório" aria-label="Relatório">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M11 2a10 10 0 1 0 10 10h-8a2 2 0 0 1-2-2V2zM13 2.05V10h7.95A10.004 10.004 0 0 0 13 2.05z" />
       </svg>
     </button>
   </nav>
 
-  <!-- VIEW: CONVERSAS (sua página original) -->
-  <section id="view-conversas" class="h-full flex flex-1">
-    <!-- Sidebar tickets -->
-    <aside class="sidebar w-1/3 lg:w-1/4 border-r flex flex-col">
-      <div class="p-3 border-b topbar">
-        <div class="flex items-center justify-between gap-2">
+  <!-- Tabs Wrapper -->
+  <div id="tabsWrapper" class="flex-1 flex flex-col">
+
+    <!-- HOME -->
+    <section id="tabHome" class="flex-1 p-6">
+      <div class="max-w-3xl mx-auto">
+        <div class="card p-6">
+          <h1 class="text-2xl font-bold">Bem-vindo(a) 👋</h1>
+          <p class="text-gray-600 mt-2">Olá <span id="homeAgenteNome" class="font-semibold">—</span>!</p>
+          <p class="text-gray-600">Você está logado(a) na carteira <span id="homeAgenteCarteira"
+              class="font-semibold">—</span>.</p>
+          <div class="mt-4 p-4 rounded-lg border bg-gray-50">
+            <p>Um ótimo trabalho e boas conversas! 💬</p>
+          </div>
+          <div class="mt-6 flex gap-2">
+            <button id="goToConversas1" class="btn btn-primary px-4 py-2">Ir para Conversas</button>
+            <button id="goToRelatorio1" class="btn px-4 py-2 bg-gray-100 hover:bg-gray-200">Ver Relatório</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONVERSAS -->
+    <section id="tabConversas" class="hidden h-full flex">
+      <!-- Sidebar esquerda -->
+      <aside class="sidebar w-1/3 lg:w-1/4 border-r flex flex-col">
+        <div class="p-3 border-b topbar">
+          <div class="flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <div class="text-xs text-gray-500">Agente</div>
+              <div id="agenteNome" class="font-semibold truncate">—</div>
+              <div class="text-xs text-gray-500">Carteira: <span id="agenteCarteira">—</span></div>
+              <div class="text-xs text-gray-500">Status: <span id="agenteStatus"><span
+                    class="dot offline"></span>Offline</span></div>
+              <div class="mt-1 text-xs">
+                <span class="text-gray-500">Tickets:</span>
+                <span id="badgeAtivos" class="badge">0</span>
+                <span class="text-gray-500 mx-1">/</span>
+                <span id="badgeLimite" class="badge" style="background:#64748b">∞</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+              <button id="btnToggleOnline"
+                class="btn px-3 py-2 text-sm bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+                disabled aria-live="polite" aria-pressed="false">
+                <svg id="toggleSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
+                  </circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <span id="toggleLabel">Ficar online</span>
+              </button>
+              <button id="btnPegarProxima"
+                class="btn btn-primary px-3 py-2 text-sm text-white disabled:opacity-50 flex items-center gap-2"
+                disabled>
+                <svg id="pegarSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
+                  </circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <span id="pegarLabel">Pegar próxima</span>
+              </button>
+              <button id="btnPrioridade" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50"
+                disabled style="background: rebeccapurple">Pedir prioridade</button>
+              <div class="flex gap-2">
+                <button id="btnTheme" class="btn btn-ghost px-3 py-1 text-xs" aria-haspopup="true"
+                  aria-controls="themeDrawer">🎨 Tema</button>
+                <button id="btnLogout" class="btn btn-ghost px-3 py-1 text-xs">Logout</button>
+              </div>
+            </div>
+          </div>
+          <div id="msgAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
+          <div id="msgLimite" class="mt-1 text-xs text-red-600 hidden" role="alert" aria-live="polite"></div>
+        </div>
+
+        <ul id="listaTickets" class="flex-1 overflow-y-auto" aria-label="Minhas conversas"></ul>
+
+        <div class="p-2 text-xs text-gray-500 border-t topbar">
+          Apenas conversas da sua carteira. “Pegar próxima” usa ordem por última mensagem <em>recebida</em>.
+        </div>
+      </aside>
+
+      <!-- Chat principal -->
+      <main class="flex-1 flex flex-col">
+        <div class="flex items-center justify-between p-3 border-b topbar">
           <div class="min-w-0">
-            <div class="text-xs text-gray-500">Agente</div>
-            <div id="agenteNome" class="font-semibold truncate">—</div>
-            <div class="text-xs text-gray-500">Carteira: <span id="agenteCarteira">—</span></div>
-            <div class="text-xs text-gray-500">Status: <span id="agenteStatus"><span
-                  class="dot offline"></span>Offline</span></div>
-            <div class="mt-1 text-xs">
-              <span class="text-gray-500">Tickets:</span>
-              <span id="badgeAtivos" class="badge">0</span>
-              <span class="text-gray-500 mx-1">/</span>
-              <span id="badgeLimite" class="badge" style="background:#64748b">∞</span>
+            <div id="tituloConversa" class="font-bold text-lg truncate">Selecione um ticket</div>
+            <div id="subInfo" class="text-sm text-gray-500 truncate"></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnLiberar" class="btn px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+              disabled>Liberar</button>
+            <div class="relative">
+              <button id="btnConcluir" class="btn px-3 py-2 text-sm text-white disabled:opacity-50"
+                style="background:var(--accent)" disabled aria-haspopup="true" aria-expanded="false">Concluir</button>
+              <div id="menuConcluir"
+                class="hidden absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-20"></div>
             </div>
           </div>
-          <div class="flex flex-col items-end gap-2">
-            <button id="btnToggleOnline"
-              class="btn px-3 py-2 text-sm bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
-              disabled aria-live="polite" aria-pressed="false">
-              <svg id="toggleSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+        </div>
+
+        <div class="relative flex-1 overflow-hidden">
+          <div class="absolute inset-0" style="background:transparent"></div>
+          <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" role="log"
+            aria-live="polite">
+            <p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>
+          </div>
+        </div>
+        <div id="digitando" class="px-4 text-left hidden" aria-live="polite">Digitando…</div>
+
+        <div id="respostaPreview"
+          class="hidden px-3 py-2 border-t bg-gray-50 text-sm flex justify-between items-center">
+          <div class="truncate max-w-[80%]">
+            <span class="font-semibold">Respondendo:</span> <span id="respostaTexto" class="text-gray-600"></span>
+          </div>
+          <button onclick="cancelarResposta()" class="text-red-500 text-xs" aria-label="Cancelar resposta">✖</button>
+        </div>
+
+        <div class="p-3 border-t topbar flex space-x-2 items-center">
+          <input type="file" id="fileInput" accept="application/pdf" class="hidden" onchange="enviarPDF(event)">
+          <button onclick="document.getElementById('fileInput').click()" class="btn btn-primary px-3 py-2">📝
+            PDF</button>
+          <textarea id="textoMensagem" rows="1" class="flex-1 border rounded-md p-2 resize-none"
+            placeholder="Digite uma mensagem…" disabled></textarea>
+          <button id="btnEnviar" onclick="enviarMensagem()" class="btn px-4 py-2 text-white disabled:opacity-50"
+            style="background:var(--accent)" disabled>Enviar</button>
+        </div>
+      </main>
+
+      <!-- Modal imagem -->
+      <div id="imageModal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+        aria-modal="true" role="dialog">
+        <span id="closeModal" class="absolute top-4 right-6 text-white text-3xl cursor-pointer"
+          aria-label="Fechar imagem">&times;</span>
+        <img id="modalImg" src="" alt="Imagem" class="max-h-[90%] max-w-[90%] rounded-lg shadow-lg">
+      </div>
+
+      <!-- Modal prioridade -->
+      <div id="priorityModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
+        <div class="absolute inset-0 bg-black/60" onclick="fecharPriorityModal()" aria-hidden="true"></div>
+        <div class="relative mx-auto mt-24 w-[95%] max-w-md bg-white rounded-xl shadow-xl border">
+          <div class="p-4 border-b flex items-center justify-between">
+            <h3 class="font-semibold">Pedir prioridade</h3>
+            <button class="text-gray-500" onclick="fecharPriorityModal()" aria-label="Fechar">✖</button>
+          </div>
+          <div class="p-4 space-y-3">
+            <label class="block text-sm text-gray-600">Telefone do cliente</label>
+            <input id="priorityTelefone" class="w-full p-2 border rounded-md"
+              placeholder="Ex: 61999999999 ou 5561999999999" autocomplete="off" inputmode="numeric" pattern="[0-9]*" />
+            <p class="text-xs text-gray-500">Atenção: informe um telefone válido DDD + 8/9 dígitos.</p>
+            <div id="priorityInfo" class="text-sm text-gray-700 hidden"></div>
+            <div id="priorityErro" class="text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
+          </div>
+          <div class="p-4 border-t flex items-center justify-end gap-2">
+            <button class="px-3 py-2 text-sm bg-gray-100 rounded hover:bg-gray-200"
+              onclick="fecharPriorityModal()">Cancelar</button>
+            <button id="btnPriorityBuscar"
+              class="px-3 py-2 text-sm text-white rounded-md hover:bg-purple-700 flex items-center gap-2"
+              style="background: rebeccapurple">
+              <svg id="prioritySpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
                 </circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v4a 4 4 0 00-4 4H4z"></path>
               </svg>
-              <span id="toggleLabel">Ficar online</span>
+              <span id="priorityBtnLabel">Buscar e solicitar</span>
             </button>
-            <button id="btnPegarProxima"
-              class="btn btn-primary px-3 py-2 text-sm text-white disabled:opacity-50 flex items-center gap-2" disabled>
-              <svg id="pegarSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
-                </circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-              </svg>
-              <span id="pegarLabel">Pegar próxima</span>
-            </button>
-            <button id="btnPrioridade" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50" disabled
-              style="background: rebeccapurple">Pedir prioridade</button>
-            <div class="flex gap-2">
-              <button id="btnTheme" class="btn btn-ghost px-3 py-1 text-xs" aria-haspopup="true"
-                aria-controls="themeDrawer">🎨 Tema</button>
-              <button id="btnLogout" class="btn btn-ghost px-3 py-1 text-xs">Logout</button>
-            </div>
-          </div>
-        </div>
-        <div id="msgAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
-        <div id="msgLimite" class="mt-1 text-xs text-red-600 hidden" role="alert" aria-live="polite"></div>
-      </div>
-
-      <ul id="listaTickets" class="flex-1 overflow-y-auto" aria-label="Minhas conversas"></ul>
-
-      <div class="p-2 text-xs text-gray-500 border-t topbar">
-        Apenas conversas da sua carteira. “Pegar próxima” usa ordem por última mensagem <em>recebida</em>.
-      </div>
-    </aside>
-
-    <!-- Main chat -->
-    <main class="flex-1 flex flex-col">
-      <div class="flex items-center justify-between p-3 border-b topbar">
-        <div class="min-w-0">
-          <div id="tituloConversa" class="font-bold text-lg truncate">Selecione um ticket</div>
-          <div id="subInfo" class="text-sm text-gray-500 truncate"></div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="btnLiberar" class="btn px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
-            disabled>Liberar</button>
-          <div class="relative">
-            <button id="btnConcluir" class="btn px-3 py-2 text-sm text-white disabled:opacity-50"
-              style="background:var(--accent)" disabled aria-haspopup="true" aria-expanded="false">Concluir</button>
-            <div id="menuConcluir" class="hidden absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-20">
-            </div>
           </div>
         </div>
       </div>
 
-      <div class="relative flex-1 overflow-hidden">
-        <div class="absolute inset-0 chat-wrap"></div>
-        <div class="chat-overlay"></div>
-        <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1"
-          style="background:transparent" role="log" aria-live="polite">
-          <p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>
+      <!-- Theme Drawer -->
+      <div id="themeDrawer" class="drawer" aria-hidden="true">
+        <div class="h-full flex flex-col">
+          <div class="p-4 border-b flex items-center justify-between">
+            <h3 class="font-semibold">🎨 Seu tema</h3>
+            <div class="flex items-center gap-2">
+              <button id="btnThemeExport" class="btn btn-ghost px-2 py-1 text-xs">Salvar no meu computador</button>
+              <label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">Importar um tema salvo <input
+                  id="importTheme" type="file" accept="application/json" class="hidden"></label>
+              <button id="btnThemeClose" class="btn btn-ghost px-2 py-1 text-xs" aria-label="Fechar">✖</button>
+            </div>
+          </div>
+          <div class="p-4 overflow-y-auto space-y-6">
+            <section>
+              <div class="text-xs text-gray-500 mb-2">Temas rápidos</div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="preset" data-preset="corporate">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#0ea5e9,#2563eb)"></div>
+                  <div class="mt-1 text-xs">Corporate</div>
+                </div>
+                <div class="preset" data-preset="ocean">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#06b6d4,#10b981)"></div>
+                  <div class="mt-1 text-xs">Ocean</div>
+                </div>
+                <div class="preset" data-preset="sunset">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#fb923c,#ef4444)"></div>
+                  <div class="mt-1 text-xs">Sunset</div>
+                </div>
+                <div class="preset" data-preset="dark">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#0b1220,#374151)"></div>
+                  <div class="mt-1 text-xs">Dark</div>
+                </div>
+                <div class="preset" data-preset="minimal">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#f8fafc,#e2e8f0)"></div>
+                  <div class="mt-1 text-xs">Minimal</div>
+                </div>
+                <div class="preset" data-preset="funky">
+                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#a78bfa,#ec4899)"></div>
+                  <div class="mt-1 text-xs">Funky</div>
+                </div>
+              </div>
+            </section>
+            <hr class="border-gray-200">
+            <section>
+              <div class="text-xs text-gray-500 mb-2">Personalizar</div>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="block"><span class="text-xs text-gray-600">Botão PDF</span><input id="tPrimary"
+                    type="color" class="w-full h-10 border rounded" value="#3b82f6"></label>
+                <label class="block"><span class="text-xs text-gray-600">Botão Concluir</span><input id="tAccent"
+                    type="color" class="w-full h-10 border rounded" value="#22c55e"></label>
+                <label class="block"><span class="text-xs text-gray-600">Barra lateral</span><input id="tSidebar"
+                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
+                <label class="block"><span class="text-xs text-gray-600">Cabeçalho</span><input id="tContentBg"
+                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
+                <label class="block"><span class="text-xs text-gray-600">Cor de fundo</span><input id="tBg" type="color"
+                    class="w-full h-10 border rounded" value="#f3f4f6"></label>
+                <label class="block"><span class="text-xs text-gray-600">Texto</span><input id="tText" type="color"
+                    class="w-full h-10 border rounded" value="#0f172a"></label>
+              </div>
+              <div class="grid grid-cols-2 gap-3 mt-3">
+                <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 1</span><input id="tOutG1"
+                    type="color" class="w-full h-10 border rounded" value="#dcf8c6"></label>
+                <label class="block"><span class="text-xs text-gray-600">Minha mensagem cor 2</span><input id="tOutG2"
+                    type="color" class="w-full h-10 border rounded" value="#b8f0a4"></label>
+                <label class="block"><span class="text-xs text-gray-600">Cliente mensagem cor</span><input id="tInBg"
+                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
+                <label class="block"><span class="text-xs text-gray-600">Cliente mensagem bordas</span><input
+                    id="tInBorder" type="color" class="w-full h-10 border rounded" value="#e2e8f0"></label>
+                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos balões</span><input
+                    id="tRadius" type="range" min="8" max="28" value="18" class="w-full"></label>
+              </div>
+              <div class="grid grid-cols-1 gap-3 mt-3">
+                <label class="block"><span class="text-xs text-gray-600">Opacidade do fundo</span><input id="tBgOp"
+                    type="range" min="0" max="1" step="0.05" value="0"></label>
+              </div>
+              <div class="grid grid-cols-2 gap-3 mt-3">
+                <label class="block"><span class="text-xs text-gray-600">Tamanho base</span>
+                  <select id="tFontSize" class="w-full p-2 border rounded">
+                    <option value="13px">13px</option>
+                    <option value="14px" selected>14px</option>
+                    <option value="15px">15px</option>
+                    <option value="16px">16px</option>
+                  </select>
+                </label>
+                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos botões</span><input
+                    id="tBtnRadius" type="range" min="6" max="16" value="10" class="w-full"></label>
+                <label class="block"><span class="text-xs text-gray-600">Canto arredondado dos cards</span><input
+                    id="tCardRadius" type="range" min="10" max="24" value="16" class="w-full"></label>
+              </div>
+              <div class="flex items-center justify-between mt-4">
+                <div class="flex items-center gap-2">
+                  <button id="btnRandom" class="btn btn-ghost px-3 py-2">🎲 Surpreenda-me</button>
+                  <button id="btnReset" class="btn btn-ghost px-3 py-2">↺ Voltar ao padrão</button>
+                </div>
+                <button id="btnSaveTheme" class="btn btn-primary px-4 py-2">Salvar</button>
+              </div>
+            </section>
+          </div>
         </div>
       </div>
-      <div id="digitando" class="px-4 text-left hidden" aria-live="polite">Digitando…</div>
+    </section>
 
-      <div id="respostaPreview" class="hidden px-3 py-2 border-t bg-gray-50 text-sm flex justify-between items-center">
-        <div class="truncate max-w-[80%]">
-          <span class="font-semibold">Respondendo:</span> <span id="respostaTexto" class="text-gray-600"></span>
+    <!-- RELATÓRIO -->
+    <section id="tabRelatorio" class="hidden p-4">
+      <div class="max-w-6xl mx-auto space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold">Relatório — Atendimentos</h2>
+          <div class="text-sm text-gray-500" id="relatorioPeriodo">Hoje</div>
         </div>
-        <button onclick="cancelarResposta()" class="text-red-500 text-xs" aria-label="Cancelar resposta">✖</button>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="card p-4">
+            <div class="text-xs text-gray-500">Em atendimento</div>
+            <div id="kpiEm" class="text-2xl font-bold">0</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-xs text-gray-500">Concluídos</div>
+            <div id="kpiConc" class="text-2xl font-bold">0</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-xs text-gray-500">TMA</div>
+            <div class="text-2xl font-bold"><span id="kpiTma">—</span><span class="text-sm text-gray-500"> min</span>
+            </div>
+          </div>
+          <div class="card p-4">
+            <div class="text-xs text-gray-500">1ª resposta</div>
+            <div class="text-2xl font-bold"><span id="kpiFRT">—</span><span class="text-sm text-gray-500"> seg</span>
+            </div>
+          </div>
+        </div>
+        <div class="card p-4">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold">Distribuição por status</div><button id="btnRefreshRel"
+              class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200 text-sm">Atualizar</button>
+          </div>
+          <div class="mt-4"><canvas id="pieStatus" height="260"></canvas></div>
+        </div>
       </div>
+    </section>
 
-      <div class="p-3 border-t topbar flex space-x-2 items-center">
-        <input type="file" id="fileInput" accept="application/pdf" class="hidden" onchange="enviarPDF(event)">
-        <button onclick="document.getElementById('fileInput').click()" class="btn btn-primary px-3 py-2">📝 PDF</button>
-        <textarea id="textoMensagem" rows="1" class="flex-1 border rounded-md p-2 resize-none"
-          placeholder="Digite uma mensagem…" disabled></textarea>
-        <button id="btnEnviar" onclick="enviarMensagem()" class="btn px-4 py-2 text-white disabled:opacity-50"
-          style="background:var(--accent)" disabled>Enviar</button>
-      </div>
-    </main>
-  </section>
-
-  <!-- VIEW: HOME (novo) -->
-  <section id="view-home" class="hidden flex-1 p-6">
-    <div class="max-w-3xl mx-auto">
-      <div class="card p-6">
-        <h1 class="text-2xl font-bold">Bem-vindo, <span id="homeNome">—</span> 👋</h1>
-        <p class="mt-2 text-gray-600">Você está logado na carteira <span class="font-semibold"
-            id="homeCarteira">—</span>.</p>
-        <p class="mt-4">Um ótimo trabalho e boas conversas!</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- VIEW: RELATÓRIO (novo) -->
-  <section id="view-relatorio" class="hidden flex-1 p-4 md:p-6 overflow-y-auto">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-      <div class="card p-4">
-        <div class="text-xs text-gray-500">Em atendimento</div>
-        <div id="kpiAtivos" class="text-2xl font-bold mt-1">—</div>
-      </div>
-      <div class="card p-4">
-        <div class="text-xs text-gray-500">Concluídos (hoje)</div>
-        <div id="kpiConcluidos" class="text-2xl font-bold mt-1">—</div>
-      </div>
-      <div class="card p-4">
-        <div class="text-xs text-gray-500">TMA</div>
-        <div id="kpiTma" class="text-2xl font-bold mt-1">—</div>
-      </div>
-      <div class="card p-4">
-        <div class="text-xs text-gray-500">1ª resposta</div>
-        <div id="kpiPrimeira" class="text-2xl font-bold mt-1">—</div>
-      </div>
-    </div>
-
-    <div class="card p-4 mt-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold">Distribuição de Atendimentos</h3>
-        <div id="pieLegend" class="text-xs text-gray-500"></div>
-      </div>
-      <div class="mt-2">
-        <canvas id="pieCanvas" height="180"></canvas>
-      </div>
-      <div id="pieFallback" class="text-sm text-gray-500 hidden mt-2">Sem dados para o gráfico.</div>
-    </div>
-  </section>
-
-  <!-- Modal imagem (original) -->
-  <div id="imageModal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50" aria-modal="true"
-    role="dialog">
-    <span id="closeModal" class="absolute top-4 right-6 text-white text-3xl cursor-pointer"
-      aria-label="Fechar imagem">&times;</span>
-    <img id="modalImg" src="" alt="Imagem" class="max-h-[90%] max-w-[90%] rounded-lg shadow-lg">
   </div>
 
-  <!-- Modal prioridade (original) -->
-  <div id="priorityModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
-    <div class="absolute inset-0 bg-black/60" onclick="fecharPriorityModal()" aria-hidden="true"></div>
-    <div class="relative mx-auto mt-24 w-[95%] max-w-md bg-white rounded-xl shadow-xl border">
-      <div class="p-4 border-b flex items-center justify-between">
-        <h3 class="font-semibold">Pedir prioridade</h3>
-        <button class="text-gray-500" onclick="fecharPriorityModal()" aria-label="Fechar">✖</button>
-      </div>
-      <div class="p-4 space-y-3">
-        <label class="block text-sm text-gray-600">Telefone do cliente</label>
-        <input id="priorityTelefone" class="w-full p-2 border rounded-md" placeholder="Ex: 61999999999 ou 5561999999999"
-          autocomplete="off" inputmode="numeric" pattern="[0-9]*" />
-        <p class="text-xs text-gray-500">Atenção: informe um telefone valido DDD + 8/9 Digitos.</p>
-        <div id="priorityInfo" class="text-sm text-gray-700 hidden"></div>
-        <div id="priorityErro" class="text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
-      </div>
-      <div class="p-4 border-t flex items-center justify-end gap-2">
-        <button class="px-3 py-2 text-sm bg-gray-100 rounded hover:bg-gray-200"
-          onclick="fecharPriorityModal()">Cancelar</button>
-        <button id="btnPriorityBuscar"
-          class="px-3 py-2 text-sm text-white rounded-md hover:bg-purple-700 flex items-center gap-2"
-          style="background: rebeccapurple">
-          <svg id="prioritySpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
-            </circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v4a 4 4 0 00-4 4H4z"></path>
-          </svg>
-          <span id="priorityBtnLabel">Buscar e solicitar</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Theme Drawer (original) -->
-  <div id="themeDrawer" class="drawer" aria-hidden="true">
-    <!-- (conteúdo do drawer permanece exatamente igual ao seu original) -->
-    <!-- Para economizar espaço aqui: mantive todo o bloco do Theme Drawer idêntico ao seu HTML anterior -->
-  </div>
-
-  <!-- MODAL PRÉ-LOGIN (novo) -->
+  <!-- Modal Login -->
   <div id="modalLogin" class="modal">
     <div class="modal-content">
       <span class="modal-close" onclick="fecharModalLogin()">&times;</span>
       <h2 class="text-xl font-bold mb-4 text-center">Login</h2>
       <input type="email" id="email" placeholder="Email" class="w-full p-2 mb-3 border rounded" />
       <input type="password" id="senha" placeholder="Senha" class="w-full p-2 mb-3 border rounded" />
-      <div class="flex items-center mb-3 text-sm">
-        <input type="checkbox" id="aceitoTermos" class="mr-2">
-        <label for="aceitoTermos">
-          Eu li e aceito os
-          <a href="https://joubertcastro.github.io/ConnectZap/Termos_de_Servico.html" target="_blank"
-            class="text-blue-600 underline">Termos de Serviço</a>
-          e a
-          <a href="https://joubertcastro.github.io/ConnectZap/Politica_de_privacidade.html" target="_blank"
-            class="text-blue-600 underline">Política de Privacidade</a>.
-        </label>
-      </div>
+      <div class="flex items-center mb-3 text-sm"><input type="checkbox" id="aceitoTermos" class="mr-2"><label
+          for="aceitoTermos">Eu li e aceito os <a
+            href="https://joubertcastro.github.io/ConnectZap/Termos_de_Servico.html" target="_blank"
+            class="text-blue-600 underline">Termos</a> e a <a
+            href="https://joubertcastro.github.io/ConnectZap/Politica_de_privacidade.html" target="_blank"
+            class="text-blue-600 underline">Privacidade</a>.</label></div>
       <button onclick="login()" class="w-full p-2 bg-blue-600 text-white rounded">Entrar</button>
-      <div class="error text-red-600 text-center mt-2" id="erroLogin"></div>
+      <div class="error text-red-600 text-center mt-2" id="erro"></div>
     </div>
   </div>
 
   <script>
-    /** APIs */
+    /** ====== CONFIG / APIs ====== */
     const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/, '');
     const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
     const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
 
-    /** Carteiras */
+    /** ====== CARTEIRAS -> Phone IDs ====== */
     const phoneIdMap = {
       "828473960349364": "ConnectZap",
       "805610009301153": "Banco PAN",
       "727586317113885": "Recovery PJ",
       "864779140046932": "Recovery PF",
       "802977069563598": "Recovery PF",
-      "864779140046932,802977069563598": "Recovery PF",
       "873637622491517": "Mercado Pago Cobrança",
       "821562937700669": "Mercado Pago Cobrança",
-      "873637622491517,821562937700669": "Mercado Pago Cobrança",
       "779797401888141": "DivZero",
       "829210283602406": "Arc4U",
       "713021321904495": "Serasa",
       "803535039503723": "Mercado Pago Vendas"
     };
-    const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => {
-      const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean);
-      acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts]));
+    const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [id, nome]) => {
+      acc[nome] = acc[nome] || [];
+      if (!acc[nome].includes(id)) acc[nome].push(id);
       return acc;
     }, {});
 
-    /** Estado geral */
+    /** ====== ESTADO ====== */
     let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
-    let tickets = []; let selecionado = null; let renderedKeys = new Set(); let lastTimestampMs = null; let lastDayRendered = null;
-    let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
+    let tickets = []; let selecionado = null; let renderedKeys = new Set();
+    let pollingContatos = null, pollingMensagens = null; let respostaMsgId = null;
     let limitPerAgent = 0; let ativosCount = 0;
     let unreadCountByKey = {}; let lastContatoTsByKey = {};
+    let pieChart = null;
 
-    /** UI refs novas */
-    const viewHome = document.getElementById('view-home');
-    const viewConversas = document.getElementById('view-conversas');
-    const viewRelatorio = document.getElementById('view-relatorio');
-    const navHome = document.getElementById('navHome');
-    const navConversas = document.getElementById('navConversas');
-    const navRelatorio = document.getElementById('navRelatorio');
-    const homeNome = document.getElementById('homeNome');
-    const homeCarteira = document.getElementById('homeCarteira');
-
-    /** Consts originais */
-    const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
-    const POLL_ACTIVE_MS = 5000; const POLL_HIDDEN_MS = 30000;
+    /** ====== UTILS ====== */
+    const POLL_ACTIVE_MS = 5000, POLL_HIDDEN_MS = 30000;
     const fmtHoraBR = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
     const fmtDataBR = new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/Sao_Paulo' });
+    function isIncoming(m) { const s = (m.status || '').toLowerCase(); if (typeof m.from_me === 'boolean') return !m.from_me; if (m.direction) return String(m.direction).toLowerCase().startsWith('in'); return ['in', 'received', 'incoming'].includes(s); }
+    function keyFrom(remetente, phone_id) { return `${remetente}|${phone_id || ''}`; }
+    function humanMin(seconds) { if (!seconds && seconds !== 0) return '—'; const m = seconds / 60; return m < 1 ? m.toFixed(1) : Math.round(m); }
+    function humanSeg(seconds) { if (!seconds && seconds !== 0) return '—'; return Math.round(seconds); }
+    function bytesToHuman(n) { if (n === undefined || n === null) return ''; const u = ['B', 'KB', 'MB', 'GB', 'TB']; let i = 0, s = n; while (s >= 1024 && i < u.length - 1) { s /= 1024; i++; } return `${s.toFixed(s >= 10 || i === 0 ? 0 : 1)} ${u[i]}`; }
 
-    /** Refs originais */
+    /** ====== DOM REFS ====== */
+    // Home + Relatório
+    const elHomeNome = document.getElementById('homeAgenteNome');
+    const elHomeCart = document.getElementById('homeAgenteCarteira');
+    const kpiEm = document.getElementById('kpiEm');
+    const kpiConc = document.getElementById('kpiConc');
+    const kpiTma = document.getElementById('kpiTma');
+    const kpiFRT = document.getElementById('kpiFRT');
+    const btnRefreshRel = document.getElementById('btnRefreshRel');
+
+    // Conversas
     const elAgenteNome = document.getElementById("agenteNome");
     const elAgenteCarteira = document.getElementById("agenteCarteira");
     const elAgenteStatus = document.getElementById("agenteStatus");
@@ -757,325 +754,271 @@
     const badgeAtivos = document.getElementById("badgeAtivos");
     const badgeLimite = document.getElementById("badgeLimite");
 
-    /** ===== Helper login (novo) ===== */
+    // Tabs & Mini-sidebar
+    const tabBtnHome = document.getElementById('tabBtnHome');
+    const tabBtnConversas = document.getElementById('tabBtnConversas');
+    const tabBtnRelatorio = document.getElementById('tabBtnRelatorio');
+    const tabHome = document.getElementById('tabHome');
+    const tabConversas = document.getElementById('tabConversas');
+    const tabRelatorio = document.getElementById('tabRelatorio');
+    document.getElementById('goToConversas1').onclick = () => switchTab('conversas');
+    document.getElementById('goToRelatorio1').onclick = () => switchTab('relatorio');
+
+    // Theme Drawer
+    const themeDrawer = document.getElementById('themeDrawer');
+    const btnTheme = document.getElementById('btnTheme');
+    const btnThemeClose = document.getElementById('btnThemeClose');
+    const btnSaveTheme = document.getElementById('btnSaveTheme');
+    const btnRandom = document.getElementById('btnRandom');
+    const btnReset = document.getElementById('btnReset');
+    const btnThemeExport = document.getElementById('btnThemeExport');
+    const importTheme = document.getElementById('importTheme');
+    const inputs = {
+      tPrimary: document.getElementById('tPrimary'), tAccent: document.getElementById('tAccent'),
+      tSidebar: document.getElementById('tSidebar'), tContentBg: document.getElementById('tContentBg'),
+      tBg: document.getElementById('tBg'), tText: document.getElementById('tText'),
+      tOutG1: document.getElementById('tOutG1'), tOutG2: document.getElementById('tOutG2'),
+      tInBg: document.getElementById('tInBg'), tInBorder: document.getElementById('tInBorder'),
+      tRadius: document.getElementById('tRadius'), tBgOp: document.getElementById('tBgOp'),
+      tFontSize: document.getElementById('tFontSize'), tBtnRadius: document.getElementById('tBtnRadius'),
+      tCardRadius: document.getElementById('tCardRadius')
+    };
+
+    /** ====== MENU CONCLUIR ====== */
+    const MOTIVOS_CONCLUSAO = ["Realizou negociação", "Solicitou 2ª via de boleto", "Recusou a proposta", "Dúvidas gerais", "Cliente ficou inativo"];
+    function renderMenuConcluir() {
+      menuConcluir.innerHTML = MOTIVOS_CONCLUSAO.map(m => `<button type="button" data-motivo="${m}" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50">${m}</button>`).join("");
+      menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => {
+        btn.onclick = async () => { await concluirAtendimento(btn.getAttribute("data-motivo")); fecharMenuConcluir(); };
+      });
+    }
+    function abrirMenuConcluir() { if (!selecionado || btnConcluir.disabled) return; menuConcluir.classList.remove("hidden"); btnConcluir.setAttribute("aria-expanded", "true"); document.addEventListener("click", clickForaMenuConcluir, { capture: true }); }
+    function fecharMenuConcluir() { menuConcluir.classList.add("hidden"); btnConcluir.setAttribute("aria-expanded", "false"); document.removeEventListener("click", clickForaMenuConcluir, { capture: true }); }
+    function clickForaMenuConcluir(e) { const within = menuConcluir.contains(e.target) || btnConcluir.contains(e.target); if (!within) fecharMenuConcluir(); }
+    btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir(); };
+    renderMenuConcluir();
+
+    /** ====== THEME ====== */
+    function themeKey() { return `cz:theme:${agente.codigo || 'anon'}`; }
+    function defaultTheme() { return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff" }; }
+    function applyTheme(t) {
+      const r = document.documentElement.style; const base = defaultTheme(); const x = { ...base, ...t };
+      r.setProperty('--ticket-selected-bg', x.ticketSelectedBg);
+      r.setProperty('--sidebar-bg', x.sidebar); r.setProperty('--content-bg', x.contentBg);
+      r.setProperty('--bg', x.bg); r.setProperty('--text', x.text);
+      r.setProperty('--muted', x.muted); r.setProperty('--border', x.border);
+      r.setProperty('--link', x.link); r.setProperty('--ghost-bg', x.ghostBg);
+      r.setProperty('--bubble-out-g1', x.outG1); r.setProperty('--bubble-out-g2', x.outG2); r.setProperty('--bubble-out-fg', x.outFg);
+      r.setProperty('--bubble-in-bg', x.inBg); r.setProperty('--bubble-in-border', x.inBorder); r.setProperty('--bubble-in-fg', x.inFg);
+      r.setProperty('--bubble-radius', x.bubbleRadius + 'px'); r.setProperty('--btn-radius', x.btnRadius + 'px'); r.setProperty('--card-radius', x.cardRadius + 'px');
+      r.setProperty('--font-size', x.fontSize); r.setProperty('--chat-wallpaper-opacity', x.wallOp);
+      r.setProperty('--scrollbar', x.scrollbar || '#cbd5e1'); r.setProperty('--primary', x.primary); r.setProperty('--accent', x.accent);
+      // sync inputs
+      inputs.tPrimary.value = x.primary; inputs.tAccent.value = x.accent; inputs.tSidebar.value = x.sidebar;
+      inputs.tContentBg.value = x.contentBg; inputs.tBg.value = x.bg; inputs.tText.value = x.text;
+      inputs.tOutG1.value = x.outG1; inputs.tOutG2.value = x.outG2; inputs.tInBg.value = x.inBg; inputs.tInBorder.value = x.inBorder;
+      inputs.tRadius.value = x.bubbleRadius; inputs.tBgOp.value = x.wallOp; inputs.tFontSize.value = x.fontSize;
+      inputs.tBtnRadius.value = x.btnRadius; inputs.tCardRadius.value = x.cardRadius;
+    }
+    function readThemeFromInputs() { return { primary: inputs.tPrimary.value, accent: inputs.tAccent.value, sidebar: inputs.tSidebar.value, contentBg: inputs.tContentBg.value, bg: inputs.tBg.value, text: inputs.tText.value, outG1: inputs.tOutG1.value, outG2: inputs.tOutG2.value, inBg: inputs.tInBg.value, inBorder: inputs.tInBorder.value, bubbleRadius: Number(inputs.tRadius.value || 18), wallOp: Number(inputs.tBgOp.value || 0), fontSize: String(inputs.tFontSize.value || '14px'), btnRadius: Number(inputs.tBtnRadius.value || 10), cardRadius: Number(inputs.tCardRadius.value || 16) }; }
+    function saveTheme(t) { try { localStorage.setItem(themeKey(), JSON.stringify(t)); } catch { } }
+    function loadTheme() { try { return JSON.parse(localStorage.getItem(themeKey()) || 'null'); } catch { return null; } }
+    if (btnTheme) btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
+    if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open'); });
+    [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius].forEach(i => { if (i) i.addEventListener('input', () => applyTheme(readThemeFromInputs())); });
+    if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open'); });
+    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); });
+    if (btnRandom) btnRandom.addEventListener('click', () => { const rand = () => '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0'); const b1 = rand(), b2 = rand(); const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? 0.8 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; applyTheme(t); });
+
+    /** ====== LOGIN BÁSICO ====== */
     function isLogged() { try { return !!JSON.parse(localStorage.getItem('usuario')); } catch { return false; } }
     function abrirModalLogin() { if (isLogged()) return; document.getElementById('modalLogin').style.display = 'flex'; }
-    function fecharModalLogin() { document.getElementById('modalLogin').style.display = 'none'; document.getElementById('erroLogin').textContent = ''; }
+    function fecharModalLogin() { document.getElementById('modalLogin').style.display = 'none'; document.getElementById('erro').textContent = ''; }
     async function login() {
-      const email = document.getElementById('email').value;
-      const senha = document.getElementById('senha').value;
-      const aceito = document.getElementById('aceitoTermos').checked;
-      const erroDiv = document.getElementById('erroLogin');
+      const email = document.getElementById('email').value; const senha = document.getElementById('senha').value; const aceito = document.getElementById('aceitoTermos').checked;
+      const erroDiv = document.getElementById('erro');
       if (!email || !senha) { erroDiv.textContent = "Preencha todos os campos!"; return; }
       if (!aceito) { erroDiv.textContent = "Você deve aceitar os Termos e a Política."; return; }
       try {
         const res = await fetch(`${FILA_API}/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, senha }) });
         const data = await res.json();
-        if (data.ok) { localStorage.setItem("usuario", JSON.stringify(data.user)); fecharModalLogin(); startApp(); }
+        if (data.ok) { localStorage.setItem("usuario", JSON.stringify(data.user)); fecharModalLogin(); boot(); switchTab('conversas'); }
         else { erroDiv.textContent = data.erro || "Erro ao fazer login"; }
       } catch { erroDiv.textContent = "Erro de conexão com o servidor"; }
     }
 
-    /** ===== Navegação (novo) ===== */
-    function setCurrent(btn) {
-      [navHome, navConversas, navRelatorio].forEach(b => b.setAttribute('aria-current', 'false'));
-      btn.setAttribute('aria-current', 'page');
+    /** ====== TABS ====== */
+    function switchTab(tab) {
+      [tabBtnHome, tabBtnConversas, tabBtnRelatorio].forEach(b => b.classList.remove('active'));
+      tabHome.classList.add('hidden'); tabConversas.classList.add('hidden'); tabRelatorio.classList.add('hidden');
+      if (tab === 'conversas') { tabBtnConversas.classList.add('active'); tabConversas.classList.remove('hidden'); }
+      else if (tab === 'relatorio') { tabBtnRelatorio.classList.add('active'); tabRelatorio.classList.remove('hidden'); }
+      else { tabBtnHome.classList.add('active'); tabHome.classList.remove('hidden'); }
     }
-    function showView(id) {
-      viewHome.classList.add('hidden');
-      viewConversas.classList.add('hidden');
-      viewRelatorio.classList.add('hidden');
-      document.getElementById(id).classList.remove('hidden');
+    tabBtnHome.onclick = () => switchTab('home');
+    tabBtnConversas.onclick = () => switchTab('conversas');
+    tabBtnRelatorio.onclick = () => switchTab('relatorio');
+
+    /** ====== BOOT ====== */
+    async function boot() {
+      try {
+        const u = JSON.parse(localStorage.getItem('usuario') || '{}');
+        agente = { codigo: u.codigo || u.id || u.user_id || 0, nome: u.nome || u.name || u.email || 'Usuário', carteira: u.carteira || 'ConnectZap', origem: 'web', online: false };
+        elAgenteNome.textContent = agente.nome;
+        elAgenteCarteira.textContent = agente.carteira;
+        elHomeNome.textContent = agente.nome;
+        elHomeCart.textContent = agente.carteira;
+        badgeLimite.textContent = '∞';
+        btnToggleOnline.disabled = false;
+        btnPrioridade.disabled = false;
+        // load theme
+        const saved = loadTheme(); applyTheme(saved || defaultTheme());
+        await refreshKPIs(); // relatório inicial
+        schedulePolls();
+      } catch (e) { console.error('boot error', e); }
     }
-    navHome.addEventListener('click', () => { setCurrent(navHome); showView('view-home'); updateHomeWelcome(); });
-    navConversas.addEventListener('click', () => { setCurrent(navConversas); showView('view-conversas'); });
-    navRelatorio.addEventListener('click', async () => { setCurrent(navRelatorio); showView('view-relatorio'); await carregarRelatorio(); });
 
-    function updateHomeWelcome() {
-      homeNome.textContent = agente?.nome || '—';
-      homeCarteira.textContent = agente?.carteira || '—';
+    /** ====== KPIs & Relatório ====== */
+    async function refreshKPIs() {
+      try {
+        const codigo = encodeURIComponent(String(agente.codigo || ''));
+        const url = `${FILA_API}/relatorio_hoje?agente=${codigo}`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const data = await r.json();
+        if (typeof data.em_atendimento === 'number') kpiEm.textContent = String(data.em_atendimento); else kpiEm.textContent = '0';
+        if (typeof data.concluidos === 'number') kpiConc.textContent = String(data.concluidos); else kpiConc.textContent = '0';
+        kpiTma.textContent = humanMin(data.tma_segundos || 0);
+        kpiFRT.textContent = humanSeg(data.primeira_resposta_seg || 0);
+        // Pizza
+        const ativos = Number(kpiEm.textContent) || 0, conc = Number(kpiConc.textContent) || 0, outros = Math.max(0, Number(data.outros || 0));
+        const ctx = document.getElementById('pieStatus').getContext('2d');
+        if (pieChart) pieChart.destroy();
+        pieChart = new Chart(ctx, { type: 'pie', data: { labels: ['Em atendimento', 'Concluídos', 'Outros'], datasets: [{ data: [ativos, conc, outros] }] }, options: { responsive: true, plugins: { legend: { display: true } } } });
+      } catch (e) {
+        console.warn('Falha KPIs', e);
+      }
     }
+    btnRefreshRel.onclick = refreshKPIs;
 
-    /** ===== Tudo que era seu (fila, chat, etc.) — mantido (apenas integrando com start/login) ===== */
-
-    // ... (toda a sua lógica original permanece)
-    // Para economizar: A PARTIR DAQUI colei integralmente todo o seu <script> original,
-    // com 3 pequenas adições:
-    // 1) startApp() em vez de boot() direto — respeita login e então chama boot()
-    // 2) welcome na Home após carregar agente
-    // 3) funções de Relatório no fim
-
-    /** ===== Helpers de contador persistente ===== */
-    function storageKeys() { return { unread: `cz:unreadCount:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}`, lastTs: `cz:lastContatoTs:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}` }; }
-    function loadUnread() { try { const { unread, lastTs } = storageKeys(); unreadCountByKey = JSON.parse(localStorage.getItem(unread) || "{}"); lastContatoTsByKey = JSON.parse(localStorage.getItem(lastTs) || "{}"); } catch { unreadCountByKey = {}; lastContatoTsByKey = {}; } }
-    function persistUnread() { try { const { unread, lastTs } = storageKeys(); localStorage.setItem(unread, JSON.stringify(unreadCountByKey)); localStorage.setItem(lastTs, JSON.stringify(lastContatoTsByKey)); } catch { } }
-    function keyFrom(remetente, phone_id) { return `${remetente}|${phone_id || ''}`; }
-    function schedulePolls() { if (pollingContatos) clearInterval(pollingContatos); if (pollingMensagens) clearInterval(pollingMensagens); const gap = document.hidden ? POLL_HIDDEN_MS : POLL_ACTIVE_MS; pollingContatos = setInterval(refreshOrdemCarteira, gap); if (selecionado) { pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true); }, gap); } }
+    /** ====== POLLING ====== */
+    function schedulePolls() {
+      if (pollingContatos) clearInterval(pollingContatos);
+      if (pollingMensagens) clearInterval(pollingMensagens);
+      const gap = document.hidden ? POLL_HIDDEN_MS : POLL_ACTIVE_MS;
+      pollingContatos = setInterval(() => {/* TODO: refresh fila/tickets se necessário */ }, gap);
+      if (selecionado) {
+        pollingMensagens = setInterval(() => { carregarMensagens(true); }, gap);
+      }
+    }
     document.addEventListener('visibilitychange', schedulePolls);
 
-    function themeKey() { return `cz:theme:${agente.codigo || 'anon'}`; }
-    function defaultTheme() { return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff" }; }
-    function applyTheme(t) { const r = document.documentElement.style; const base = defaultTheme(); r.setProperty('--ticket-selected-bg', t.ticketSelectedBg ?? base.ticketSelectedBg); r.setProperty('--sidebar-bg', t.sidebar); r.setProperty('--content-bg', t.contentBg); r.setProperty('--bg', t.bg); r.setProperty('--text', t.text); r.setProperty('--muted', t.muted || '#6b7280'); r.setProperty('--border', t.border || '#e5e7eb'); r.setProperty('--link', t.link || t.primary || '#2563eb'); r.setProperty('--ghost-bg', t.ghostBg || '#f3f4f6'); r.setProperty('--bubble-out-g1', t.outG1); r.setProperty('--bubble-out-g2', t.outG2); r.setProperty('--bubble-out-fg', t.outFg || '#111827'); r.setProperty('--bubble-in-bg', t.inBg); r.setProperty('--bubble-in-border', t.inBorder); r.setProperty('--bubble-in-fg', t.inFg || '#0f172a'); r.setProperty('--bubble-radius', t.bubbleRadius + 'px'); r.setProperty('--btn-radius', t.btnRadius + 'px'); r.setProperty('--card-radius', t.cardRadius + 'px'); r.setProperty('--font-size', t.fontSize); r.setProperty('--chat-wallpaper-opacity', t.wallOp); r.setProperty('--hover', t.hover || 'var(--ghost-bg)'); r.setProperty('--hover-strong', t.hoverStrong || 'var(--ghost-bg)'); r.setProperty('--input-bg', t.inputBg || t.contentBg || '#ffffff'); r.setProperty('--input-fg', t.inputFg || t.text || '#0f172a'); r.setProperty('--scrollbar', t.scrollbar || '#cbd5e1'); r.setProperty('--primary', t.primary); r.setProperty('--accent', t.accent); }
-    function readThemeFromInputs() { return { primary: tPrimary.value, accent: tAccent.value, sidebar: tSidebar.value, contentBg: tContentBg.value, bg: tBg.value, text: tText.value, outG1: tOutG1.value, outG2: tOutG2.value, inBg: tInBg.value, inBorder: tInBorder.value, bubbleRadius: Number(tRadius.value), wallOp: Number(tBgOp.value), fontSize: tFontSize.value, btnRadius: Number(tBtnRadius.value), cardRadius: Number(tCardRadius.value) }; }
-    function saveTheme(t) { try { localStorage.setItem(themeKey(), JSON.stringify(t)); } catch { } }
-    function loadTheme() { try { return JSON.parse(localStorage.getItem(themeKey())) || null; } catch { return null; } }
-
-    // mapeia inputs do Theme Drawer (existem no drawer original)
-    const tPrimary = document.getElementById('tPrimary') || { value: '#3b82f6' };
-    const tAccent = document.getElementById('tAccent') || { value: '#22c55e' };
-    const tSidebar = document.getElementById('tSidebar') || { value: '#ffffff' };
-    const tContentBg = document.getElementById('tContentBg') || { value: '#ffffff' };
-    const tBg = document.getElementById('tBg') || { value: '#f3f4f6' };
-    const tText = document.getElementById('tText') || { value: '#0f172a' };
-    const tOutG1 = document.getElementById('tOutG1') || { value: '#dcf8c6' };
-    const tOutG2 = document.getElementById('tOutG2') || { value: '#b8f0a4' };
-    const tInBg = document.getElementById('tInBg') || { value: '#ffffff' };
-    const tInBorder = document.getElementById('tInBorder') || { value: '#e2e8f0' };
-    const tRadius = document.getElementById('tRadius') || { value: 18 };
-    const tBgOp = document.getElementById('tBgOp') || { value: 0 };
-    const tFontSize = document.getElementById('tFontSize') || { value: '14px' };
-    const tBtnRadius = document.getElementById('tBtnRadius') || { value: 10 };
-    const tCardRadius = document.getElementById('tCardRadius') || { value: 16 };
-    const btnTheme = document.getElementById('btnTheme');
-    const themeDrawer = document.getElementById('themeDrawer');
-    const btnThemeClose = document.getElementById('btnThemeClose');
-    const btnSaveTheme = document.getElementById('btnSaveTheme');
-    const btnRandom = document.getElementById('btnRandom');
-    const btnReset = document.getElementById('btnReset');
-
-    if (btnTheme) btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
-    if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && themeDrawer && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open'); });
-    [tPrimary, tAccent, tSidebar, tContentBg, tBg, tText, tOutG1, tOutG2, tInBg, tInBorder, tRadius, tBgOp, tFontSize, tBtnRadius, tCardRadius].forEach(i => { if (i && i.addEventListener) i.addEventListener('input', () => applyTheme(readThemeFromInputs())); });
-    if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open'); });
-    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); });
-    if (btnRandom) btnRandom.addEventListener('click', () => { const rand = () => '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0'); const b1 = rand(), b2 = rand(); const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: Math.random() > .5 ? .08 : 0, bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; applyTheme(t); });
-
-    function qsParam(name) { return new URLSearchParams(location.search).get(name); }
-    function escapeHtml(s) { if (!s) return ""; return s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
-    const __colorCache = new Map(); function gerarCor(nome) { const key = String(nome || "U"); if (__colorCache.has(key)) return __colorCache.get(key); let h = 0; for (const c of key) h = c.charCodeAt(0) + ((h << 5) - h); const val = `hsl(${h % 360},70%,60%)`; __colorCache.set(key, val); return val; }
-    function keyLocal() { return `cz:tickets:${agente.codigo}:${agente.carteira}`; }
-    let __lastSavedTicketsStr = ""; function saveTickets() { try { const s = JSON.stringify(tickets); if (s !== __lastSavedTicketsStr) { localStorage.setItem(keyLocal(), s); __lastSavedTicketsStr = s; } } catch { } }
-    function loadTickets() { try { tickets = JSON.parse(localStorage.getItem(keyLocal()) || "[]") || []; } catch { tickets = []; } }
-    function bytesToHuman(n) { if (!n && n !== 0) return ""; const u = ["B", "KB", "MB", "GB", "TB"]; let i = 0, s = n; while (s >= 1024 && i < u.length - 1) { s /= 1024; i++; } return `${s.toFixed(s >= 10 || i === 0 ? 0 : 1)} ${u[i]}`; }
-    function isIncoming(m) { const s = (m.status || "").toLowerCase(); if (typeof m.from_me === "boolean") return !m.from_me; if (m.direction) return String(m.direction).toLowerCase().startsWith("in"); if (["in", "received", "incoming"].includes(s)) return true; if (["out", "sent", "delivered", "read", "outgoing"].includes(s)) return false; return s === "in"; }
-
-    /** ====== Ordem, fila, chat etc. (app) ====== */
-    let ordemCache = [];
-    async function boot() {
-      // tema inicial
-      const savedT = loadTheme(); applyTheme(savedT || defaultTheme());
-
-      // agente.codigo via localStorage/qs/prompt
-      agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
-      agente.origem = localStorage.getItem("agente_origem") || qsParam("origem") || null;
-      if (!agente.codigo) {
-        const cod = prompt("Informe seu código de agente:"); if (!cod) return; agente.codigo = String(parseInt(cod, 10));
-      }
-
-      try {
-        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(agente.codigo)}`); const j = await r.json();
-        if (!j.ok) throw new Error(j.erro || "Agente não encontrado");
-        agente.nome = j.agente.nome; agente.carteira = j.agente.carteira;
-        localStorage.setItem("agente_codigo", agente.codigo);
-        localStorage.setItem("agente_nome", agente.nome);
-        localStorage.setItem("agente_carteira", agente.carteira);
-        elAgenteNome.textContent = `${agente.nome} (#${agente.codigo})`;
-        elAgenteCarteira.textContent = agente.carteira;
-
-        // Home welcome:
-        updateHomeWelcome();
-
-        // contadores
-        loadUnread();
-
-        await verificarOnline();
-
-        try {
-          const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
-          const r2 = await fetch(url);
-          if (r2.ok) { tickets = await r2.json(); saveTickets(); }
-        } catch (_) { }
-
-        renderTickets();
-        schedulePolls();
-        await refreshOrdemCarteira();
-        await refreshAtivosELimite();
-        if (!tickets.length) btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
-      } catch (e) {
-        elMsgAviso.classList.remove("hidden");
-        elMsgAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
-      }
-    }
-
-    async function verificarOnline() {
-      try {
-        const r = await fetch(`${FILA_API}/fila/status?carteira=${encodeURIComponent(agente.carteira)}`);
-        const lista = await r.json();
-        const achou = Array.isArray(lista) && lista.some(x => String(x.codigo_do_agente) === String(agente.codigo));
-        setStatus(achou);
-        if (!achou) { elMsgAviso.classList.remove("hidden"); elMsgAviso.textContent = "Você está OFFLINE nesta carteira. Use “Ficar online” para entrar na fila."; }
-        else { elMsgAviso.classList.add("hidden"); elMsgAviso.textContent = ""; }
-      } catch (e) { setStatus(false); }
-    }
-
-    function setStatus(online) {
-      elAgenteStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
-      agente.online = !!online;
-      btnPegarProxima.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
-      btnPrioridade.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
-      const toggleLabel = document.getElementById("toggleLabel"); btnToggleOnline.disabled = false;
-      btnToggleOnline.setAttribute('aria-pressed', online ? 'true' : 'false');
-      if (agente.online) { toggleLabel.textContent = "Ficar offline"; btnToggleOnline.classList.remove("bg-green-600", "hover:bg-green-700", "text-white"); btnToggleOnline.classList.add("bg-gray-100"); }
-      else { toggleLabel.textContent = "Ficar online"; btnToggleOnline.classList.add("bg-green-600", "text-white", "hover:bg-green-700"); btnToggleOnline.classList.remove("bg-gray-100"); }
-    }
-
-    async function refreshOrdemCarteira() {
-      const phoneIds = (carteiraToPhoneIds[agente.carteira] || []).map(String);
-      if (!phoneIds.length) return;
-      try {
-        const res = await fetch(`${CONV_API}/api/conversas/contatos`);
-        const contatos = await res.json();
-        const filtrados = (contatos || []).filter(c => phoneIds.includes(String(c.phone_id)));
-        filtrados.sort((a, b) => { const ai = a.status === 'in', bi = b.status === 'in'; if (ai !== bi) return bi - ai; return new Date(b.data_hora) - new Date(a.data_hora); });
-        ordemCache = filtrados;
-        const ticketByKey = new Map((tickets || []).map(t => [keyFrom(t.remetente, t.phone_id), t]));
-        filtrados.forEach(c => {
-          const k = keyFrom(c.remetente, c.phone_id);
-          const t = ticketByKey.get(k);
-          if (!t) { lastContatoTsByKey[k] = +new Date(c.data_hora || 0); return; }
-          const ts = +new Date(c.data_hora || 0);
-          const prev = lastContatoTsByKey[k] || 0;
-          const isOpen = !!(selecionado && selecionado.remetente === c.remetente && selecionado.phone_id === c.phone_id);
-          if (c.status === 'in' && ts > prev && !isOpen) { unreadCountByKey[k] = (unreadCountByKey[k] || 0) + 1; }
-          lastContatoTsByKey[k] = ts;
-          if (c.mensagem_final) t.mensagem_final = c.mensagem_final; else if (c.ultima_mensagem) t.mensagem_final = c.ultima_mensagem;
-          if (c.data_hora) t.data_hora = c.data_hora;
-        });
-        persistUnread();
-        saveTickets();
-        renderTickets();
-      } catch (e) { console.error("Falha ao atualizar ordem", e); }
-    }
-
-    async function refreshAtivosELimite() {
-      try {
-        const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
-        const r = await fetch(url); const rows = r.ok ? await r.json() : []; ativosCount = Array.isArray(rows) ? rows.length : 0;
-      } catch { ativosCount = tickets.length; }
-      try {
-        const j = await fetch(`${CONV_API}/api/supervisao/tickets-limit?carteira=${encodeURIComponent(agente.carteira)}`).then(r => r.json());
-        limitPerAgent = Number(j.limit_per_agent || 0);
-      } catch { limitPerAgent = 0; }
-      renderAtivosLimiteUI();
-    }
-    function renderAtivosLimiteUI() {
-      badgeAtivos.textContent = String(ativosCount);
-      badgeLimite.textContent = limitPerAgent > 0 ? String(limitPerAgent) : "∞";
-      const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
-      if (atingiu) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua ou libere um atendimento para continuar. Duvidas, fale com seu supervisor`; elMsgLimite.classList.remove("hidden"); }
-      else { elMsgLimite.classList.add("hidden"); elMsgLimite.textContent = ""; }
-      btnPegarProxima.disabled = !agente.online || atingiu; btnPrioridade.disabled = !agente.online || atingiu;
-    }
-
+    /** ====== AÇÕES DE CONVERSA (stubs integráveis) ====== */
     btnToggleOnline.onclick = async () => {
-      if (!agente.carteira || !agente.codigo) return;
-      const toggleSpinner = document.getElementById('toggleSpinner'); const toggleLabel = document.getElementById('toggleLabel');
-      elMsgAviso.classList.add("hidden"); elMsgAviso.textContent = ""; const indoOnline = !agente.online;
-      btnToggleOnline.disabled = true; toggleSpinner.classList.remove('hidden'); toggleLabel.textContent = indoOnline ? 'Entrando…' : 'Saindo…';
       try {
-        if (indoOnline) {
-          const r = await fetch(`${FILA_API}/fila/online`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
-          const j = await r.json(); if (!j.ok) throw new Error(j.erro || "Erro ao entrar online");
-          setStatus(true); await refreshOrdemCarteira(); await refreshAtivosELimite();
-        } else {
-          const r = await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
-          const j = await r.json(); if (!j.ok) throw new Error(j.erro || "Erro ao ficar offline");
-          setStatus(false);
-        }
+        const wantOnline = !agente.online;
+        btnToggleOnline.disabled = true; document.getElementById('toggleSpinner').classList.remove('hidden');
+        const r = await fetch(`${FILA_API}/agentes/online`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ codigo: agente.codigo, online: wantOnline }) });
+        const data = await r.json().catch(() => ({}));
+        agente.online = !!(data.ok ? wantOnline : agente.online);
+        elAgenteStatus.innerHTML = agente.online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
+        document.getElementById('toggleSpinner').classList.add('hidden'); btnToggleOnline.disabled = false;
+        document.getElementById('toggleLabel').textContent = agente.online ? 'Ficar offline' : 'Ficar online';
+      } catch { document.getElementById('toggleSpinner').classList.add('hidden'); btnToggleOnline.disabled = false; }
+    };
+
+    btnPegarProxima.onclick = async () => {
+      try {
+        btnPegarProxima.disabled = true; document.getElementById('pegarSpinner').classList.remove('hidden');
+        const r = await fetch(`${FILA_API}/fila/pegar_proxima`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ agente: agente.codigo, carteira: agente.carteira }) });
+        const data = await r.json();
+        document.getElementById('pegarSpinner').classList.add('hidden'); btnPegarProxima.disabled = false;
+        if (!data || !data.ok) { alert(data?.erro || 'Sem conversas na fila.'); return; }
+        abrirConversa(data.ticket);
       } catch (e) {
-        elMsgAviso.classList.remove("hidden"); elMsgAviso.textContent = (e?.message || "Falha ao alterar status");
-      } finally {
-        toggleSpinner.classList.add('hidden'); toggleLabel.textContent = agente.online ? 'Ficar offline' : 'Ficar online'; btnToggleOnline.disabled = false;
+        document.getElementById('pegarSpinner').classList.add('hidden'); btnPegarProxima.disabled = false;
       }
     };
 
-    // ... (restante da sua lógica de prioridade, tickets, renderização de mensagens, upload PDF, concluir/liberar, etc.)
-    // Mantido idêntico ao seu original — não repito aqui por tamanho. **Use o mesmo bloco que você me mandou.**
+    btnPrioridade.onclick = () => { document.getElementById('priorityModal').classList.remove('hidden'); };
+    function fecharPriorityModal() { document.getElementById('priorityModal').classList.add('hidden'); }
 
-    /** ===== Relatório (novo) ===== */
-    let pieChart = null;
-    function humanTime(sec) { if (sec == null) return '—'; const s = Math.round(sec); const mm = Math.floor(s / 60); const ss = s % 60; return mm > 0 ? `${mm}m ${ss}s` : `${ss}s`; }
-    async function carregarRelatorio() {
-      // KPIs default
-      document.getElementById('kpiAtivos').textContent = String(ativosCount || 0);
-      document.getElementById('kpiConcluidos').textContent = '—';
-      document.getElementById('kpiTma').textContent = '—';
-      document.getElementById('kpiPrimeira').textContent = '—';
-
-      // tenta endpoint do dashboard de atendimentos (ajuste conforme seu backend)
-      let data = null;
+    async function concluirAtendimento(motivo) {
+      if (!selecionado) return;
       try {
-        const url = `${CONV_API}/api/dashboard/atendimentos?carteira=${encodeURIComponent(agente.carteira)}&agente=${encodeURIComponent(agente.codigo)}`;
-        const r = await fetch(url);
-        if (r.ok) data = await r.json();
+        btnConcluir.disabled = true;
+        await fetch(`${FILA_API}/fila/concluir`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ticket_id: selecionado.id, motivo }) });
+        btnConcluir.disabled = false;
+        selecionado = null; elTitulo.textContent = 'Selecione um ticket'; chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>';
+      } catch { btnConcluir.disabled = false; }
+    }
+
+    function abrirConversa(ticket) {
+      selecionado = ticket;
+      elTitulo.textContent = `${ticket.nome || ticket.remetente || 'Cliente'} — ${ticket.phone_id || ''}`;
+      elSubInfo.textContent = ticket.telefone || '';
+      btnEnviar.disabled = false; textarea.disabled = false; btnLiberar.disabled = false; btnConcluir.disabled = false;
+      chat.innerHTML = ''; carregarMensagens(false);
+    }
+
+    async function carregarMensagens(append) {
+      if (!selecionado) return;
+      try {
+        const url = `${CONV_API}/mensagens?telefone=${encodeURIComponent(selecionado.telefone)}&phone_id=${encodeURIComponent(selecionado.phone_id || '')}`;
+        const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status);
+        const data = await r.json();
+        if (!append) chat.innerHTML = '';
+        for (const m of data || []) renderMsg(m);
+        chat.scrollTop = chat.scrollHeight;
+      } catch (e) { /* noop */ }
+    }
+
+    function renderMsg(m) {
+      const div = document.createElement('div');
+      div.className = `msg ${isIncoming(m) ? 'recebida' : 'enviada'}`;
+      const txt = (m.text || m.body || m.caption || '');
+      div.innerHTML = `<div>${txt}</div><div class="hora">${(m.hora || '')}</div>`;
+      chat.appendChild(div);
+    }
+
+    async function enviarMensagem() {
+      if (!selecionado) return;
+      const txt = textarea.value.trim(); if (!txt) return;
+      textarea.value = '';
+      try {
+        await fetch(`${CONV_API}/enviar_texto`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ telefone: selecionado.telefone, phone_id: selecionado.phone_id, texto: txt }) });
+        renderMsg({ text: txt, from_me: true, hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) });
+        chat.scrollTop = chat.scrollHeight;
       } catch { }
-
-      // aplica se veio algo
-      if (data) {
-        if (typeof data.em_atendimento === 'number') document.getElementById('kpiAtivos').textContent = String(data.em_atendimento);
-        if (typeof data.concluidos === 'number') document.getElementById('kpiConcluidos').textContent = String(data.concluidos);
-        if (typeof data.tma_segundos === 'number') document.getElementById('kpiTma').textContent = humanTime(data.tma_segundos);
-        if (typeof data.primeira_resposta_seg === 'number') document.getElementById('kpiPrimeira').textContent = humanTime(data.primeira_resposta_seg);
-      }
-
-      // Pizza: distribuição simples (ativos vs concluidos vs outros)
-      const ativos = Number(document.getElementById('kpiAtivos').textContent) || 0;
-      const concl = (data && typeof data.concluidos === 'number') ? Number(data.concluidos) : 0;
-      const outros = Math.max(0, (data && typeof data.outros === 'number') ? Number(data.outros) : 0);
-      const total = ativos + concl + outros;
-
-      const pieFallback = document.getElementById('pieFallback');
-      const ctx = document.getElementById('pieCanvas').getContext('2d');
-      if (total === 0) { pieFallback.classList.remove('hidden'); if (pieChart) { pieChart.destroy(); pieChart = null; } return; }
-      pieFallback.classList.add('hidden');
-
-      if (pieChart) { pieChart.destroy(); }
-      pieChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: ['Em atendimento', 'Concluídos', 'Outros'],
-          datasets: [{ data: [ativos, concl, outros] }]
-        },
-        options: { responsive: true, plugins: { legend: { display: true } } }
-      });
-      document.getElementById('pieLegend').textContent = `Total: ${total}`;
     }
 
-    /** ===== Start ===== */
+    async function enviarPDF(ev) {
+      if (!selecionado) return;
+      const f = ev.target.files[0]; if (!f) return;
+      if (f.size > 2 * 1024 * 1024) { alert('PDF acima de 2MB.'); return; }
+      const b64 = await f.arrayBuffer().then(b => btoa(String.fromCharCode(...new Uint8Array(b))));
+      try {
+        await fetch(`${CONV_API}/enviar_pdf`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ telefone: selecionado.telefone, phone_id: selecionado.phone_id, nome: f.name, mime: f.type || 'application/pdf', base64: b64 }) });
+        renderMsg({ text: `📎 PDF enviado (${f.name} • ${bytesToHuman(f.size)})`, from_me: true, hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) });
+      } catch { }
+    }
+
+    /** ====== START ====== */
     async function startApp() {
-      // aplica tema salvo do usuário (se houver)
       const saved = loadTheme(); applyTheme(saved || defaultTheme());
-      // Se não estiver logado, mostra modal e interrompe
       if (!isLogged()) { abrirModalLogin(); return; }
-      // Logado → entra em Conversas por padrão
-      setCurrent(navConversas); showView('view-conversas');
-      // carrega app (agente, fila, etc.)
       await boot();
-      // após boot, atualiza saudação da Home
-      updateHomeWelcome();
+      switchTab('conversas');
     }
 
-    // Logout integra com seu botão existente
-    const oldLogout = btnLogout.onclick;
-    btnLogout.onclick = async () => {
+    /** ====== LOGOUT ====== */
+    btnLogout.onclick = () => {
       try { localStorage.removeItem('usuario'); } catch { }
-      if (typeof oldLogout === 'function') oldLogout();
-      // volta para Home e exibe login
-      setCurrent(navHome); showView('view-home'); abrirModalLogin();
+      switchTab('home'); abrirModalLogin();
+      if (LOGOUT_REDIRECT) location.href = LOGOUT_REDIRECT;
     };
 
-    // init
     window.addEventListener('load', startApp);
   </script>
 </body>
