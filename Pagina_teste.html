@@ -39,7 +39,6 @@
       --input-fg: var(--text);
       --scrollbar: #cbd5e1;
       --ticket-selected-bg: #f0f9ff;
-      /* reply button vars (usados também no dark) */
       --reply-bg: rgba(0, 0, 0, .06);
       --reply-border: rgba(0, 0, 0, .08);
       --reply-fg: #334155;
@@ -394,7 +393,7 @@
     </button>
     <button id="tabBtnConversas" class="btn-mini" title="Conversas" aria-label="Conversas">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
+        <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a 2 2 0 0 0 2-2V4a 2 2 0 0 0-2-2z" />
       </svg>
     </button>
     <button id="tabBtnRelatorio" class="btn-mini" title="Relatório" aria-label="Relatório">
@@ -751,7 +750,7 @@
           </div>
         </div>
 
-        <!-- Gráficos -->
+        <!-- Gráficos e Extrato -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <div class="card p-4">
             <div class="flex items-center justify-between">
@@ -767,18 +766,13 @@
             <div class="mt-4"><canvas id="pieMotivos" height="260"></canvas></div>
           </div>
 
-          <div class="card p-4">
+          <!-- NOVO: Extrato de motivos em acordeão -->
+          <div class="card p-4 lg:col-span-2">
             <div class="flex items-center justify-between">
-              <div class="font-semibold">Atendimentos por dia</div>
+              <div class="font-semibold">Extrato de motivos (por dia)</div>
+              <button id="btnExtratoRefresh" class="btn btn-neutral px-3 py-1 text-xs">Atualizar extrato</button>
             </div>
-            <div class="mt-4"><canvas id="lineSeries" height="260"></canvas></div>
-          </div>
-
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <div class="font-semibold">Atendimentos por hora</div>
-            </div>
-            <div class="mt-4"><canvas id="barHora" height="260"></canvas></div>
+            <div id="extratoWrap" class="mt-3 divide-y rounded-md border"></div>
           </div>
         </div>
       </div>
@@ -825,8 +819,8 @@
     let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
     let limitPerAgent = 0; let ativosCount = 0;
     let unreadCountByKey = {}; let lastContatoTsByKey = {};
-    let ordemCache = []; let pieChart = null; // (status) – mantive o id/var original
-    let chartMotivos = null, chartSeries = null, chartHora = null; // novos gráficos
+    let ordemCache = []; let pieChart = null; // status
+    let chartMotivos = null; // motivos
     let typingTimer = null;
 
     /** ============== UTILS ============== */
@@ -867,6 +861,8 @@
     const relEnd = document.getElementById('relEnd');
     const relPeriodo = document.getElementById('relatorioPeriodo');
     const relAgentePill = document.getElementById('relAgentePill');
+    const btnExtratoRefresh = document.getElementById('btnExtratoRefresh');
+    const extratoWrap = document.getElementById('extratoWrap');
 
     // Conversas
     const elAgenteNome = document.getElementById("agenteNome");
@@ -1034,7 +1030,7 @@
         await refreshAtivosELimite();
         if (!tickets.length) btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
 
-        // RELATÓRIO (agora usa filtros + agente fixo)
+        // RELATÓRIO
         await refreshKPIs();
         wireComposer();
       } catch (e) {
@@ -1179,7 +1175,7 @@
       finally { spinner.classList.add('hidden'); label.textContent = 'Pegar próxima'; btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent); }
     };
 
-    // Prioridade
+    // Prioridade (… mantido igual …)
     const priorityModal = document.getElementById('priorityModal');
     const priorityTelefone = document.getElementById('priorityTelefone');
     const priorityInfo = document.getElementById('priorityInfo');
@@ -1270,6 +1266,7 @@
       elListaTickets.appendChild(frag);
     }
 
+    let msgsCtrl = null;
     async function abrirTicket(t) {
       selecionado = t;
       try { const k = keyFrom(t.remetente, t.phone_id); unreadCountByKey[k] = 0; lastContatoTsByKey[k] = Date.now(); persistUnread(); } catch { }
@@ -1287,7 +1284,6 @@
       wireComposer();
     }
     function startMensagensPoll() { schedulePolls() }
-    let msgsCtrl = null;
 
     async function carregarMensagens(incremental = true) {
       if (!selecionado) return;
@@ -1452,14 +1448,6 @@
       finally { event.target.value = ""; }
     }
 
-    /** ============== MODAL IMAGEM ============== */
-    const imageModal = document.getElementById("imageModal");
-    const modalImg = document.getElementById("modalImg");
-    const closeModal = document.getElementById("closeModal");
-    function abrirModalImagem(src) { isModalOpen = true; modalImg.src = src; imageModal.classList.remove("hidden") }
-    closeModal.onclick = fecharModal; imageModal.onclick = e => { if (e.target === imageModal) fecharModal(); };
-    function fecharModal() { imageModal.classList.add("hidden"); modalImg.src = ""; isModalOpen = false }
-
     /** ============== LIBERAR / CONCLUIR / LOGOUT ============== */
     btnLiberar.onclick = async () => {
       if (!selecionado) return;
@@ -1502,8 +1490,6 @@
     function limparChat() { chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>' }
 
     /** ============== KPIs & Relatório (com filtros + agente fixo) ============== */
-    function humanMin(seconds) { if (seconds === undefined || seconds === null) return '—'; const m = seconds / 60; return m < 1 ? m.toFixed(1) : Math.round(m) }
-    function humanSeg(seconds) { if (seconds === undefined || seconds === null) return '—'; return Math.round(seconds) }
     function fmtDurSec(s) { if (s == null) return "—"; const m = Math.floor(s / 60), sec = s % 60; if (m >= 60) { const h = Math.floor(m / 60), mm = m % 60; return `${h}h ${mm}m`; } return `${m}m ${sec}s`; }
 
     function buildRelQS() {
@@ -1513,6 +1499,17 @@
       p.set('start', start);
       p.set('end', end);
       if (agente?.carteira) p.set('carteira', agente.carteira);
+      if (agente?.codigo) p.set('agentes', String(agente.codigo));
+      return `?${p.toString()}`;
+    }
+
+    // QS específico do extrato (sem carteira)
+    function buildExtratoQS() {
+      const start = relStart.value || fmtYMD(new Date());
+      const end = relEnd.value || start;
+      const p = new URLSearchParams();
+      p.set('start', start);
+      p.set('end', end);
       if (agente?.codigo) p.set('agentes', String(agente.codigo));
       return `?${p.toString()}`;
     }
@@ -1557,8 +1554,6 @@
       const qs = buildRelQS();
       const urlResumo = `${API_BASE}/api/atendimentos/resumo${qs}`;
       const urlMotivos = `${API_BASE}/api/atendimentos/motivos${qs}`;
-      const urlSeries = `${API_BASE}/api/atendimentos/series${qs}`;
-      const urlHora = `${API_BASE}/api/atendimentos/hora_hora${qs}`;
 
       try {
         // Resumo
@@ -1583,7 +1578,7 @@
           });
         }
 
-        // Motivos
+        // Motivos (pizza)
         try {
           const rMot = await fetch(urlMotivos);
           const motivos = rMot.ok ? await rMot.json() : [];
@@ -1596,44 +1591,133 @@
           }
         } catch { /* silencioso */ }
 
-        // Series (por dia)
-        try {
-          const rSer = await fetch(urlSeries);
-          const series = rSer.ok ? await rSer.json() : [];
-          const labels = Array.isArray(series) ? series.map(s => s.dia || s.data || '—') : [];
-          const totals = Array.isArray(series) ? series.map(s => Number(s.total || s.qtd || 0)) : [];
-          const ctxLine = document.getElementById('lineSeries')?.getContext('2d');
-          if (ctxLine) {
-            if (chartSeries) chartSeries.destroy();
-            chartSeries = new Chart(ctxLine, {
-              type: 'line',
-              data: { labels, datasets: [{ label: 'Atendimentos', data: totals, tension: .2, fill: false }] },
-              options: { responsive: true, plugins: { legend: { display: false } } }
-            });
-          }
-        } catch { /* silencioso */ }
-
-        // Hora a hora
-        try {
-          const rH = await fetch(urlHora);
-          const hora = rH.ok ? await rH.json() : [];
-          const labels = Array.isArray(hora) ? hora.map(h => String(h.hora ?? h.h ?? '—')) : [];
-          const totals = Array.isArray(hora) ? hora.map(h => Number(h.total || h.qtd || 0)) : [];
-          const ctxBar = document.getElementById('barHora')?.getContext('2d');
-          if (ctxBar) {
-            if (chartHora) chartHora.destroy();
-            chartHora = new Chart(ctxBar, {
-              type: 'bar',
-              data: { labels, datasets: [{ label: 'Atendimentos', data: totals }] },
-              options: { responsive: true, plugins: { legend: { display: false } } }
-            });
-          }
-        } catch { /* silencioso */ }
+        // Extrato (acordeão)
+        await refreshExtrato();
 
       } catch (e) {
         // fallback silencioso
       }
     }
+
+    // ------- Extrato (acordeão) -------
+    function normalizeExtratoRow(row) {
+      if (!row) return null;
+      // Suporta array (psycopg2 default) e objeto
+      if (Array.isArray(row)) {
+        return {
+          data: row[0],
+          atendimentos: Number(row[1] || 0),
+          inativo: Number(row[2] || 0),
+          duvidas: Number(row[3] || 0),
+          segunda_via: Number(row[4] || 0),
+          recusou: Number(row[5] || 0),
+          negociacao: Number(row[6] || 0)
+        };
+      }
+      return {
+        data: row.data_hora || row.data || row.dia,
+        atendimentos: Number(row.atendimentos || row.total || 0),
+        inativo: Number(row.cliente_ficou_inativo || 0),
+        duvidas: Number(row.duvidas_gerais || 0),
+        segunda_via: Number(row.solicitou_2ª_via_de_boleto || row.solicitou_2a_via_de_boleto || 0),
+        recusou: Number(row.recusou_a_proposta || 0),
+        negociacao: Number(row.realizou_negociacao || 0)
+      };
+    }
+
+    function pct(v, tot) { if (!tot) return '0%'; return Math.round((v / tot) * 100) + '%'; }
+
+    function renderExtrato(rows) {
+      extratoWrap.innerHTML = '';
+      if (!Array.isArray(rows) || !rows.length) {
+        extratoWrap.innerHTML = `<div class="p-4 text-sm text-gray-500">Sem dados para o período selecionado.</div>`;
+        return;
+      }
+      rows.forEach((raw, idx) => {
+        const r = normalizeExtratoRow(raw);
+        if (!r) return;
+        const dt = r.data ? new Date(r.data) : null;
+        const label = dt ? fmtDataBR.format(dt) : String(r.data || '—');
+        const total = r.atendimentos || 0;
+
+        const item = document.createElement('div');
+        item.className = 'extrato-item';
+
+        const header = document.createElement('button');
+        header.type = 'button';
+        header.className = 'w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50';
+        header.setAttribute('aria-expanded', 'false');
+        header.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="font-medium">${escapeHtml(label)}</span>
+            <span class="text-xs text-gray-500">Total: <strong>${total}</strong></span>
+            <span class="text-xs text-gray-500">Negociações: <strong>${r.negociacao}</strong> (${pct(r.negociacao, total)})</span>
+          </div>
+          <span class="text-gray-400">▼</span>
+        `;
+
+        const content = document.createElement('div');
+        content.className = 'hidden px-3 pb-3';
+        content.innerHTML = `
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm border rounded-md">
+              <thead>
+                <tr class="bg-gray-50 text-gray-600">
+                  <th class="text-left p-2 border">Motivo</th>
+                  <th class="text-right p-2 border">Qtd</th>
+                  <th class="text-right p-2 border">% do dia</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${[
+            ['Realizou negociação', r.negociacao],
+            ['Solicitou 2ª via de boleto', r.segunda_via],
+            ['Recusou a proposta', r.recusou],
+            ['Dúvidas gerais', r.duvidas],
+            ['Cliente ficou inativo', r.inativo]
+          ].map(([mot, v]) => `
+                  <tr>
+                    <td class="p-2 border">${escapeHtml(mot)}</td>
+                    <td class="p-2 border text-right">${v}</td>
+                    <td class="p-2 border text-right">${pct(v, total)}</td>
+                  </tr>
+                `).join('')}
+                <tr class="font-medium">
+                  <td class="p-2 border text-right">Total do dia</td>
+                  <td class="p-2 border text-right">${total}</td>
+                  <td class="p-2 border text-right">100%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+
+        header.addEventListener('click', () => {
+          const open = !content.classList.contains('hidden');
+          content.classList.toggle('hidden');
+          header.setAttribute('aria-expanded', String(!open));
+          header.querySelector('span.text-gray-400').textContent = open ? '▼' : '▲';
+        });
+
+        item.appendChild(header);
+        item.appendChild(content);
+        extratoWrap.appendChild(item);
+      });
+    }
+
+    async function refreshExtrato() {
+      try {
+        const qs = buildExtratoQS();
+        const url = `${API_BASE}/api/dashboard/extrato_motivos_agentes${qs}`;
+        const r = await fetch(url);
+        const rows = r.ok ? await r.json() : [];
+        renderExtrato(rows);
+      } catch (e) {
+        extratoWrap.innerHTML = `<div class="p-4 text-sm text-red-600">Falha ao carregar extrato.</div>`;
+      }
+    }
+
+    if (btnExtratoRefresh) btnExtratoRefresh.addEventListener('click', refreshExtrato);
     if (btnRefreshRel) btnRefreshRel.onclick = refreshKPIs;
     relStart?.addEventListener('change', () => { updatePeriodoLabel(); refreshKPIs(); });
     relEnd?.addEventListener('change', () => { updatePeriodoLabel(); refreshKPIs(); });
