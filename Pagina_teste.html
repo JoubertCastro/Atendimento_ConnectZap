@@ -487,8 +487,7 @@
 
         <div id="digitando" class="px-4 text-left hidden text-sm text-gray-500" aria-live="polite">Digitando…</div>
 
-        <div id="respostaPreview"
-          class="hidden px-3 py-2 border-t bg-gray-50 text-sm flex justify-between items-center">
+        <div id="respostaPreview" class="hidden px-3 py-2 border-t bg-gray-50 text-sm flex justify-between items-center">
           <div class="truncate max-w-[80%]"><span class="font-semibold">Respondendo:</span> <span id="respostaTexto"
               class="text-gray-600"></span></div>
           <button onclick="cancelarResposta()" class="text-red-500 text-xs" aria-label="Cancelar resposta">✖</button>
@@ -713,89 +712,305 @@
 
   <script>
     /** =================== CONFIG / APIs =================== */
-    const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/, '');
-    const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
-    const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
+    const FILA_API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+      ? "http://localhost:8001"
+      : "https://fila-de-atendimento-production.up.railway.app";
 
-    /** ================== CARTEIRAS / Phone IDs ================== */
-    const phoneIdMap = {
-      "828473960349364": "ConnectZap",
-      "805610009301153": "Banco PAN",
-      "727586317113885": "Recovery PJ",
-      "864779140046932": "Recovery PF",
-      "802977069563598": "Recovery PF",
-      "864779140046932,802977069563598": "Recovery PF",
-      "873637622491517": "Mercado Pago Cobrança",
-      "821562937700669": "Mercado Pago Cobrança",
-      "873637622491517,821562937700669": "Mercado Pago Cobrança",
-      "779797401888141": "DivZero",
-      "829210283602406": "Arc4U",
-      "713021321904495": "Serasa",
-      "803535039503723": "Mercado Pago Vendas"
-    };
-    const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => {
-      const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean);
-      acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts]));
-      return acc;
-    }, {});
+    const CONV_API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+      ? "http://localhost:8002"
+      : "https://conversas-api-production.up.railway.app";
+
+    const REL_API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+      ? "http://localhost:8003"
+      : "https://dashboard-connectzap-production.up.railway.app";
+
+    const STORAGE_KEY_THEME = "cz:theme:v1";
+    const STORAGE_KEY_TICKETS = "cz:tickets:v1";
+    const STORAGE_KEY_UNREAD_PREFIX = "cz:unread:";
+    const STORAGE_KEY_LAST_TS_PREFIX = "cz:lastContatoTs:";
+    const STORAGE_KEY_ATIVOS = "cz:ativos:";
+    const LOGOUT_REDIRECT = "";
 
     /** =================== ESTADO GLOBAL =================== */
-    let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
-    let tickets = []; let selecionado = null; let renderedKeys = new Set(); let lastTimestampMs = null; let lastDayRendered = null;
-    let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
-    let limitPerAgent = 0; let ativosCount = 0;
-    let unreadCountByKey = {}; let lastContatoTsByKey = {};
-    let ordemCache = [];
-    let pieChart = null;
-    let typingTimer = null;
+    let agente = {
+      codigo: localStorage.getItem("agente_codigo") || "",
+      nome: localStorage.getItem("agente_nome") || "",
+      carteira: localStorage.getItem("agente_carteira") || "",
+      origem: localStorage.getItem("agente_origem") || "",
+      online: false
+    };
 
-    /** =================== UTILS =================== */
-    const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
-    const POLL_ACTIVE_MS = 5000, POLL_HIDDEN_MS = 30000;
-    const fmtHoraBR = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
-    const fmtDataBR = new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/Sao_Paulo' });
-    function qsParam(name) { return new URLSearchParams(location.search).get(name); }
-    function escapeHtml(s) { if (!s) return ""; return s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
-    const __colorCache = new Map();
-    function gerarCor(nome) { const key = String(nome || "U"); if (__colorCache.has(key)) return __colorCache.get(key); let h = 0; for (const c of key) h = c.charCodeAt(0) + ((h << 5) - h); const v = `hsl(${h % 360},70%,60%)`; __colorCache.set(key, v); return v; }
-    function keyLocal() { return `cz:tickets:${agente.codigo}:${agente.carteira}`; }
-    let __lastSavedTicketsStr = ""; function saveTickets() { try { const s = JSON.stringify(tickets); if (s !== __lastSavedTicketsStr) { localStorage.setItem(keyLocal(), s); __lastSavedTicketsStr = s; } } catch { } }
-    function loadTickets() { try { tickets = JSON.parse(localStorage.getItem(keyLocal()) || "[]") || []; } catch { tickets = []; } }
-    function bytesToHuman(n) { if (n === undefined || n === null) return ''; const u = ['B', 'KB', 'MB', 'GB', 'TB']; let i = 0, s = n; while (s >= 1024 && i < u.length - 1) { s /= 1024; i++; } return `${s.toFixed(s >= 10 || i === 0 ? 0 : 1)} ${u[i]}`; }
-    function isIncoming(m) { const s = (m.status || "").toLowerCase(); if (typeof m.from_me === "boolean") return !m.from_me; if (m.direction) return String(m.direction).toLowerCase().startsWith("in"); if (["in", "received", "incoming"].includes(s)) return true; if (["out", "sent", "delivered", "read", "outgoing"].includes(s)) return false; return s === "in"; }
-    function storageKeys() { return { unread: `cz:unreadCount:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}`, lastTs: `cz:lastContatoTs:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}` }; }
-    function loadUnread() { try { const { unread, lastTs } = storageKeys(); unreadCountByKey = JSON.parse(localStorage.getItem(unread) || "{}"); lastContatoTsByKey = JSON.parse(localStorage.getItem(lastTs) || "{}"); } catch { unreadCountByKey = {}; lastContatoTsByKey = {}; } }
-    function persistUnread() { try { const { unread, lastTs } = storageKeys(); localStorage.setItem(unread, JSON.stringify(unreadCountByKey)); localStorage.setItem(lastTs, JSON.stringify(lastContatoTsByKey)); } catch { } }
-    function keyFrom(remetente, phone_id) { return `${remetente}|${phone_id || ''}`; }
-    function schedulePolls() {
-      if (pollingContatos) clearInterval(pollingContatos);
-      if (pollingMensagens) clearInterval(pollingMensagens);
-      const gap = document.hidden ? POLL_HIDDEN_MS : POLL_ACTIVE_MS;
-      pollingContatos = setInterval(refreshOrdemCarteira, gap);
-      if (selecionado) {
-        pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true); }, gap);
+    let tickets = [];
+    let ordemCache = [];
+    let unreadCountByKey = {};
+    let lastContatoTsByKey = {};
+    let pollingContatos = null;
+    let pollingMensagens = null;
+    let selecionado = null;
+    let isModalOpen = false;
+    let limitPerAgent = 0;
+    let ativosCount = 0;
+
+    let lastTimestampMs = null;
+    let lastDayRendered = null;
+    const renderedKeys = new Set();
+
+    const phoneIdMap = {
+      "828473960349364": "ConnectZap",
+      "727586317113885": "Recovery PJ",
+      "864779140046932": "Recovery PF",
+      "802977069563598": "Recovery PF2",
+      "873637622491517": "Mercado Pago Cobrança",
+      "821562937700669": "Mercado Pago Cobrança2",
+      "779797401888141": "DivZero",
+      "829210283602406": "Arc4U",
+      "713021321631338": "Serasa"
+    };
+
+    /** =================== HELPERS =================== */
+    function escapeHtml(s) {
+      if (s == null) return "";
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function normalizarTelefone(t) {
+      if (!t) return "";
+      return String(t).replace(/\D/g, "");
+    }
+
+    function formatarDataHora(iso) {
+      if (!iso) return "";
+      const d = new Date(iso);
+      if (Number.isNaN(+d)) return "";
+      return d.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function formatarHora(iso) {
+      if (!iso) return "";
+      const d = new Date(iso);
+      if (Number.isNaN(+d)) return "";
+      return d.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function diaLabel(iso) {
+      if (!iso) return "";
+      const d = new Date(iso);
+      if (Number.isNaN(+d)) return "";
+      const hoje = new Date();
+      const diff = Math.floor((hoje - d) / 86400000);
+      if (diff === 0) return "Hoje";
+      if (diff === 1) return "Ontem";
+      return d.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      });
+    }
+
+    function keyFrom(remetente, phoneId) {
+      return `${normalizarTelefone(remetente)}::${phoneId || ""}`;
+    }
+
+    function persistUnread() {
+      try {
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith(STORAGE_KEY_UNREAD_PREFIX) || k.startsWith(STORAGE_KEY_LAST_TS_PREFIX)) {
+            localStorage.removeItem(k);
+          }
+        });
+        Object.entries(unreadCountByKey).forEach(([k, v]) => {
+          localStorage.setItem(STORAGE_KEY_UNREAD_PREFIX + k, String(v));
+        });
+        Object.entries(lastContatoTsByKey).forEach(([k, v]) => {
+          localStorage.setItem(STORAGE_KEY_LAST_TS_PREFIX + k, String(v));
+        });
+      } catch (e) {
+        console.error("Erro ao persistir unread", e);
       }
     }
-    document.addEventListener('visibilitychange', schedulePolls);
+
+    function loadUnread() {
+      unreadCountByKey = {};
+      lastContatoTsByKey = {};
+      try {
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith(STORAGE_KEY_UNREAD_PREFIX)) {
+            const key = k.substring(STORAGE_KEY_UNREAD_PREFIX.length);
+            unreadCountByKey[key] = parseInt(localStorage.getItem(k) || "0", 10) || 0;
+          }
+          if (k.startsWith(STORAGE_KEY_LAST_TS_PREFIX)) {
+            const key = k.substring(STORAGE_KEY_LAST_TS_PREFIX.length);
+            lastContatoTsByKey[key] = parseInt(localStorage.getItem(k) || "0", 10) || 0;
+          }
+        });
+      } catch (e) {
+        console.error("Erro ao carregar unread", e);
+      }
+    }
+
+    function saveTickets() {
+      try {
+        localStorage.setItem(STORAGE_KEY_TICKETS, JSON.stringify(tickets));
+      } catch (e) {
+        console.error("Erro ao salvar tickets", e);
+      }
+    }
+
+    function loadTicketsFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_TICKETS);
+        if (!raw) return;
+        const arr = JSON.parse(raw);
+        if (!Array.isArray(arr)) return;
+        tickets = arr;
+      } catch (e) {
+        console.error("Erro ao carregar tickets", e);
+      }
+    }
+
+    function sorterByLastContato(a, b) {
+      const ka = keyFrom(a.remetente, a.phone_id);
+      const kb = keyFrom(b.remetente, b.phone_id);
+      const ta = lastContatoTsByKey[ka] || 0;
+      const tb = lastContatoTsByKey[kb] || 0;
+      if (ta !== tb) return tb - ta;
+      return new Date(b.data_hora || 0) - new Date(a.data_hora || 0);
+    }
+
+    /** =================== THEME =================== */
+    function defaultTheme() {
+      return {
+        primary: "#3b82f6",
+        accent: "#22c55e",
+        sidebar: "#ffffff",
+        contentBg: "#ffffff",
+        bg: "#f3f4f6",
+        text: "#0f172a",
+        bubbleOutG1: "#dcf8c6",
+        bubbleOutG2: "#b8f0a4",
+        bubbleInBg: "#ffffff",
+        bubbleInBorder: "#e2e8f0",
+        bubbleRadius: 18,
+        bgOpacity: 0,
+        fontSize: "14px",
+        btnRadius: 10,
+        cardRadius: 16
+      };
+    }
+
+    function loadTheme() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_THEME);
+        if (!raw) return defaultTheme();
+        const t = JSON.parse(raw);
+        return { ...defaultTheme(), ...t };
+      } catch {
+        return defaultTheme();
+      }
+    }
+
+    function applyTheme(t) {
+      const r = document.documentElement.style;
+      const base = defaultTheme();
+      const x = { ...base, ...t };
+      r.setProperty("--primary", x.primary);
+      r.setProperty("--accent", x.accent);
+      r.setProperty("--sidebar-bg", x.sidebar);
+      r.setProperty("--content-bg", x.contentBg);
+      r.setProperty("--bg", x.bg);
+      r.setProperty("--text", x.text);
+      r.setProperty("--bubble-out-g1", x.bubbleOutG1);
+      r.setProperty("--bubble-out-g2", x.bubbleOutG2);
+      r.setProperty("--bubble-in-bg", x.bubbleInBg);
+      r.setProperty("--bubble-in-border", x.bubbleInBorder);
+      r.setProperty("--bubble-radius", x.bubbleRadius + "px");
+      r.setProperty("--chat-wallpaper-opacity", x.bgOpacity);
+      r.setProperty("--font-size", x.fontSize);
+      r.setProperty("--btn-radius", x.btnRadius + "px");
+      r.setProperty("--card-radius", x.cardRadius + "px");
+    }
+
+    function saveTheme(t) {
+      try {
+        localStorage.setItem(STORAGE_KEY_THEME, JSON.stringify(t));
+      } catch (e) {
+        console.error("Erro ao salvar tema", e);
+      }
+    }
+
+    function randomColor() {
+      const h = Math.floor(Math.random() * 360);
+      const s = 60 + Math.floor(Math.random() * 20);
+      const l = 45 + Math.floor(Math.random() * 10);
+      return `hsl(${h} ${s}% ${l}%)`;
+    }
+
+    function randomTheme() {
+      const base = defaultTheme();
+      const t = {
+        ...base,
+        primary: randomColor(),
+        accent: randomColor(),
+        sidebar: randomColor(),
+        contentBg: "#ffffff",
+        bg: "#f9fafb",
+        text: "#0f172a",
+        bubbleOutG1: randomColor(),
+        bubbleOutG2: randomColor(),
+        bubbleInBg: "#ffffff",
+        bubbleInBorder: "#e5e7eb",
+        bubbleRadius: 18 + Math.floor(Math.random() * 6),
+        bgOpacity: Math.random() * 0.4,
+        fontSize: ["13px", "14px", "15px", "16px"][Math.floor(Math.random() * 4)],
+        btnRadius: 8 + Math.floor(Math.random() * 5),
+        cardRadius: 14 + Math.floor(Math.random() * 6)
+      };
+      return t;
+    }
+
+    function syncThemeControls(t) {
+      document.getElementById("tPrimary").value = t.primary;
+      document.getElementById("tAccent").value = t.accent;
+      document.getElementById("tSidebar").value = t.sidebar;
+      document.getElementById("tContentBg").value = t.contentBg;
+      document.getElementById("tBg").value = t.bg;
+      document.getElementById("tText").value = t.text;
+      document.getElementById("tOutG1").value = t.bubbleOutG1;
+      document.getElementById("tOutG2").value = t.bubbleOutG2;
+      document.getElementById("tInBg").value = t.bubbleInBg;
+      document.getElementById("tInBorder").value = t.bubbleInBorder;
+      document.getElementById("tRadius").value = t.bubbleRadius;
+      document.getElementById("tBgOp").value = t.bgOpacity;
+      document.getElementById("tFontSize").value = t.fontSize;
+      document.getElementById("tBtnRadius").value = t.btnRadius;
+      document.getElementById("tCardRadius").value = t.cardRadius;
+    }
+
+    function loadAndApplyTheme() {
+      const t = loadTheme();
+      applyTheme(t);
+      syncThemeControls(t);
+    }
 
     /** =================== DOM REFS =================== */
-    // Home
-    const elHomeNome = document.getElementById('homeAgenteNome');
-    const elHomeCart = document.getElementById('homeAgenteCarteira');
-    const elHomeStatus = document.getElementById('homeStatus');
-    const elHomeAviso = document.getElementById('homeAviso');
+    const elHomeAgenteNome = document.getElementById("homeAgenteNome");
+    const elHomeAgenteCarteira = document.getElementById("homeAgenteCarteira");
+    const elHomeStatus = document.getElementById("homeStatus");
+    const elHomeAviso = document.getElementById("homeAviso");
 
-    // Relatório
-    const kpiEm = document.getElementById('kpiEm');
-    const kpiConc = document.getElementById('kpiConc');
-    const kpiTma = document.getElementById('kpiTma');
-    const kpiFRT = document.getElementById('kpiFRT');
-    const btnRefreshRel = document.getElementById('btnRefreshRel');
-
-    // Conversas
-    const elAgenteNome = document.getElementById("agenteNome");
-    const elAgenteCarteira = document.getElementById("agenteCarteira");
-    const elAgenteStatus = document.getElementById("agenteStatus");
     const elMsgAviso = document.getElementById("msgAviso");
     const elMsgLimite = document.getElementById("msgLimite");
     const elListaTickets = document.getElementById("listaTickets");
@@ -839,400 +1054,517 @@
     function fecharMenuConcluir() { menuConcluir.classList.add("hidden"); btnConcluir.setAttribute("aria-expanded", "false"); document.removeEventListener("click", clickForaMenuConcluir, { capture: true }); }
     function clickForaMenuConcluir(e) { const within = menuConcluir.contains(e.target) || btnConcluir.contains(e.target); if (!within) fecharMenuConcluir(); }
     btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir(); };
-    renderMenuConcluir();
 
-    /** =================== THEME =================== */
-    function themeKey() { return `cz:theme:${agente.codigo || 'anon'}`; }
-    function defaultTheme() { return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff" }; }
-    function applyTheme(t) {
-      const r = document.documentElement.style; const base = defaultTheme(); const x = { ...base, ...t };
-      r.setProperty('--ticket-selected-bg', x.ticketSelectedBg);
-      r.setProperty('--sidebar-bg', x.sidebar); r.setProperty('--content-bg', x.contentBg);
-      r.setProperty('--bg', x.bg); r.setProperty('--text', x.text);
-      r.setProperty('--muted', x.muted); r.setProperty('--border', x.border);
-      r.setProperty('--link', x.link); r.setProperty('--ghost-bg', x.ghostBg);
-      r.setProperty('--bubble-out-g1', x.outG1); r.setProperty('--bubble-out-g2', x.outG2); r.setProperty('--bubble-out-fg', x.outFg || '#111827');
-      r.setProperty('--bubble-in-bg', x.inBg); r.setProperty('--bubble-in-border', x.inBorder); r.setProperty('--bubble-in-fg', x.inFg || '#0f172a');
-      r.setProperty('--bubble-radius', x.bubbleRadius + 'px'); r.setProperty('--btn-radius', x.btnRadius + 'px'); r.setProperty('--card-radius', x.cardRadius + 'px');
-      r.setProperty('--font-size', x.fontSize); r.setProperty('--chat-wallpaper-opacity', x.wallOp);
-      r.setProperty('--scrollbar', x.scrollbar || '#cbd5e1'); r.setProperty('--primary', x.primary); r.setProperty('--accent', x.accent);
-      inputs.tPrimary.value = x.primary; inputs.tAccent.value = x.accent; inputs.tSidebar.value = x.sidebar;
-      inputs.tContentBg.value = x.contentBg; inputs.tBg.value = x.bg; inputs.tText.value = x.text;
-      inputs.tOutG1.value = x.outG1; inputs.tOutG2.value = x.outG2; inputs.tInBg.value = x.inBg; inputs.tInBorder.value = x.inBorder;
-      inputs.tRadius.value = x.bubbleRadius; inputs.tBgOp.value = x.wallOp; inputs.tFontSize.value = x.fontSize;
-      inputs.tBtnRadius.value = x.btnRadius; inputs.tCardRadius.value = x.cardRadius;
+    /** =================== THEME DRAWER =================== */
+    const themeDrawer = document.getElementById("themeDrawer");
+    const btnThemeClose = document.getElementById("btnThemeClose");
+    const btnThemeExport = document.getElementById("btnThemeExport");
+    const importTheme = document.getElementById("importTheme");
+    const btnRandom = document.getElementById("btnRandom");
+    const btnReset = document.getElementById("btnReset");
+    const btnSaveTheme = document.getElementById("btnSaveTheme");
+
+    function openThemeDrawer() {
+      themeDrawer.classList.add("open");
+      themeDrawer.setAttribute("aria-hidden", "false");
     }
-    function readThemeFromInputs() { return { primary: inputs.tPrimary.value, accent: inputs.tAccent.value, sidebar: inputs.tSidebar.value, contentBg: inputs.tContentBg.value, bg: inputs.tBg.value, text: inputs.tText.value, outG1: inputs.tOutG1.value, outG2: inputs.tOutG2.value, inBg: inputs.tInBg.value, inBorder: inputs.tInBorder.value, bubbleRadius: Number(inputs.tRadius.value || 18), wallOp: Number(inputs.tBgOp.value || 0), fontSize: String(inputs.tFontSize.value || '14px'), btnRadius: Number(inputs.tBtnRadius.value || 10), cardRadius: Number(inputs.tCardRadius.value || 16) }; }
-    function saveTheme(t) { try { localStorage.setItem(themeKey(), JSON.stringify(t)); } catch { } }
-    function loadTheme() { try { return JSON.parse(localStorage.getItem(themeKey()) || 'null'); } catch { return null; } }
 
-    // refs de Theme
-    const themeDrawer = document.getElementById('themeDrawer');
-    const btnTheme = document.getElementById('btnTheme');
-    const btnThemeClose = document.getElementById('btnThemeClose');
-    const btnSaveTheme = document.getElementById('btnSaveTheme');
-    const btnRandom = document.getElementById('btnRandom');
-    const btnReset = document.getElementById('btnReset');
-    const btnThemeExport = document.getElementById('btnThemeExport');
-    const importTheme = document.getElementById('importTheme');
-    const inputs = {
-      tPrimary: document.getElementById('tPrimary'), tAccent: document.getElementById('tAccent'),
-      tSidebar: document.getElementById('tSidebar'), tContentBg: document.getElementById('tContentBg'),
-      tBg: document.getElementById('tBg'), tText: document.getElementById('tText'),
-      tOutG1: document.getElementById('tOutG1'), tOutG2: document.getElementById('tOutG2'),
-      tInBg: document.getElementById('tInBg'), tInBorder: document.getElementById('tInBorder'),
-      tRadius: document.getElementById('tRadius'), tBgOp: document.getElementById('tBgOp'),
-      tFontSize: document.getElementById('tFontSize'), tBtnRadius: document.getElementById('tBtnRadius'),
-      tCardRadius: document.getElementById('tCardRadius')
-    };
-    if (btnTheme) btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
-    if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open'); });
-    [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
-      .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
-    if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open'); });
-    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); });
-    if (btnRandom) btnRandom.addEventListener('click', () => { const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')); const b1 = rand(), b2 = rand(); const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; applyTheme(t); });
-
-    /** =================== LOGIN MODAL =================== */
-    function isLogged() { try { return !!localStorage.getItem('agente_codigo'); } catch { return false; } }
-    function abrirModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'flex'; setTimeout(() => document.getElementById('loginCodigoAgente').focus(), 50); isModalOpen = true; }
-    function fecharModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'none'; const e = document.getElementById('loginErro'); e.textContent = ''; e.classList.add('hidden'); isModalOpen = false; }
-    async function login() {
-      const codigo = (document.getElementById('loginCodigoAgente').value || '').trim();
-      const erro = document.getElementById('loginErro');
-      if (!codigo || !/^\d+$/.test(codigo)) { erro.textContent = 'Informe um código numérico válido.'; erro.classList.remove('hidden'); return; }
-      try {
-        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(codigo)}`);
-        const j = await r.json();
-        if (!j.ok) { throw new Error(j.erro || 'Agente não encontrado'); }
-        localStorage.setItem("agente_codigo", String(codigo));
-        localStorage.setItem("agente_nome", j.agente?.nome || `Agente ${codigo}`);
-        localStorage.setItem("agente_carteira", j.agente?.carteira || 'ConnectZap');
-        fecharModalLogin();
-        await boot();
-        switchTab('home');
-        updateAuthButton(); // muda para Logout
-      } catch (e) {
-        erro.textContent = e?.message || 'Falha ao validar código.';
-        erro.classList.remove('hidden');
-      }
+    function closeThemeDrawer() {
+      themeDrawer.classList.remove("open");
+      themeDrawer.setAttribute("aria-hidden", "true");
     }
-    document.getElementById('btnDoLogin').onclick = login;
-    document.getElementById('loginCodigoAgente').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); login(); } });
 
-    /** =================== BOOT =================== */
-    async function boot() {
-      const savedT = loadTheme(); applyTheme(savedT || defaultTheme());
+    btnThemeClose.onclick = closeThemeDrawer;
 
-      // carrega agente de localStorage / QS
-      agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
-      agente.origem = localStorage.getItem("agente_origem") || qsParam("origem") || 'web';
-
-      updateAuthButton();
-
-      if (!agente.codigo) {
-        // Sem login: mostra HOME limpa
-        elHomeNome.textContent = '—';
-        elHomeCart.textContent = '—';
-        setStatus(false);
-        return;
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && themeDrawer.classList.contains("open")) {
+        closeThemeDrawer();
       }
+    });
 
-      try {
-        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(agente.codigo)}`);
-        const j = await r.json();
-        if (!j.ok) throw new Error(j.erro || "Agente não encontrado");
-        agente.nome = j.agente?.nome || localStorage.getItem("agente_nome") || `Agente ${agente.codigo}`;
-        agente.carteira = j.agente?.carteira || localStorage.getItem("agente_carteira") || 'ConnectZap';
+    document.addEventListener("keydown", e => {
+      if (e.key === "F2") {
+        e.preventDefault();
+        openThemeDrawer();
+      }
+    });
 
-        localStorage.setItem("agente_nome", agente.nome);
-        localStorage.setItem("agente_carteira", agente.carteira);
+    function exportThemeToFile() {
+      const t = loadTheme();
+      const blob = new Blob([JSON.stringify(t, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "connectzap-theme.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
 
-        elAgenteNome.textContent = `${agente.nome} (#${agente.codigo})`;
-        elAgenteCarteira.textContent = agente.carteira;
-        elHomeNome.textContent = agente.nome;
-        elHomeCart.textContent = agente.carteira;
+    btnThemeExport.onclick = exportThemeToFile;
 
-        loadUnread();
-        await verificarOnline();
-
+    importTheme.onchange = e => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
         try {
-          const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
-          const r2 = await fetch(url);
-          if (r2.ok) { tickets = await r2.json(); saveTickets(); }
-        } catch { }
+          const t = JSON.parse(ev.target.result);
+          const merged = { ...defaultTheme(), ...t };
+          saveTheme(merged);
+          applyTheme(merged);
+          syncThemeControls(merged);
+          alert("Tema importado com sucesso!");
+        } catch (err) {
+          console.error("Erro ao importar tema", err);
+          alert("Arquivo de tema inválido.");
+        }
+      };
+      reader.readAsText(file);
+    };
 
-        renderTickets();
-        schedulePolls();
-        await refreshOrdemCarteira();
-        await refreshAtivosELimite();
-        if (!tickets.length) btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
-
-        await refreshKPIs();
-        wireComposer();
-      } catch (e) {
-        elHomeAviso.classList.remove("hidden");
-        elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
-      }
+    function updateThemeFromControls() {
+      const t = {
+        primary: document.getElementById("tPrimary").value,
+        accent: document.getElementById("tAccent").value,
+        sidebar: document.getElementById("tSidebar").value,
+        contentBg: document.getElementById("tContentBg").value,
+        bg: document.getElementById("tBg").value,
+        text: document.getElementById("tText").value,
+        bubbleOutG1: document.getElementById("tOutG1").value,
+        bubbleOutG2: document.getElementById("tOutG2").value,
+        bubbleInBg: document.getElementById("tInBg").value,
+        bubbleInBorder: document.getElementById("tInBorder").value,
+        bubbleRadius: parseInt(document.getElementById("tRadius").value, 10),
+        bgOpacity: parseFloat(document.getElementById("tBgOp").value),
+        fontSize: document.getElementById("tFontSize").value,
+        btnRadius: parseInt(document.getElementById("tBtnRadius").value, 10),
+        cardRadius: parseInt(document.getElementById("tCardRadius").value, 10)
+      };
+      saveTheme(t);
+      applyTheme(t);
     }
 
-    /** =================== Botão Login/Logout dinâmico =================== */
-    function updateAuthButton() {
-      const logged = isLogged();
-      if (!btnLogout) return;
-      if (logged) {
-        btnLogout.textContent = "Logout";
-        btnLogout.onclick = doLogout;
-      } else {
-        btnLogout.textContent = "Login";
-        btnLogout.onclick = () => abrirModalLogin();
-      }
-    }
+    ["tPrimary", "tAccent", "tSidebar", "tContentBg", "tBg", "tText", "tOutG1", "tOutG2", "tInBg", "tInBorder"].forEach(id => {
+      document.getElementById(id).addEventListener("change", updateThemeFromControls);
+    });
+
+    ["tRadius", "tBgOp", "tBtnRadius", "tCardRadius", "tFontSize"].forEach(id => {
+      document.getElementById(id).addEventListener("input", updateThemeFromControls);
+    });
+
+    btnRandom.onclick = () => {
+      const t = randomTheme();
+      saveTheme(t);
+      applyTheme(t);
+      syncThemeControls(t);
+    };
+
+    btnReset.onclick = () => {
+      const t = defaultTheme();
+      saveTheme(t);
+      applyTheme(t);
+      syncThemeControls(t);
+    };
+
+    btnSaveTheme.onclick = () => {
+      alert("Tema salvo! Ele será mantido neste navegador.");
+    };
 
     /** =================== TABS =================== */
     function switchTab(tab) {
-      [tabBtnHome, tabBtnConversas, tabBtnRelatorio].forEach(b => b.classList.remove('active'));
-      tabHome.classList.add('hidden'); tabConversas.classList.add('hidden'); tabRelatorio.classList.add('hidden');
-      if (tab === 'conversas') { tabBtnConversas.classList.add('active'); tabConversas.classList.remove('hidden'); }
-      else if (tab === 'relatorio') { tabBtnRelatorio.classList.add('active'); tabRelatorio.classList.remove('hidden'); }
-      else { tabBtnHome.classList.add('active'); tabHome.classList.remove('hidden'); }
-    }
-    tabBtnHome.onclick = () => switchTab('home');
-    tabBtnConversas.onclick = () => switchTab('conversas');
-    tabBtnRelatorio.onclick = () => switchTab('relatorio');
+      tabHome.classList.add("hidden");
+      tabConversas.classList.add("hidden");
+      tabRelatorio.classList.add("hidden");
+      tabBtnHome.classList.remove("active");
+      tabBtnConversas.classList.remove("active");
+      tabBtnRelatorio.classList.remove("active");
 
-    /** =================== ONLINE/OFFLINE, LIMITES E FILA =================== */
-    async function verificarOnline() {
+      if (tab === "home") {
+        tabHome.classList.remove("hidden");
+        tabBtnHome.classList.add("active");
+      } else if (tab === "conversas") {
+        tabConversas.classList.remove("hidden");
+        tabBtnConversas.classList.add("active");
+      } else if (tab === "relatorio") {
+        tabRelatorio.classList.remove("hidden");
+        tabBtnRelatorio.classList.add("active");
+      }
+    }
+
+    tabBtnHome.onclick = () => switchTab("home");
+    tabBtnConversas.onclick = () => switchTab("conversas");
+    tabBtnRelatorio.onclick = () => switchTab("relatorio");
+
+    /** =================== LOGIN MODAL =================== */
+    const modalLogin = document.getElementById("modalLogin");
+    const loginCodigoAgente = document.getElementById("loginCodigoAgente");
+    const loginErro = document.getElementById("loginErro");
+    const btnDoLogin = document.getElementById("btnDoLogin");
+
+    function abrirModalLogin() {
+      modalLogin.style.display = "flex";
+      loginCodigoAgente.value = agente.codigo || "";
+      loginErro.classList.add("hidden");
+      setTimeout(() => loginCodigoAgente.focus(), 50);
+    }
+
+    function fecharModalLogin() {
+      modalLogin.style.display = "none";
+    }
+
+    async function carregarDadosAgente(codigo) {
       try {
-        const r = await fetch(`${FILA_API}/fila/status?carteira=${encodeURIComponent(agente.carteira)}`);
+        const url = `${CONV_API}/api/agentes/${encodeURIComponent(codigo)}`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error("Agente não encontrado");
+        const j = await r.json();
+        return j;
+      } catch (e) {
+        console.error("Erro ao carregar dados do agente", e);
+        throw e;
+      }
+    }
+
+    function aplicarDadosAgente(dados) {
+      agente.codigo = dados.codigo || "";
+      agente.nome = dados.nome || "";
+      agente.carteira = dados.carteira || "";
+      agente.origem = dados.origem || "";
+      localStorage.setItem("agente_codigo", agente.codigo);
+      localStorage.setItem("agente_nome", agente.nome);
+      localStorage.setItem("agente_carteira", agente.carteira);
+      localStorage.setItem("agente_origem", agente.origem);
+
+      elHomeAgenteNome.textContent = agente.nome || "—";
+      elHomeAgenteCarteira.textContent = agente.carteira || "—";
+      document.getElementById("agenteNome").textContent = agente.nome || "—";
+      document.getElementById("agenteCarteira").textContent = agente.carteira || "—";
+    }
+
+    function setStatus(online) {
+      agente.online = !!online;
+      const dot = `<span class="dot ${online ? "online" : "offline"}"></span>`;
+      elHomeStatus.innerHTML = `${dot}${online ? "Online" : "Offline"}`;
+      document.getElementById("agenteStatus").innerHTML = `${dot}${online ? "Online" : "Offline"}`;
+      btnToggleOnline.disabled = !agente.codigo || !agente.carteira;
+      btnToggleOnline.setAttribute("aria-pressed", online ? "true" : "false");
+      btnToggleOnline.classList.toggle("bg-green-600", !online);
+      btnToggleOnline.classList.toggle("bg-red-600", online);
+      btnToggleOnline.classList.toggle("hover:bg-green-700", !online);
+      btnToggleOnline.classList.toggle("hover:bg-red-700", online);
+      document.getElementById("toggleLabel").textContent = online ? "Ficar offline" : "Ficar online";
+    }
+
+    async function verificarSeAgenteEstaOnline() {
+      if (!agente.codigo || !agente.carteira) return;
+      try {
+        const r = await fetch(`${FILA_API}/fila/status?codigo_do_agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`);
+        if (!r.ok) throw new Error("Erro ao checar status");
         const lista = await r.json();
         const achou = Array.isArray(lista) && lista.some(x => String(x.codigo_do_agente) === String(agente.codigo));
         setStatus(achou);
-        if (!achou) { elMsgAviso?.classList.add("hidden"); elHomeAviso.classList.remove("hidden"); elHomeAviso.textContent = "Você está OFFLINE nesta carteira. Use “Ficar online” para entrar na fila."; }
-        else { elHomeAviso.classList.add("hidden"); elHomeAviso.textContent = ""; }
-      } catch (e) { setStatus(false); }
-    }
-    function setStatus(online) {
-      agente.online = !!online;
-      if (elAgenteStatus) elAgenteStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
-      if (elHomeStatus) elHomeStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
-      btnPegarProxima.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
-      btnPrioridade.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
-      const toggleLabel = document.getElementById("toggleLabel");
-      if (btnToggleOnline) {
-        btnToggleOnline.disabled = false;
-        btnToggleOnline.setAttribute('aria-pressed', online ? 'true' : 'false');
-        if (online) {
-          if (toggleLabel) toggleLabel.textContent = "Ficar offline";
-          btnToggleOnline.classList.remove("bg-green-600", "hover:bg-green-700", "text-white");
-          btnToggleOnline.classList.add("bg-gray-100");
-        } else {
-          if (toggleLabel) toggleLabel.textContent = "Ficar online";
-          btnToggleOnline.classList.add("bg-green-600", "text-white", "hover:bg-green-700");
-          btnToggleOnline.classList.remove("bg-gray-100");
-        }
+        if (!achou) { elMsgAviso?.classList.add("hidden"); elMsgAviso.textContent = ""; }
+      } catch (e) {
+        console.error("Falha ao verificar status online", e);
       }
     }
+
+    function carregarAgenteInicial() {
+      elHomeAgenteNome.textContent = agente.nome || "—";
+      elHomeAgenteCarteira.textContent = agente.carteira || "—";
+      document.getElementById("agenteNome").textContent = agente.nome || "—";
+      document.getElementById("agenteCarteira").textContent = agente.carteira || "—";
+      if (!agente.codigo || !agente.carteira) {
+        setStatus(false);
+        btnToggleOnline.disabled = false;
+      } else {
+        verificarSeAgenteEstaOnline();
+      }
+    }
+
+    btnDoLogin.onclick = async () => {
+      const codigo = (loginCodigoAgente.value || "").trim();
+      if (!codigo) {
+        loginErro.textContent = "Informe seu código.";
+        loginErro.classList.remove("hidden");
+        return;
+      }
+      btnDoLogin.disabled = true;
+      btnDoLogin.textContent = "Carregando...";
+      try {
+        const dados = await carregarDadosAgente(codigo);
+        aplicarDadosAgente(dados);
+        await verificarSeAgenteEstaOnline();
+        fecharModalLogin();
+        updateAuthButton();
+      } catch (e) {
+        loginErro.textContent = e.message || "Não foi possível carregar seu cadastro.";
+        loginErro.classList.remove("hidden");
+      } finally {
+        btnDoLogin.disabled = false;
+        btnDoLogin.textContent = "Confirmar";
+      }
+    };
+
+    loginCodigoAgente.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        btnDoLogin.click();
+      }
+    });
+
+    function updateAuthButton() {
+      if (!agente.codigo || !agente.carteira) {
+        btnLogout.textContent = "Login";
+        btnLogout.onclick = () => abrirModalLogin();
+      } else {
+        btnLogout.textContent = "Logout";
+        btnLogout.onclick = () => doLogout();
+      }
+    }
+
+    /** =================== ORDEM / TICKETS =================== */
+    function dedupe(arr) {
+      return Array.from(new Set(arr));
+    }
+
     async function refreshOrdemCarteira() {
       if (!agente.carteira) return;
-      const phoneIds = (carteiraToPhoneIds[agente.carteira] || []).map(String);
-      if (!phoneIds.length) return;
       try {
-        const res = await fetch(`${CONV_API}/api/conversas/contatos`);
-        const contatos = await res.json();
-        const filtrados = (contatos || []).filter(c => phoneIds.includes(String(c.phone_id)));
-        filtrados.sort((a, b) => {
-          const ai = a.status === 'in', bi = b.status === 'in';
-          if (ai !== bi) return bi - ai;
-          return new Date(b.data_hora) - new Date(a.data_hora);
-        });
-        ordemCache = filtrados;
-        const ticketByKey = new Map((tickets || []).map(t => [keyFrom(t.remetente, t.phone_id), t]));
-        filtrados.forEach(c => {
-          const k = keyFrom(c.remetente, c.phone_id);
-          const t = ticketByKey.get(k);
-          if (!t) { lastContatoTsByKey[k] = +new Date(c.data_hora || 0); return; }
-          const ts = +new Date(c.data_hora || 0);
-          const prev = lastContatoTsByKey[k] || 0;
-          const isOpen = !!(selecionado && selecionado.remetente === c.remetente && selecionado.phone_id === c.phone_id);
-          if (c.status === 'in' && ts > prev && !isOpen) { unreadCountByKey[k] = (unreadCountByKey[k] || 0) + 1; }
-          lastContatoTsByKey[k] = ts;
-          if (c.mensagem_final) t.mensagem_final = c.mensagem_final;
-          else if (c.ultima_mensagem) t.mensagem_final = c.ultima_mensagem;
-          if (c.data_hora) t.data_hora = c.data_hora;
-        });
-        persistUnread(); saveTickets(); renderTickets();
-      } catch (e) { console.error("Falha ao atualizar ordem", e); }
-    }
-    async function refreshAtivosELimite() {
-      try {
-        const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo || '')}&carteira=${encodeURIComponent(agente.carteira || '')}`;
-        const r = await fetch(url); const rows = r.ok ? await r.json() : []; ativosCount = Array.isArray(rows) ? rows.length : 0;
-      } catch { ativosCount = tickets.length; }
-      try {
-        const j = await fetch(`${CONV_API}/api/supervisao/tickets-limit?carteira=${encodeURIComponent(agente.carteira || '')}`).then(r => r.json());
-        limitPerAgent = Number(j.limit_per_agent || 0);
-      } catch { limitPerAgent = 0; }
-      renderAtivosLimiteUI();
-    }
-    function renderAtivosLimiteUI() {
-      badgeAtivos.textContent = String(ativosCount);
-      badgeLimite.textContent = limitPerAgent > 0 ? String(limitPerAgent) : "∞";
-      const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
-      if (atingiu) {
-        elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua ou libere um atendimento para continuar.`;
-        elMsgLimite.classList.remove("hidden");
-      } else {
-        elMsgLimite.classList.add("hidden");
-        elMsgLimite.textContent = "";
-      }
-      btnPegarProxima.disabled = !agente.online || atingiu;
-      btnPrioridade.disabled = !agente.online || atingiu;
-    }
-
-    // Toggle online (na HOME)
-    btnToggleOnline.onclick = async () => {
-      if (!agente.carteira || !agente.codigo) { abrirModalLogin(); return; }
-      const toggleSpinner = document.getElementById('toggleSpinner'); const toggleLabel = document.getElementById('toggleLabel');
-      elHomeAviso.classList.add("hidden"); elHomeAviso.textContent = ""; const indoOnline = !agente.online;
-      btnToggleOnline.disabled = true; toggleSpinner.classList.remove('hidden'); if (toggleLabel) toggleLabel.textContent = indoOnline ? 'Entrando…' : 'Saindo…';
-      try {
-        if (indoOnline) {
-          const r = await fetch(`${FILA_API}/fila/online`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
-          const j = await r.json(); if (!j.ok) throw new Error(j.erro || "Erro ao entrar online");
-          setStatus(true); await refreshOrdemCarteira(); await refreshAtivosELimite();
-        } else {
-          const r = await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
-          const j = await r.json(); if (!j.ok) throw new Error(j.erro || "Erro ao ficar offline");
-          setStatus(false);
-        }
+        const url = `${CONV_API}/api/ordem?carteira=${encodeURIComponent(agente.carteira)}`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error("Erro ao buscar ordem");
+        const data = await r.json();
+        const contatos = Array.isArray(data.contatos) ? data.contatos : [];
+        const grouped = contatos.reduce((acc, c) => {
+          const tel = normalizarTelefone(c.telefone);
+          const nome = tel;
+          const parts = c.phone_ids && Array.isArray(c.phone_ids) ? c.phone_ids : (c.phone_ids ? [c.phone_ids] : []);
+          acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts]));
+          return acc;
+        }, {});
+        ordemCache = Object.entries(grouped).map(([tel, arr]) => ({ telefone: tel, phone_ids: arr }));
+        ordemCache.sort((a, b) => a.telefone.localeCompare(b.telefone));
       } catch (e) {
-        elHomeAviso.classList.remove("hidden"); elHomeAviso.textContent = (e?.message || "Falha ao alterar status");
-      } finally {
-        toggleSpinner.classList.add('hidden'); if (toggleLabel) toggleLabel.textContent = agente.online ? 'Ficar offline' : 'Ficar online'; btnToggleOnline.disabled = false;
+        console.error("Falha ao atualizar ordem", e);
       }
-    };
+    }
 
-    // Pegar próxima / Prioridade
-    btnPegarProxima.onclick = async () => {
-      if (!agente.online) { alert("Você está offline. Vá na Home e clique em “Ficar online”."); return; }
-      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) {
-        elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return;
-      }
-      const spinner = document.getElementById('pegarSpinner'); const label = document.getElementById('pegarLabel');
-      btnPegarProxima.disabled = true; spinner.classList.remove('hidden'); label.textContent = 'Buscando…';
+    async function refreshMinhasConversas() {
+      if (!agente.codigo || !agente.carteira) return;
       try {
-        const r = await fetch(`${CONV_API}/api/tickets/claim`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira })
+        const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error("Erro ao buscar tickets");
+        const arr = await r.json();
+        if (!Array.isArray(arr)) throw new Error("Resposta inválida");
+        tickets = arr;
+        saveTickets();
+        renderTickets();
+      } catch (e) {
+        console.error("Falha ao buscar tickets", e);
+      }
+    }
+
+    async function refreshOrdensPeriodicamente() {
+      await refreshOrdemCarteira();
+      setInterval(refreshOrdemCarteira, 60000);
+    }
+
+    async function pegarProxima() {
+      if (!agente.codigo || !agente.carteira) return;
+      try {
+        btnPegarProxima.disabled = true;
+        document.getElementById("pegarSpinner").classList.remove("hidden");
+        document.getElementById("pegarLabel").textContent = "Buscando…";
+        elMsgAviso.classList.add("hidden");
+        elMsgAviso.textContent = "";
+        const url = `${CONV_API}/api/tickets/claim`;
+        const body = {
+          codigo_do_agente: parseInt(agente.codigo, 10),
+          carteira: agente.carteira
+        };
+        const r = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
         });
-        const j = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
-        if (r.status === 409 && j && (j.limit_per_agent !== undefined)) {
-          limitPerAgent = Number(j.limit_per_agent || 0); ativosCount = Number(j.ativos || ativosCount);
-          elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosELimite(); return;
+        const j = await r.json();
+        if (!r.ok || !j.ok) {
+          elMsgAviso.textContent = j.erro || "Não foi possível pegar a próxima conversa.";
+          elMsgAviso.classList.remove("hidden");
+          return;
         }
-        if (!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
-        if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) { tickets.unshift(j.ticket); saveTickets(); }
-        renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosLimiteUI();
-      } catch (e) { alert("Falha ao pegar próxima."); }
-      finally {
-        spinner.classList.add('hidden'); label.textContent = 'Pegar próxima';
-        btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+        if (j.limit_per_agent !== undefined) {
+          limitPerAgent = Number(j.limit_per_agent || 0);
+          ativosCount = Number(j.ativos || ativosCount);
+          renderAtivosLimiteUI();
+          return;
+        }
+        const t = j.ticket;
+        if (!t) {
+          elMsgAviso.textContent = "Nenhuma conversa disponível no momento.";
+          elMsgAviso.classList.remove("hidden");
+          return;
+        }
+        const existing = tickets.find(x => x.remetente === t.remetente && x.phone_id === t.phone_id);
+        if (!existing) {
+          tickets.unshift(t);
+        }
+        saveTickets();
+        renderTickets();
+        abrirTicket(t);
+        ativosCount++;
+        renderAtivosLimiteUI();
+      } catch (e) {
+        console.error("Erro ao pegar próxima", e);
+        elMsgAviso.textContent = "Erro ao pegar próxima conversa.";
+        elMsgAviso.classList.remove("hidden");
+      } finally {
+        document.getElementById("pegarSpinner").classList.add("hidden");
+        document.getElementById("pegarLabel").textContent = "Pegar próxima";
+        btnPegarProxima.disabled = !agente.online;
       }
-    };
+    }
 
-    // Prioridade
-    const priorityModal = document.getElementById('priorityModal');
-    const priorityTelefone = document.getElementById('priorityTelefone');
-    const priorityInfo = document.getElementById('priorityInfo');
-    const priorityErro = document.getElementById('priorityErro');
-    const btnPriorityBuscar = document.getElementById('btnPriorityBuscar');
-    const prioritySpinner = document.getElementById('prioritySpinner');
-    const priorityBtnLabel = document.getElementById('priorityBtnLabel');
-    btnPrioridade.onclick = () => {
-      if (!agente.online) { alert('Você está offline. Vá na Home e clique em “Ficar online”.'); return; }
-      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); return; }
-      abrirPriorityModal();
-    };
-    function abrirPriorityModal() { isModalOpen = true; priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden'); priorityTelefone.value = ''; priorityModal.classList.remove('hidden'); setTimeout(() => priorityTelefone.focus(), 50); }
-    function fecharPriorityModal() { isModalOpen = false; priorityModal.classList.add('hidden'); }
-    priorityTelefone.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); btnPriorityBuscar.click(); } });
-    function normalizarTelefone(raw) {
-      let d = String(raw || '').replace(/\D/g, ''); if (!d) return '';
-      if (!d.startsWith('55')) d = '55' + d;
-      const m = d.match(/^55(\d{2})(\d{8,9})(.*)$/);
-      if (m) {
-        const ddd = m[1]; let numero = m[2]; const tail = m[3] || '';
-        if (numero.length === 9 && numero.startsWith('9')) numero = numero.slice(1);
-        d = '55' + ddd + numero + tail;
-      }
-      return d;
+    btnPegarProxima.onclick = pegarProxima;
+
+    function phoneIdsForCarteira() {
+      const map = {
+        "ConnectZap": ["828473960349364"],
+        "Recovery PJ": ["727586317113885"],
+        "Recovery PF": ["864779140046932", "802977069563598"],
+        "Mercado Pago Cobrança": ["873637622491517", "821562937700669"],
+        "DivZero": ["779797401888141"],
+        "Arc4U": ["829210283602406"],
+        "Serasa": ["713021321631338"]
+      };
+      return map[agente.carteira] || [];
     }
-    function phoneIdsForCarteira() { return (carteiraToPhoneIds[agente.carteira] || []).map(String); }
-    function dedupe(arr) { return Array.from(new Set(arr.filter(Boolean))); }
-    async function preferPhoneIdDoContato(remetente) {
-      const hit = (ordemCache || []).find(x => String(x.remetente) === String(remetente));
-      if (hit && hit.phone_id) return String(hit.phone_id);
+
+    async function preferPhoneIdDoContato(telefone) {
       try {
-        const r = await fetch(`${CONV_API}/api/conversas/contatos`);
-        const all = await r.json();
-        const ids = phoneIdsForCarteira();
-        const c = (all || []).find(x => ids.includes(String(x.phone_id)) && String(x.remetente) === String(remetente));
-        return c ? String(c.phone_id) : null;
-      } catch { return null; }
-    }
-    async function tentarClaimComIds(remetente, ids) {
-      const candidatos = [];
-      if (ids && ids.length) {
-        candidatos.push(ids);
-        ids.forEach(id => candidatos.push([id]));
-      } else {
-        candidatos.push([]);
+        const url = `${CONV_API}/api/contatos/preferido?telefone=${encodeURIComponent(telefone)}`;
+        const r = await fetch(url);
+        if (!r.ok) return null;
+        const j = await r.json();
+        return j && j.phone_id ? j.phone_id : null;
+      } catch {
+        return null;
       }
-      for (const arr of candidatos) {
-        const body = { codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira, remetente, ...(arr.length ? { phone_id: arr } : {}), prioridade: true };
-        const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        const data = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
-        if (r.status === 404) continue;
-        return data;
-      }
-      return { ok: false, erro: 'Contato não está na fila desta carteira.' };
     }
+
+    async function tentarClaimComIds(telefone, ids) {
+      const unique = (ids || []).filter(Boolean);
+      if (!unique.length) return null;
+      const url = `${CONV_API}/api/tickets/claim-por-telefone`;
+      const body = {
+        codigo_do_agente: parseInt(agente.codigo, 10),
+        carteira: agente.carteira,
+        telefone: telefone,
+        phone_ids: unique
+      };
+      const r = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if (!r.ok) throw new Error("Erro ao claim");
+      return r.json();
+    }
+
+    function abrirPriorityModal() {
+      if (!agente.carteira || !agente.codigo) {
+        abrirModalLogin();
+        return;
+      }
+      document.getElementById("priorityModal").classList.remove("hidden");
+      const telInput = document.getElementById("priorityTelefone");
+      telInput.value = "";
+      telInput.focus();
+      document.getElementById("priorityInfo").classList.add("hidden");
+      document.getElementById("priorityErro").classList.add("hidden");
+    }
+
+    function fecharPriorityModal() {
+      document.getElementById("priorityModal").classList.add("hidden");
+    }
+
+    document.getElementById("btnPrioridade").onclick = abrirPriorityModal;
+
+    const priorityTelefone = document.getElementById("priorityTelefone");
+    const priorityInfo = document.getElementById("priorityInfo");
+    const priorityErro = document.getElementById("priorityErro");
+    const btnPriorityBuscar = document.getElementById("btnPriorityBuscar");
+    const prioritySpinner = document.getElementById("prioritySpinner");
+    const priorityBtnLabel = document.getElementById("priorityBtnLabel");
+
     btnPriorityBuscar.onclick = async () => {
-      priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden');
+      priorityInfo.classList.add('hidden');
+      priorityErro.classList.add('hidden');
       if (limitPerAgent > 0 && ativosCount >= limitPerAgent) {
-        priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; priorityErro.classList.remove('hidden'); return;
+        priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de solicitar prioridade.`;
+        priorityErro.classList.remove('hidden');
+        return;
       }
+
       const nrm = normalizarTelefone(priorityTelefone.value);
-      if (nrm.length < 11) { priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).'; priorityErro.classList.remove('hidden'); return; }
-      priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`; priorityInfo.classList.remove('hidden');
+      if (nrm.length < 11) {
+        priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).';
+        priorityErro.classList.remove('hidden');
+        return;
+      }
+
+      priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`;
+      priorityInfo.classList.remove('hidden');
+
       const preferido = await preferPhoneIdDoContato(nrm);
       const ordemIds = dedupe([preferido, ...phoneIdsForCarteira()]);
-      btnPriorityBuscar.disabled = true; prioritySpinner.classList.remove('hidden'); priorityBtnLabel.textContent = 'Solicitando…';
+
+      btnPriorityBuscar.disabled = true;
+      prioritySpinner.classList.remove('hidden');
+      priorityBtnLabel.textContent = 'Solicitando…';
       try {
         const data = await tentarClaimComIds(nrm, ordemIds);
+
         if (data && data.limit_per_agent !== undefined) {
-          limitPerAgent = Number(data.limit_per_agent || 0); ativosCount = Number(data.ativos || ativosCount);
-          priorityErro.textContent = data.erro || `Limite de ${limitPerAgent} atingido.`; priorityErro.classList.remove('hidden'); await refreshAtivosELimite(); return;
+          limitPerAgent = Number(data.limit_per_agent || 0);
+          ativosCount = Number(data.ativos || ativosCount);
+          priorityErro.textContent = data.erro || `Limite de ${limitPerAgent} atingido.`;
+          priorityErro.classList.remove('hidden');
+          await refreshAtivosELimite();
+          return;
         }
+
         if (data && data.ok && data.ticket) {
           priorityInfo.innerHTML = `<span class="text-emerald-700 font-medium">Prioridade concedida.</span> Abrindo o ticket…`;
-          if (!tickets.find(t => t.remetente === data.ticket.remetente && t.phone_id === data.ticket.phone_id)) { tickets.unshift(data.ticket); saveTickets(); renderTickets(); }
-          fecharPriorityModal(); abrirTicket(data.ticket);
-          ativosCount++; renderAtivosLimiteUI(); return;
+          if (!tickets.find(t => t.remetente === data.ticket.remetente && t.phone_id === data.ticket.phone_id)) {
+            tickets.unshift(data.ticket);
+            saveTickets();
+            renderTickets();
+          }
+          fecharPriorityModal();
+          abrirTicket(data.ticket);
+          ativosCount++;
+          renderAtivosLimiteUI();
+          return;
         }
+
         if (data && (data.assigned_to || data.atendimento)) {
           const owner = data.assigned_to || data.atendimento;
           priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome || '—')}</strong> (#${escapeHtml(String(owner.codigo || '—'))}).`;
-          priorityErro.classList.remove('hidden'); return;
+          priorityErro.classList.remove('hidden');
+          return;
         }
+
         priorityErro.textContent = (data && (data.erro || data.message)) || 'Não foi possível conceder prioridade.';
         priorityErro.classList.remove('hidden');
       } catch (e) {
-        priorityErro.textContent = 'Falha ao solicitar prioridade.'; priorityErro.classList.remove('hidden');
+        priorityErro.textContent = 'Falha ao solicitar prioridade.';
+        priorityErro.classList.remove('hidden');
       } finally {
-        btnPriorityBuscar.disabled = false; prioritySpinner.classList.add('hidden'); priorityBtnLabel.textContent = 'Buscar e solicitar';
+        btnPriorityBuscar.disabled = false;
+        prioritySpinner.classList.add('hidden');
+        priorityBtnLabel.textContent = 'Buscar e solicitar';
       }
     };
 
@@ -1251,17 +1583,23 @@
         const key = keyFrom(t.remetente, t.phone_id);
         const unread = unreadCountByKey[key] || 0;
         const badge = unread > 0 ? `<span class="badge absolute right-2 top-2">${unread}</span>` : "";
-        const hora = t.data_hora ? fmtHoraBR.format(new Date(t.data_hora)) : "";
+        const hora = t.data_hora ? formatarHora(t.data_hora) : "";
+        const ultima = (t.mensagem_final || "").slice(0, 90);
         li.innerHTML = `
-          <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">${(nome || "U").charAt(0).toUpperCase()}</div>
           <div class="flex-1 min-w-0">
-            <div class="font-semibold truncate">${escapeHtml(nome)}</div>
-            <div class="text-sm text-gray-600 truncate">${escapeHtml(t.mensagem_final ? t.mensagem_final.slice(0, 70) : "")}</div>
+            <div class="flex items-center justify-between gap-2">
+              <div class="font-semibold truncate">${escapeHtml(nome)}</div>
+              <div class="text-xs text-gray-500">${escapeHtml(hora)}</div>
+            </div>
+            <div class="text-xs text-gray-500 truncate">${escapeHtml(ultima)}</div>
+            <div class="text-[11px] text-gray-400 mt-0.5">Conta: ${escapeHtml(phoneIdMap[t.phone_id] || t.phone_id || "—")}</div>
           </div>
-          <div class="text-xs text-gray-400 pl-2">${hora}</div>
           ${badge}
         `;
-        if (selecionado && selecionado.remetente === t.remetente && selecionado.phone_id === t.phone_id) { li.classList.add("ticket-selected"); }
+        const keySel = selecionado && keyFrom(selecionado.remetente, selecionado.phone_id);
+        if (keySel === key) {
+          li.classList.add("ticket-selected");
+        }
         frag.appendChild(li);
       });
       elListaTickets.appendChild(frag);
@@ -1271,17 +1609,30 @@
       selecionado = t;
       try {
         const k = keyFrom(t.remetente, t.phone_id);
-        unreadCountByKey[k] = 0; lastContatoTsByKey[k] = Date.now(); persistUnread();
+        unreadCountByKey[k] = 0;
+        lastContatoTsByKey[k] = Date.now();
+        persistUnread();
       } catch { }
       renderTickets();
       elTitulo.textContent = t.nome_exibicao ? `${t.nome_exibicao} (${t.remetente})` : t.remetente;
       elSubInfo.textContent = `conta: ${phoneIdMap[t.phone_id] || t.phone_id}`;
-      textarea.disabled = false; textarea.focus(); btnEnviar.disabled = true; btnLiberar.disabled = false; btnConcluir.disabled = false;
+      textarea.disabled = false;
+      textarea.focus();
+      btnEnviar.disabled = false;
+      btnLiberar.disabled = false;
+      btnConcluir.disabled = false;
 
-      if (msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+      if (msgsCtrl) {
+        try {
+          msgsCtrl.abort();
+        } catch { }
+      }
       msgsCtrl = new AbortController();
 
-      lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); chat.innerHTML = "";
+      lastTimestampMs = null;
+      lastDayRendered = null;
+      renderedKeys.clear();
+      chat.innerHTML = "";
       await carregarMensagens(false);
       startMensagensPoll();
       wireComposer();
@@ -1295,206 +1646,171 @@
       let url = `${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`;
       if (selecionado.phone_id) url += `?phone_id=${encodeURIComponent(selecionado.phone_id)}`;
       try {
-        const r = await fetch(url, { signal: msgsCtrl?.signal }); if (!r.ok) throw new Error("Erro histórico");
-        const msgs = await r.json(); msgs.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
-        if (!incremental) { chat.innerHTML = ""; lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); }
+        const r = await fetch(url, { signal: msgsCtrl?.signal });
+        if (!r.ok) throw new Error("Erro histórico");
+        const msgs = await r.json();
+        msgs.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
+        if (!incremental) {
+          chat.innerHTML = "";
+          lastTimestampMs = null;
+          lastDayRendered = null;
+          renderedKeys.clear();
+        }
         const isNearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 200;
         msgs.forEach(m => renderMsg(m, incremental));
         if (isNearBottom) requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" }));
-      } catch (e) { if (String(e?.name) !== "AbortError") console.error(e); }
+      } catch (e) {
+        if (String(e?.name) !== "AbortError") console.error(e);
+      }
     }
 
     function renderMsg(m, incremental) {
       const tMs = new Date(m.data_hora).getTime();
-      const key = `${m.data_hora}|${m.status}|${m.mensagem_final || m.tipo || ""}`;
-      if (renderedKeys.has(key)) return;
-      if (incremental && lastTimestampMs !== null && tMs <= lastTimestampMs) return;
-
-      const dia = fmtDataBR.format(new Date(m.data_hora));
-      const hora = fmtHoraBR.format(new Date(m.data_hora));
-      if (!lastDayRendered || lastDayRendered !== dia) {
-        const sep = document.createElement("div"); sep.className = "dia"; sep.textContent = `— ${dia} —`; chat.appendChild(sep); lastDayRendered = dia;
+      const dia = diaLabel(m.data_hora);
+      if (!lastDayRendered || diaLabel(lastDayRendered) !== dia) {
+        const sep = document.createElement("div");
+        sep.className = "dia";
+        sep.textContent = dia;
+        chat.appendChild(sep);
+        lastDayRendered = m.data_hora;
       }
 
-      const incoming = isIncoming(m);
-      const div = document.createElement("div"); div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
+      const key = `${m.remetente || ""}-${m.data_hora || ""}-${m.id || ""}`;
+      if (renderedKeys.has(key) && incremental) return;
+      renderedKeys.add(key);
 
-      if (m.tipo === "imagem" || m.mensagem_final === "[image]") {
-        div.innerHTML = `<div class="text-gray-600 italic">[imagem recebida]</div><button class="btn-olhinho text-blue-600 underline mt-1">👁 Ver imagem</button><span class="hora">${hora}</span>`;
-        const btn = div.querySelector(".btn-olhinho"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Imagem indisponível"; } else btn.onclick = () => carregarImagem(div, btn, m.msg_id);
-      } else if (m.tipo === "audio" || m.mensagem_final === "[audio]") {
-        div.innerHTML = `<div class="text-gray-600 italic">[áudio recebido]</div><button class="btn-audio text-blue-600 underline mt-1">▶ Reproduzir áudio</button><span class="hora">${hora}</span>`;
-        const btn = div.querySelector(".btn-audio"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Áudio indisponível"; } else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
-      } else if (m.tipo === "document" || m.mensagem_final === "[document]") {
-        div.innerHTML = `<div class="text-gray-600 italic">[documento recebido]</div><button class="btn-doc text-blue-600 underline mt-1">📎 Ver documento</button><span class="hora">${hora}</span>`;
-        const btn = div.querySelector(".btn-doc"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Documento indisponível"; } else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
-      } else if (typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")) {
-        const lines = m.mensagem_final.split("\n"); const filename = (lines[0] || "").replace("📎 PDF:", "").trim() || "Arquivo"; const link = (lines[1] || "").replace("🔗", "").trim();
-        div.innerHTML = `<div class="flex items-start gap-2"><div class="text-xl leading-none">📄</div><div class="min-w-0">
-          <div class="font-semibold">${escapeHtml(filename)}</div>${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">Abrir/baixar</a>` : `<span class="text-slate-500">sem link</span>`}
-        </div></div><span class="hora">${hora}</span>`;
-      } else if (m.tipo === "emoji" || m.mensagem_final === "[reaction]") {
-        const wrap = document.createElement("div"); wrap.className = "flex items-center gap-2";
-        const emojiEl = document.createElement("span"); emojiEl.className = "text-2xl"; emojiEl.textContent = "🙂";
-        const label = document.createElement("span"); label.className = "text-gray-600 italic"; label.textContent = "enviou um emote";
-        wrap.appendChild(emojiEl); wrap.appendChild(label); div.appendChild(wrap);
-        const horaSpan = document.createElement("span"); horaSpan.className = "hora"; horaSpan.textContent = hora; div.appendChild(horaSpan);
-        if (m.msg_id) {
-          fetch(`${CONV_API}/api/conversas/emoji/${encodeURIComponent(m.msg_id)}`).then(r => r.json())
-            .then(j => { if (j.ok && j.emoji) emojiEl.textContent = j.emoji; else label.textContent = "emoji não carregado"; })
-            .catch(() => label.textContent = "falha ao carregar emoji");
-        }
-      } else if (m.tipo === "system" || m.mensagem_final === "[system]") {
-        div.className = "msg system";
-        div.innerHTML = `<div class="sys-title"><span>ℹ️ Evento do sistema</span> <span class="sys-pill">carregando…</span></div>
-          <div class="sys-body mt-1">Obtendo detalhes…</div><div class="sys-meta mt-1"></div><span class="hora">${hora}</span>`;
-        if (!m.msg_id) {
-          div.querySelector(".sys-body").textContent = "Detalhes indisponíveis (sem msg_id).";
-          const pill = div.querySelector(".sys-pill"); if (pill) pill.textContent = "indisponível";
-        } else {
-          (async () => {
-            try {
-              const r = await fetch(`${CONV_API}/api/conversas/system/${encodeURIComponent(m.msg_id)}`); const j = await r.json();
-              const pill = div.querySelector(".sys-pill"); const bodyEl = div.querySelector(".sys-body"); const metaEl = div.querySelector(".sys-meta");
-              if (!j.ok) { if (pill) pill.textContent = "erro"; bodyEl.textContent = j.erro || "Falha ao obter detalhes do evento."; return; }
-              if (pill) pill.textContent = j.type || "system";
-              if (j.type === "user_changed_number" && j.old_wa_id && j.wa_id) {
-                bodyEl.innerHTML = `O cliente alterou o número:<br><span class="font-semibold">${escapeHtml(j.old_wa_id)}</span> <span class="mx-1">→</span> <span class="font-semibold">${escapeHtml(j.wa_id)}</span>`;
-              } else { bodyEl.textContent = j.body || "Evento de sistema recebido."; }
-              const src = j.from || j.old_wa_id || ""; const pid = j.phone_id ? ` • conta: ${escapeHtml(j.phone_id)}` : ""; metaEl.textContent = `${src ? ("Origem: " + src) : ""}${pid}`;
-            } catch (e) { const pill = div.querySelector(".sys-pill"); if (pill) pill.textContent = "erro"; div.querySelector(".sys-body").textContent = "Falha ao carregar detalhes do evento."; }
-          })();
-        }
-      } else {
-        div.innerHTML = `<div>${escapeHtml(m.mensagem_final || "")}</div><span class="hora">${hora}</span>`;
+      const msgEl = document.createElement("div");
+      msgEl.className = "msg " + (m.direcao === "out" ? "enviada" : "recebida");
+
+      let conteudoHtml = escapeHtml(m.conteudo || "");
+      if (m.tipo === "image" && m.media_url) {
+        conteudoHtml = `<img src="${escapeHtml(m.media_url)}" alt="Imagem" class="thumb" onclick="abrirModalImagem('${escapeHtml(m.media_url)}')">`;
+      } else if (m.tipo === "audio" && m.media_url) {
+        conteudoHtml = `<audio controls src="${escapeHtml(m.media_url)}"></audio>`;
       }
 
-      if (incoming && !(m.tipo === "system" || m.mensagem_final === "[system]")) {
-        const btn = document.createElement("button");
-        btn.className = "reply-btn";
-        btn.title = "Responder";
-        btn.setAttribute("aria-label", "Responder");
-        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 8V5l-7 7 7 7v-3h4c3.314 0 6 2.686 6 6v-2c0-4.418-3.582-8-8-8h-2z"/></svg>`;
-        btn.onclick = (ev) => { ev.stopPropagation(); responderMensagem(m.msg_id, m.mensagem_final || ""); };
-        div.appendChild(btn);
-      }
-      chat.appendChild(div); renderedKeys.add(key); if (lastTimestampMs === null || tMs > lastTimestampMs) lastTimestampMs = tMs;
+      msgEl.innerHTML = `
+        <button class="reply-btn" title="Responder" onclick="prepararResposta('${escapeHtml(m.id || "")}', '${escapeHtml(m.conteudo || "")}')">
+          ↩
+        </button>
+        <div>${conteudoHtml}</div>
+        <div class="hora">${formatarHora(m.data_hora)}</div>
+      `;
+      chat.appendChild(msgEl);
+      lastTimestampMs = tMs;
+      requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" }));
     }
 
-    async function carregarImagem(div, btn, msg_id) {
-      btn.disabled = true; btn.textContent = "⏳ Carregando…";
-      try {
-        const r = await fetch(`${CONV_API}/api/conversas/image/${encodeURIComponent(msg_id)}`); const j = await r.json();
-        if (j.ok && j.data_uri) {
-          const img = document.createElement("img"); img.src = j.data_uri; img.alt = "Imagem"; img.className = "thumb mt-2"; img.loading = "lazy"; img.decoding = "async";
-          img.onclick = () => abrirModalImagem(j.data_uri); div.insertBefore(img, btn); btn.remove();
-        } else throw new Error(j.erro || "Resposta inválida");
-      } catch { alert("Erro ao carregar imagem"); btn.disabled = false; btn.textContent = "👁 Ver imagem"; }
-    }
-    async function carregarAudio(div, btn, msg_id) {
-      btn.disabled = true; btn.textContent = "⏳ Carregando…";
-      try {
-        const r = await fetch(`${CONV_API}/api/conversas/audio/${encodeURIComponent(msg_id)}`); const j = await r.json();
-        if (j.ok && j.data_uri) {
-          const audio = document.createElement("audio"); audio.src = j.data_uri; audio.controls = true; audio.preload = "metadata"; audio.className = "mt-2";
-          div.insertBefore(audio, btn); btn.remove();
-        } else throw new Error(j.erro || "Resposta inválida");
-      } catch { alert("Erro ao carregar áudio"); btn.disabled = false; btn.textContent = "▶ Reproduzir áudio"; }
-    }
-    async function carregarDocumento(div, btn, msg_id) {
-      btn.disabled = true; btn.textContent = "⏳ Carregando…";
-      try {
-        const r = await fetch(`${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}`); const j = await r.json();
-        if (!j.ok) throw new Error(j.erro || "Falha no backend");
-        const filename = j.filename || "arquivo"; const mime = j.mime_type || "application/octet-stream"; const size = j.size_bytes ?? null;
-        const box = document.createElement("div"); box.className = "mt-2 space-y-1";
-        if (mime.startsWith("application/pdf") && j.data_uri && (size === null || size <= DOC_PREVIEW_MAX)) {
-          const preview = document.createElement("embed"); preview.src = j.data_uri; preview.type = mime; preview.className = "w-[260px] h-[200px] rounded border"; box.appendChild(preview);
-          const meta = document.createElement("div"); meta.className = "text-xs text-slate-600";
-          const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
-          meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div><div>${size ? bytesToHuman(size) : ""}</div>
-            <a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">Abrir/baixar</a>`; box.appendChild(meta);
-        } else {
-          const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
-          const row = document.createElement("div"); row.className = "flex items-start gap-2";
-          row.innerHTML = `<div class="text-xl leading-none">📎</div><div class="min-w-0">
-            <div class="font-semibold truncate">${escapeHtml(filename)}</div>
-            <div class="text-xs text-slate-600">${escapeHtml(mime)} ${size ? ("• " + bytesToHuman(size)) : ""}</div>
-            <a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">Baixar documento</a></div>`;
-          box.appendChild(row);
-        }
-        div.insertBefore(box, btn); btn.remove();
-      } catch (e) { console.error(e); alert("Erro ao carregar documento"); btn.disabled = false; btn.textContent = "📎 Ver documento"; }
+    function schedulePolls() {
+      if (pollingMensagens) clearInterval(pollingMensagens);
+      pollingMensagens = setInterval(() => carregarMensagens(true), 5000);
     }
 
-    function responderMensagem(msgId, conteudo) {
-      respostaMsgId = msgId || null;
-      document.getElementById("respostaPreview").classList.remove("hidden");
-      document.getElementById("respostaTexto").innerText = (conteudo || "").slice(0, 50);
-      textarea.focus();
-    }
-    function cancelarResposta() { respostaMsgId = null; document.getElementById("respostaPreview").classList.add("hidden"); document.getElementById("respostaTexto").innerText = ""; }
-
-    // Composer
     function wireComposer() {
-      textarea.removeEventListener('input', __onTextInput);
-      textarea.removeEventListener('keydown', __onTextKeydown);
-      btnEnviar.removeEventListener('click', enviarMensagem);
-      textarea.addEventListener('input', __onTextInput);
-      textarea.addEventListener('keydown', __onTextKeydown);
-      btnEnviar.addEventListener('click', enviarMensagem);
-      updateEnviarState();
-    }
-    function autoGrow() { textarea.style.height = 'auto'; textarea.style.height = Math.min(180, Math.max(38, textarea.scrollHeight)) + 'px'; }
-    function updateEnviarState() {
-      const hasText = !!textarea.value.trim();
-      btnEnviar.disabled = !hasText || !selecionado;
-      if (hasText && selecionado) { showTyping(); } else { hideTyping(); }
-    }
-    function showTyping() { digitando.classList.remove('hidden'); if (typingTimer) clearTimeout(typingTimer); typingTimer = setTimeout(hideTyping, 1200); }
-    function hideTyping() { digitando.classList.add('hidden'); if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; } }
-    function __onTextInput() { autoGrow(); updateEnviarState(); }
-    function __onTextKeydown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!btnEnviar.disabled) enviarMensagem(); return false; } showTyping(); }
-    async function enviarMensagem() {
-      if (!selecionado) return;
-      const texto = textarea.value.trim(); if (!texto) return;
-      userTyping = true; btnEnviar.disabled = true;
-      try {
-        const body = { texto, phone_id: selecionado.phone_id, msg_id: respostaMsgId || null };
-        const r = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-        const j = await r.json();
-        if (j.ok) {
-          textarea.value = ""; autoGrow(); cancelarResposta(); hideTyping();
-          await carregarMensagens(true);
-        } else { alert("Erro ao enviar: " + (j.erro || JSON.stringify(j))); }
-      } catch (e) { alert("Erro ao enviar mensagem. Verifique rede/CORS."); }
-      finally { userTyping = false; updateEnviarState(); }
+      textarea.addEventListener("keydown", e => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          btnEnviar.click();
+        }
+      });
     }
 
-    // PDF upload
-    async function enviarPDF(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      if (!selecionado) { alert("Abra um ticket antes de enviar PDF."); event.target.value = ""; return; }
-      if (file.type !== "application/pdf") { alert("Somente arquivos PDF são permitidos."); event.target.value = ""; return; }
+    async function enviarMensagem(texto, replyToId = null) {
+      if (!selecionado || !texto.trim()) return;
       try {
-        const res = await fetch(`${CONV_API}/api/upload/pdf`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ filename: file.name }) });
-        const j = await res.json();
-        if (!j.ok) { console.error("Presign falhou:", j); alert("Erro ao gerar URL: " + j.erro); return; }
-        const putResp = await fetch(j.upload_url, { method: "PUT", headers: { "Content-Type": "application/pdf" }, body: file });
-        if (!putResp.ok) {
-          const txt = await putResp.text().catch(() => ""); console.error("S3 PUT falhou", putResp.status, txt);
-          alert(`Falha no upload (S3): HTTP ${putResp.status}\n${txt.slice(0, 300)}`); return;
+        btnEnviar.disabled = true;
+        const payload = {
+          remetente: selecionado.remetente,
+          phone_id: selecionado.phone_id,
+          mensagem: texto,
+          reply_to: replyToId
+        };
+        const url = `${CONV_API}/api/mensagens/enviar`;
+        const r = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const j = await r.json();
+        if (!r.ok || !j.ok) {
+          alert(j.erro || "Erro ao enviar mensagem.");
+          return;
         }
-        const send = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone_id: selecionado.phone_id, file_url: j.file_url, original_filename: file.name })
+        textarea.value = "";
+        cancelarResposta();
+        await carregarMensagens(true);
+      } catch (e) {
+        console.error("Erro ao enviar", e);
+        alert("Erro ao enviar mensagem.");
+      } finally {
+        btnEnviar.disabled = false;
+      }
+    }
+
+    let replyContext = null;
+    function prepararResposta(id, texto) {
+      replyContext = { id, texto };
+      const preview = document.getElementById("respostaPreview");
+      const txt = document.getElementById("respostaTexto");
+      txt.textContent = texto.slice(0, 120);
+      preview.classList.remove("hidden");
+    }
+
+    function cancelarResposta() {
+      replyContext = null;
+      document.getElementById("respostaPreview").classList.add("hidden");
+    }
+
+    btnEnviar.onclick = () => {
+      const texto = textarea.value || "";
+      enviarMensagem(texto, replyContext ? replyContext.id : null);
+    };
+
+    async function enviarPDF(event) {
+      if (!selecionado) {
+        alert("Selecione uma conversa para enviar o PDF.");
+        event.target.value = "";
+        return;
+      }
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("remetente", selecionado.remetente);
+      formData.append("phone_id", selecionado.phone_id);
+
+      try {
+        const s3Url = "https://pdf-connectzap.s3.amazonaws.com";
+        const r = await fetch(`${CONV_API}/api/uploads/presign`, {
+          method: "POST",
+          body: JSON.stringify({ filename: file.name, content_type: file.type || "application/pdf" }),
+          headers: { "Content-Type": "application/json" }
+        });
+        if (!r.ok) throw new Error("Falha ao obter URL pré-assinada");
+        const { upload_url, final_url } = await r.json();
+
+        const upload = await fetch(upload_url, { method: "PUT", body: file, headers: { "Content-Type": file.type || "application/pdf" } });
+        if (!upload.ok) throw new Error("Falha no upload para S3");
+
+        const send = await fetch(`${CONV_API}/api/mensagens/enviar-pdf`, {
+          method: "POST",
+          body: JSON.stringify({ remetente: selecionado.remetente, phone_id: selecionado.phone_id, pdf_url: final_url, original_filename: file.name }),
+          headers: { "Content-Type": "application/json" }
         });
         const sj = await send.json().catch(() => ({ ok: false, erro: "resposta inválida" }));
-        if (sj.ok) { await carregarMensagens(true); }
-        else { console.error("Erro ao enviar PDF para WhatsApp:", sj); alert("Erro ao enviar PDF (API META): " + (sj.erro || JSON.stringify(sj))); }
-      } catch (e) { console.error("Erro geral ao enviar PDF:", e); alert("Erro ao enviar PDF (rede)."); }
-      finally { event.target.value = ""; }
+        if (sj.ok) {
+          await carregarMensagens(true);
+        } else {
+          console.error("Erro ao enviar PDF para WhatsApp:", sj);
+          alert("Erro ao enviar PDF (API META): " + (sj.erro || JSON.stringify(sj)));
+        }
+      } catch (e) {
+        console.error("Erro geral ao enviar PDF:", e);
+        alert("Erro ao enviar PDF (rede).");
+      } finally {
+        event.target.value = "";
+      }
     }
 
     /** =================== MODAL IMAGEM =================== */
@@ -1506,6 +1822,46 @@
     function fecharModal() { imageModal.classList.add("hidden"); modalImg.src = ""; isModalOpen = false; }
 
     /** =================== LIBERAR / CONCLUIR / LOGOUT =================== */
+
+    btnLiberar.onclick = async () => {
+      if (!selecionado) return;
+      try {
+        const r = await fetch(`${CONV_API}/api/tickets/liberar`, {
+          method: "DELETE", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id })
+        });
+        const j = await r.json();
+        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível liberar."); return; }
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id);
+        delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
+
+        tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
+        saveTickets(); renderTickets(); limparChat();
+        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+      } catch (e) { alert("Erro ao liberar."); }
+    };
+
+    async function concluirAtendimento(motivo) {
+      if (!selecionado) return;
+      try {
+        btnConcluir.disabled = true;
+        const r = await fetch(`${CONV_API}/api/tickets/concluir`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id, motivo })
+        });
+        const j = await r.json();
+        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível concluir."); btnConcluir.disabled = false; return; }
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id);
+        delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
+
+        tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
+        saveTickets(); renderTickets(); limparChat();
+        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+      } catch (e) { alert("Erro ao concluir."); btnConcluir.disabled = false; }
+    };
+
     async function doLogout() {
       try {
         await fetch(`${FILA_API}/fila/offline`, {
@@ -1515,49 +1871,167 @@
         }).catch(() => { });
       } catch (_) { }
       try {
-        localStorage.removeItem("agente_codigo"); localStorage.removeItem("agente_nome"); localStorage.removeItem("agente_carteira"); localStorage.removeItem("agente_origem");
-        Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:") || k.startsWith("cz:unreadCount:") || k.startsWith("cz:lastContatoTs:")) localStorage.removeItem(k); });
+        localStorage.removeItem("agente_codigo");
+        localStorage.removeItem("agente_nome");
+        localStorage.removeItem("agente_carteira");
+        localStorage.removeItem("agente_origem");
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith(STORAGE_KEY_UNREAD_PREFIX) || k.startsWith(STORAGE_KEY_LAST_TS_PREFIX)) {
+            localStorage.removeItem(k);
+          }
+        });
       } catch (_) { }
       if (pollingContatos) clearInterval(pollingContatos);
       if (pollingMensagens) clearInterval(pollingMensagens);
-      // Refresh imediato para limpar UI e trocar o botão para "Login"
       location.reload();
     }
 
-    function limparChat() { chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>'; }
-
-    /** =================== KPIs & Relatório =================== */
-    function humanMin(seconds) { if (!seconds && seconds !== 0) return '—'; const m = seconds / 60; return m < 1 ? m.toFixed(1) : Math.round(m); }
-    function humanSeg(seconds) { if (!seconds && seconds !== 0) return '—'; return Math.round(seconds); }
-    async function refreshKPIs() {
-      try {
-        const codigo = encodeURIComponent(String(agente.codigo || ''));
-        const url = `${FILA_API}/relatorio_hoje?agente=${codigo}`;
-        const r = await fetch(url);
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        const data = await r.json();
-        kpiEm.textContent = typeof data.em_atendimento === 'number' ? String(data.em_atendimento) : '0';
-        kpiConc.textContent = typeof data.concluidos === 'number' ? String(data.concluidos) : '0';
-        kpiTma.textContent = humanMin(data.tma_segundos || 0);
-        kpiFRT.textContent = humanSeg(data.primeira_resposta_seg || 0);
-        const ativos = Number(kpiEm.textContent) || 0, conc = Number(kpiConc.textContent) || 0, outros = Math.max(0, Number(data.outros || 0));
-        const ctx = document.getElementById('pieStatus')?.getContext('2d');
-        if (ctx) {
-          if (pieChart) pieChart.destroy();
-          pieChart = new Chart(ctx, { type: 'pie', data: { labels: ['Em atendimento', 'Concluídos', 'Outros'], datasets: [{ data: [ativos, conc, outros] }] }, options: { responsive: true, plugins: { legend: { display: true } } } });
-        }
-      } catch (e) { /* silencioso */ }
+    function limparChat() {
+      chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>';
     }
-    if (btnRefreshRel) btnRefreshRel.onclick = refreshKPIs;
 
-    /** =================== Navegação inicial =================== */
-    window.addEventListener('load', async () => {
-      const saved = loadTheme(); applyTheme(saved || defaultTheme());
-      await boot();
-      switchTab('home');
-      // Garante que o modal não esteja visível após F5 se logado
-      if (isLogged()) fecharModalLogin();
-    });
+    /** =================== ATIVOS / LIMITE =================== */
+    async function refreshAtivosELimite() {
+      try {
+        const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo || '')}&carteira=${encodeURIComponent(agente.carteira || '')}`;
+        const r = await fetch(url);
+        const rows = r.ok ? await r.json() : [];
+        ativosCount = Array.isArray(rows) ? rows.length : 0;
+      } catch {
+        ativosCount = tickets.length;
+      }
+      try {
+        const j = await fetch(`${CONV_API}/api/supervisao/tickets-limit?carteira=${encodeURIComponent(agente.carteira || '')}`).then(r => r.json());
+        limitPerAgent = Number(j.limit_per_agent || 0);
+      } catch {
+        limitPerAgent = 0;
+      }
+      renderAtivosLimiteUI();
+    }
+
+    function renderAtivosLimiteUI() {
+      badgeAtivos.textContent = String(ativosCount);
+      badgeLimite.textContent = limitPerAgent > 0 ? String(limitPerAgent) : "∞";
+      const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+      if (atingiu) {
+        elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua ou libere um atendimento para continuar.`;
+        elMsgLimite.classList.remove("hidden");
+      } else {
+        elMsgLimite.classList.add("hidden");
+        elMsgLimite.textContent = "";
+      }
+      btnPegarProxima.disabled = !agente.online || atingiu;
+      btnPrioridade.disabled = !agente.online || atingiu;
+    }
+
+    /** =================== TOGGLE ONLINE =================== */
+    btnToggleOnline.onclick = async () => {
+      if (!agente.carteira || !agente.codigo) {
+        abrirModalLogin();
+        return;
+      }
+      const toggleSpinner = document.getElementById('toggleSpinner');
+      const toggleLabel = document.getElementById('toggleLabel');
+      elHomeAviso.classList.add("hidden");
+      elHomeAviso.textContent = "";
+      const indoOnline = !agente.online;
+      btnToggleOnline.disabled = true;
+      toggleSpinner.classList.remove('hidden');
+      if (toggleLabel) toggleLabel.textContent = indoOnline ? 'Entrando…' : 'Saindo…';
+      try {
+        if (indoOnline) {
+          const r = await fetch(`${FILA_API}/fila/online`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira })
+          });
+          const j = await r.json();
+          if (!j.ok) throw new Error(j.erro || "Erro ao entrar online");
+          setStatus(true);
+          await refreshOrdemCarteira();
+          await refreshAtivosELimite();
+        } else {
+          const r = await fetch(`${FILA_API}/fila/offline`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira })
+          });
+          const j = await r.json();
+          if (!j.ok) throw new Error(j.erro || "Erro ao ficar offline");
+          setStatus(false);
+        }
+      } catch (e) {
+        elHomeAviso.classList.remove("hidden");
+        elHomeAviso.textContent = (e?.message || "Falha ao alterar status");
+      } finally {
+        toggleSpinner.classList.add('hidden');
+        if (toggleLabel) toggleLabel.textContent = agente.online ? 'Ficar offline' : 'Ficar online';
+        btnToggleOnline.disabled = false;
+      }
+    };
+
+    /** =================== RELATÓRIO / CHART =================== */
+    let pieChart = null;
+
+    async function carregarRelatorio() {
+      if (!agente.carteira || !agente.codigo) return;
+      try {
+        const url = `${REL_API}/api/relatorio?carteira=${encodeURIComponent(agente.carteira)}&agente=${encodeURIComponent(agente.codigo)}`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error("Erro ao buscar relatório");
+        const j = await r.json();
+        document.getElementById("kpiEm").textContent = j.em_atendimento ?? 0;
+        document.getElementById("kpiConc").textContent = j.concluidos ?? 0;
+        document.getElementById("kpiTma").textContent = j.tma_min ?? "—";
+        document.getElementById("kpiFRT").textContent = j.frt_seg ?? "—";
+        document.getElementById("relatorioPeriodo").textContent = j.periodo || "Hoje";
+
+        const ctx = document.getElementById("pieStatus").getContext("2d");
+        const data = j.status || {};
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+
+        if (pieChart) pieChart.destroy();
+        pieChart = new Chart(ctx, {
+          type: "pie",
+          data: {
+            labels,
+            datasets: [{
+              data: values
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "bottom"
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error("Erro ao carregar relatório", e);
+      }
+    }
+
+    document.getElementById("btnRefreshRel").onclick = carregarRelatorio;
+
+    /** =================== INIT =================== */
+    function init() {
+      loadAndApplyTheme();
+      loadUnread();
+      loadTicketsFromStorage();
+      carregarAgenteInicial();
+      renderTickets();
+      updateAuthButton();
+      if (agente.codigo && agente.carteira) {
+        refreshOrdemCarteira();
+        refreshAtivosELimite();
+        carregarRelatorio();
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
   </script>
 </body>
 
