@@ -325,15 +325,16 @@
       transform: translateX(0)
     }
 
+    /* FIX: modal não deve abrir após F5 se logado */
     .modal {
       display: none;
+      /* <— manter apenas esta declaração */
       position: fixed;
       z-index: 100;
       inset: 0;
       background: rgba(0, 0, 0, .6);
-      display: flex;
       align-items: center;
-      justify-content: center
+      justify-content: center;
     }
 
     .modal-inner {
@@ -395,6 +396,7 @@
                   </svg>
                   <span id="toggleLabel">Ficar online</span>
                 </button>
+                <!-- Botão dinâmico: Login/Logout -->
                 <button id="btnLogout" class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200">Logout</button>
               </div>
               <div id="homeAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
@@ -405,10 +407,7 @@
               <div class="flex flex-wrap gap-2">
                 <button id="goToConversas1" class="btn btn-primary px-4 py-2">Ir para Conversas</button>
                 <button id="goToRelatorio1" class="btn px-4 py-2 bg-gray-100 hover:bg-gray-200">Ver Relatório</button>
-                <button id="btnAbrirLogin" class="btn px-4 py-2 bg-gray-100 hover:bg-gray-200">Entrar (alterar
-                  código)</button>
               </div>
-              <p class="mt-3 text-xs text-gray-500">Use “Entrar” apenas quando precisar trocar o código de agente.</p>
             </div>
           </div>
         </div>
@@ -560,7 +559,7 @@
             </div>
           </div>
           <div class="p-4 overflow-y-auto space-y-6">
-            <!-- (mesmo conteúdo de tema do arquivo anterior) -->
+            <!-- Conteúdo de tema (como antes) -->
             <section>
               <div class="text-xs text-gray-500 mb-2">Temas rápidos</div>
               <div class="grid grid-cols-2 gap-2">
@@ -785,7 +784,6 @@
     const elHomeCart = document.getElementById('homeAgenteCarteira');
     const elHomeStatus = document.getElementById('homeStatus');
     const elHomeAviso = document.getElementById('homeAviso');
-    const btnAbrirLogin = document.getElementById('btnAbrirLogin');
 
     // Relatório
     const kpiEm = document.getElementById('kpiEm');
@@ -828,7 +826,6 @@
     const tabRelatorio = document.getElementById('tabRelatorio');
     document.getElementById('goToConversas1').onclick = () => switchTab('conversas');
     document.getElementById('goToRelatorio1').onclick = () => switchTab('relatorio');
-    btnAbrirLogin.onclick = () => abrirModalLogin();
 
     /** =================== MENU CONCLUIR =================== */
     const MOTIVOS_CONCLUSAO = ["Realizou negociação", "Solicitou 2ª via de boleto", "Recusou a proposta", "Dúvidas gerais", "Cliente ficou inativo"];
@@ -844,7 +841,7 @@
     btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir(); };
     renderMenuConcluir();
 
-    /** =================== THEME (mesmo do arquivo anterior) =================== */
+    /** =================== THEME =================== */
     function themeKey() { return `cz:theme:${agente.codigo || 'anon'}`; }
     function defaultTheme() { return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff" }; }
     function applyTheme(t) {
@@ -891,16 +888,16 @@
     if (btnTheme) btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
     if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open'); });
-    [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs.tBorder, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
+    [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
       .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
     if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open'); });
     if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); });
     if (btnRandom) btnRandom.addEventListener('click', () => { const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')); const b1 = rand(), b2 = rand(); const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; applyTheme(t); });
 
-    /** =================== LOGIN MODAL (abre só quando clicar) =================== */
+    /** =================== LOGIN MODAL =================== */
     function isLogged() { try { return !!localStorage.getItem('agente_codigo'); } catch { return false; } }
-    function abrirModalLogin() { document.getElementById('modalLogin').style.display = 'flex'; setTimeout(() => document.getElementById('loginCodigoAgente').focus(), 50); isModalOpen = true; }
-    function fecharModalLogin() { document.getElementById('modalLogin').style.display = 'none'; const e = document.getElementById('loginErro'); e.textContent = ''; e.classList.add('hidden'); isModalOpen = false; }
+    function abrirModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'flex'; setTimeout(() => document.getElementById('loginCodigoAgente').focus(), 50); isModalOpen = true; }
+    function fecharModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'none'; const e = document.getElementById('loginErro'); e.textContent = ''; e.classList.add('hidden'); isModalOpen = false; }
     async function login() {
       const codigo = (document.getElementById('loginCodigoAgente').value || '').trim();
       const erro = document.getElementById('loginErro');
@@ -913,8 +910,9 @@
         localStorage.setItem("agente_nome", j.agente?.nome || `Agente ${codigo}`);
         localStorage.setItem("agente_carteira", j.agente?.carteira || 'ConnectZap');
         fecharModalLogin();
-        await boot(); // mantém-se na HOME; usuário decide ir para conversas
+        await boot();
         switchTab('home');
+        updateAuthButton(); // muda para Logout
       } catch (e) {
         erro.textContent = e?.message || 'Falha ao validar código.';
         erro.classList.remove('hidden');
@@ -927,12 +925,14 @@
     async function boot() {
       const savedT = loadTheme(); applyTheme(savedT || defaultTheme());
 
-      // carrega agente de localStorage / QS (sem abrir modal automaticamente)
+      // carrega agente de localStorage / QS
       agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
       agente.origem = localStorage.getItem("agente_origem") || qsParam("origem") || 'web';
 
+      updateAuthButton();
+
       if (!agente.codigo) {
-        // Primeiro acesso / sem login: mostra HOME limpa e botão “Entrar”
+        // Sem login: mostra HOME limpa
         elHomeNome.textContent = '—';
         elHomeCart.textContent = '—';
         setStatus(false);
@@ -955,7 +955,6 @@
         elHomeCart.textContent = agente.carteira;
 
         loadUnread();
-
         await verificarOnline();
 
         try {
@@ -971,11 +970,23 @@
         if (!tickets.length) btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
 
         await refreshKPIs();
-
-        wireComposer(); // garante eventos do composer
+        wireComposer();
       } catch (e) {
         elHomeAviso.classList.remove("hidden");
         elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
+      }
+    }
+
+    /** =================== Botão Login/Logout dinâmico =================== */
+    function updateAuthButton() {
+      const logged = isLogged();
+      if (!btnLogout) return;
+      if (logged) {
+        btnLogout.textContent = "Logout";
+        btnLogout.onclick = doLogout;
+      } else {
+        btnLogout.textContent = "Login";
+        btnLogout.onclick = () => abrirModalLogin();
       }
     }
 
@@ -998,20 +1009,16 @@
         const lista = await r.json();
         const achou = Array.isArray(lista) && lista.some(x => String(x.codigo_do_agente) === String(agente.codigo));
         setStatus(achou);
-        if (!achou) { elMsgAviso.classList.add("hidden"); elHomeAviso.classList.remove("hidden"); elHomeAviso.textContent = "Você está OFFLINE nesta carteira. Use “Ficar online” para entrar na fila."; }
+        if (!achou) { elMsgAviso?.classList.add("hidden"); elHomeAviso.classList.remove("hidden"); elHomeAviso.textContent = "Você está OFFLINE nesta carteira. Use “Ficar online” para entrar na fila."; }
         else { elHomeAviso.classList.add("hidden"); elHomeAviso.textContent = ""; }
       } catch (e) { setStatus(false); }
     }
     function setStatus(online) {
       agente.online = !!online;
-      // Conversas (indicador)
       if (elAgenteStatus) elAgenteStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
-      // Home (indicador)
       if (elHomeStatus) elHomeStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
-      // Botões dependentes
       btnPegarProxima.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
       btnPrioridade.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
-      // Toggle label/cores
       const toggleLabel = document.getElementById("toggleLabel");
       if (btnToggleOnline) {
         btnToggleOnline.disabled = false;
@@ -1111,8 +1118,7 @@
     btnPegarProxima.onclick = async () => {
       if (!agente.online) { alert("Você está offline. Vá na Home e clique em “Ficar online”."); return; }
       if (limitPerAgent > 0 && ativosCount >= limitPerAgent) {
-        elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua/libere um antes de pegar outro.`;
-        elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return;
+        elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return;
       }
       const spinner = document.getElementById('pegarSpinner'); const label = document.getElementById('pegarLabel');
       btnPegarProxima.disabled = true; spinner.classList.remove('hidden'); label.textContent = 'Buscando…';
@@ -1500,46 +1506,13 @@
     function fecharModal() { imageModal.classList.add("hidden"); modalImg.src = ""; isModalOpen = false; }
 
     /** =================== LIBERAR / CONCLUIR / LOGOUT =================== */
-    btnLiberar.onclick = async () => {
-      if (!selecionado) return;
+    async function doLogout() {
       try {
-        const r = await fetch(`${CONV_API}/api/tickets/liberar`, {
-          method: "DELETE", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id })
-        });
-        const j = await r.json();
-        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível liberar."); return; }
-        const k = keyFrom(selecionado.remetente, selecionado.phone_id);
-        delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
-        tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
-        saveTickets(); renderTickets(); limparChat();
-        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
-        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
-      } catch (e) { alert("Erro ao liberar."); }
-    };
-
-    async function concluirAtendimento(motivo) {
-      if (!selecionado) return;
-      try {
-        btnConcluir.disabled = true;
-        const r = await fetch(`${CONV_API}/api/tickets/concluir`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id, motivo })
-        });
-        const j = await r.json();
-        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível concluir."); btnConcluir.disabled = false; return; }
-        const k = keyFrom(selecionado.remetente, selecionado.phone_id);
-        delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
-        tickets = tickets.filter(t => !(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id));
-        saveTickets(); renderTickets(); limparChat();
-        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
-        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
-      } catch (e) { alert("Erro ao concluir."); btnConcluir.disabled = false; }
-    }
-
-    btnLogout.onclick = async () => {
-      try {
-        await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), carteira: agente.carteira || '' }) }).catch(() => { });
+        await fetch(`${FILA_API}/fila/offline`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), carteira: agente.carteira || '' })
+        }).catch(() => { });
       } catch (_) { }
       try {
         localStorage.removeItem("agente_codigo"); localStorage.removeItem("agente_nome"); localStorage.removeItem("agente_carteira"); localStorage.removeItem("agente_origem");
@@ -1547,12 +1520,9 @@
       } catch (_) { }
       if (pollingContatos) clearInterval(pollingContatos);
       if (pollingMensagens) clearInterval(pollingMensagens);
-      setStatus(false); tickets = []; renderTickets(); limparChat();
-      elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = "";
-      switchTab('home');
-      // Mostra o modal APENAS agora (pedido do usuário)
-      abrirModalLogin();
-    };
+      // Refresh imediato para limpar UI e trocar o botão para "Login"
+      location.reload();
+    }
 
     function limparChat() { chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>'; }
 
@@ -1583,9 +1553,10 @@
     /** =================== Navegação inicial =================== */
     window.addEventListener('load', async () => {
       const saved = loadTheme(); applyTheme(saved || defaultTheme());
-      // NÃO abre modal automaticamente mais. Só quando o usuário clicar em Logout (ou “Entrar”).
       await boot();
       switchTab('home');
+      // Garante que o modal não esteja visível após F5 se logado
+      if (isLogged()) fecharModalLogin();
     });
   </script>
 </body>
