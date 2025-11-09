@@ -35,6 +35,11 @@
       --chat-wallpaper-opacity: 0;
       --scrollbar: #cbd5e1;
       --ticket-selected-bg: #f0f9ff
+    
+      --hover: var(--ghost-bg);
+      --hover-strong: var(--ghost-bg);
+      --input-bg: var(--content-bg);
+      --input-fg: var(--text);
     }
 
     * {
@@ -344,7 +349,19 @@
       width: min(420px, 94%);
       box-shadow: 0 10px 30px rgba(0, 0, 0, .14)
     }
-  </style>
+  
+    .hover\:bg-gray-100:hover { background: var(--hover) !important }
+    .hover-soft:hover { background: var(--hover) !important }
+    .hover-strong:hover { background: var(--hover-strong) !important }
+    .chat-wrap { background-image: url('https://joubertcastro.github.io/ConnectZap/pattern.png'); background-repeat: repeat; background-size: auto; opacity: var(--chat-wallpaper-opacity); pointer-events: none; }
+    .chat-overlay { position:absolute; inset:0; background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%); pointer-events: none; }
+    input[type="text"], input[type="search"], input[type="color"], input[type="file"], textarea, select {
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border-color: var(--border) !important;
+    }
+    input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted) 85%, var(--bg)); }
+</style>
 </head>
 
 <body class="h-screen flex with-mini">
@@ -397,7 +414,8 @@
                   <span id="toggleLabel">Ficar online</span>
                 </button>
                 <!-- Botão dinâmico: Login/Logout -->
-                <button id="btnLogout" class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200">Logout</button>
+                <button id="btnTheme" class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200">🎨 Tema</button>
+                  <button id="btnLogout" class="btn px-3 py-2 bg-gray-100 hover:bg-gray-200">Logout</button>
               </div>
               <div id="homeAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
             </div>
@@ -479,7 +497,7 @@
         </div>
 
         <div class="relative flex-1 overflow-hidden">
-          <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" role="log"
+          <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" style="background:transparent" role="log"
             aria-live="polite">
             <p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>
           </div>
@@ -855,6 +873,11 @@
       r.setProperty('--bubble-in-bg', x.inBg); r.setProperty('--bubble-in-border', x.inBorder); r.setProperty('--bubble-in-fg', x.inFg || '#0f172a');
       r.setProperty('--bubble-radius', x.bubbleRadius + 'px'); r.setProperty('--btn-radius', x.btnRadius + 'px'); r.setProperty('--card-radius', x.cardRadius + 'px');
       r.setProperty('--font-size', x.fontSize); r.setProperty('--chat-wallpaper-opacity', x.wallOp);
+      r.setProperty('--hover', (x.hover || 'var(--ghost-bg)'));
+      r.setProperty('--hover-strong', (x.hoverStrong || 'var(--ghost-bg)'));
+      r.setProperty('--input-bg', (x.inputBg || x.contentBg || '#ffffff'));
+      r.setProperty('--input-fg', (x.inputFg || x.text || '#0f172a'));
+
       r.setProperty('--scrollbar', x.scrollbar || '#cbd5e1'); r.setProperty('--primary', x.primary); r.setProperty('--accent', x.accent);
       inputs.tPrimary.value = x.primary; inputs.tAccent.value = x.accent; inputs.tSidebar.value = x.sidebar;
       inputs.tContentBg.value = x.contentBg; inputs.tBg.value = x.bg; inputs.tText.value = x.text;
@@ -892,7 +915,23 @@
       .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
     if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open'); });
     if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); });
-    if (btnRandom) btnRandom.addEventListener('click', () => { const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')); const b1 = rand(), b2 = rand(); const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; applyTheme(t); });
+    if (btnRandom) btnRandom.addEventListener('click', () => { const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0'));
+    const presets = {
+      corporate: { primary: "#2563eb", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#0f172a", outG1: "#dcf8c6", outG2: "#b8f0a4", inBg: "#ffffff", inBorder: "#e2e8f0", link: "#2563eb", muted: "#6b7280", border: "#e5e7eb", ghostBg: "#f3f4f6" },
+      ocean: { primary: "#06b6d4", accent: "#10b981", sidebar: "#e0f7fa", contentBg: "#ecfeff", bg: "#e0f2f1", text: "#0e7490", outG1: "#d1fae5", outG2: "#a7f3d0", inBg: "#ffffff", inBorder: "#cbd5e1", link: "#0891b2", ghostBg: "#e2f2f3" },
+      sunset: { primary: "#f97316", accent: "#ef4444", sidebar: "#fff7ed", contentBg: "#ffedd5", bg: "#fff7ed", text: "#7c2d12", outG1: "#fed7aa", outG2: "#fdba74", inBg: "#ffffff", inBorder: "#fca5a5", link: "#ea580c", ghostBg: "#fff3e0" },
+      dark: { primary: "#60a5fa", accent: "#34d399", sidebar: "#111827", contentBg: "#1f2937", bg: "#0f172a", text: "#e5e7eb", outG1: "#1f2937", outG2: "#374151", inBg: "#111827", inBorder: "#374151", link: "#93c5fd", muted: "#9ca3af", border: "#374151", ghostBg: "#111827" },
+      minimal: { primary: "#111827", accent: "#10b981", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#111827", outG1: "#e5e7eb", outG2: "#cbd5e1", inBg: "#ffffff", inBorder: "#e5e7eb", link: "#111827", ghostBg: "#f3f4f6" },
+      funky: { primary: "#a78bfa", accent: "#ec4899", sidebar: "#fdf4ff", contentBg: "#fce7f3", bg: "#fef3c7", text: "#1f2937", outG1: "#f5d0fe", outG2: "#fbcfe8", inBg: "#ffffff", inBorder: "#f9a8d4", link: "#a855f7", ghostBg: "#fdf2f8" }
+    };
+    document.querySelectorAll('.preset').forEach(div => {
+      div.addEventListener('click', () => {
+        const key = div.getAttribute('data-preset');
+        const p = presets[key];
+        if (p) { const t = { ...defaultTheme(), ...p }; applyTheme(t); saveTheme(t); }
+      });
+    });
+     const b1 = rand(), b2 = rand(); const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) }; applyTheme(t); });
 
     /** =================== LOGIN MODAL =================== */
     function isLogged() { try { return !!localStorage.getItem('agente_codigo'); } catch { return false; } }
@@ -1643,7 +1682,27 @@
       // Garante que o modal não esteja visível após F5 se logado
       if (isLogged()) fecharModalLogin();
     });
-  </script>
+  
+    if (btnThemeExport) btnThemeExport.addEventListener('click', () => {
+      try {
+        const data = JSON.stringify(loadTheme() || defaultTheme(), null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `connectzap-theme-${(agente?.codigo||'anon')}.json`;
+        document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
+      } catch (_) {}
+    });
+    if (importTheme) importTheme.addEventListener('change', (ev) => {
+      const f = ev.target.files?.[0]; if (!f) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try { const obj = JSON.parse(String(e.target?.result||'')); if (obj && typeof obj === 'object') { applyTheme(obj); saveTheme(obj); } } catch {}
+      };
+      reader.readAsText(f);
+      ev.target.value = '';
+    });
+    </script>
 </body>
 
 </html>
