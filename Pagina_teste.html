@@ -220,7 +220,6 @@
       color: var(--muted)
     }
 
-    /* Botão responder — agora com contraste por tema */
     .reply-btn {
       position: absolute;
       top: 4px;
@@ -253,7 +252,6 @@
       height: 14px
     }
 
-    /* Inputs */
     textarea {
       background: var(--input-bg);
       color: var(--input-fg);
@@ -349,7 +347,6 @@
       transform: translateX(0)
     }
 
-    /* Modal login: manter fechado por padrão */
     .modal {
       display: none;
       position: fixed;
@@ -368,13 +365,20 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, .14)
     }
 
-    /* Helpers */
     .bar-soft {
       background: var(--ghost-bg)
     }
 
     .ticket-item:hover {
       background: var(--hover)
+    }
+
+    .pill {
+      border: 1px solid var(--border);
+      background: var(--ghost-bg);
+      padding: 4px 8px;
+      border-radius: 9999px;
+      font-size: 12px
     }
   </style>
 </head>
@@ -693,10 +697,39 @@
     <!-- RELATÓRIO -->
     <section id="tabRelatorio" class="hidden p-4">
       <div class="max-w-6xl mx-auto space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold">Relatório — Atendimentos</h2>
-          <div class="text-sm text-gray-500" id="relatorioPeriodo">Hoje</div>
+        <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 class="text-xl font-semibold">Relatório — Atendimentos</h2>
+            <div class="text-sm text-gray-500" id="relatorioPeriodo">Hoje</div>
+          </div>
+
+          <!-- Filtros -->
+          <div class="flex flex-wrap gap-2 items-end">
+            <div class="flex flex-col">
+              <label class="text-xs text-gray-500">Início</label>
+              <input id="relStart" type="date" class="border rounded px-2 py-1" />
+            </div>
+            <div class="flex flex-col">
+              <label class="text-xs text-gray-500">Fim</label>
+              <input id="relEnd" type="date" class="border rounded px-2 py-1" />
+            </div>
+
+            <div class="flex gap-1">
+              <button class="btn btn-neutral px-2 py-1 text-xs" data-qk="hoje">Hoje</button>
+              <button class="btn btn-neutral px-2 py-1 text-xs" data-qk="ontem">Ontem</button>
+              <button class="btn btn-neutral px-2 py-1 text-xs" data-qk="7d">7d</button>
+              <button class="btn btn-neutral px-2 py-1 text-xs" data-qk="30d">30d</button>
+            </div>
+
+            <div id="relAgenteLock" class="pill select-none" title="Agente aplicado ao filtro">
+              Agente: <span id="relAgentePill">—</span>
+            </div>
+
+            <button id="btnRefreshRel" class="btn btn-primary px-3 py-2 text-sm">Atualizar</button>
+          </div>
         </div>
+
+        <!-- KPIs -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div class="card p-4">
             <div class="text-xs text-gray-500">Em atendimento</div>
@@ -717,12 +750,36 @@
             </div>
           </div>
         </div>
-        <div class="card p-4">
-          <div class="flex items-center justify-between">
-            <div class="font-semibold">Distribuição por status</div>
-            <button id="btnRefreshRel" class="btn btn-neutral px-3 py-2 text-sm">Atualizar</button>
+
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div class="card p-4">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold">Distribuição por status</div>
+            </div>
+            <div class="mt-4"><canvas id="pieStatus" height="260"></canvas></div>
           </div>
-          <div class="mt-4"><canvas id="pieStatus" height="260"></canvas></div>
+
+          <div class="card p-4">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold">Motivos de conclusão</div>
+            </div>
+            <div class="mt-4"><canvas id="pieMotivos" height="260"></canvas></div>
+          </div>
+
+          <div class="card p-4">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold">Atendimentos por dia</div>
+            </div>
+            <div class="mt-4"><canvas id="lineSeries" height="260"></canvas></div>
+          </div>
+
+          <div class="card p-4">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold">Atendimentos por hora</div>
+            </div>
+            <div class="mt-4"><canvas id="barHora" height="260"></canvas></div>
+          </div>
         </div>
       </div>
     </section>
@@ -755,6 +812,7 @@
     /** ============== CONFIG / APIs ============== */
     const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/, '');
     const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
+    const API_BASE = CONV_API; // usar os endpoints do dashboard
     const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
 
     /** ============== CARTEIRAS / Phone IDs ============== */
@@ -767,13 +825,16 @@
     let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
     let limitPerAgent = 0; let ativosCount = 0;
     let unreadCountByKey = {}; let lastContatoTsByKey = {};
-    let ordemCache = []; let pieChart = null; let typingTimer = null;
+    let ordemCache = []; let pieChart = null; // (status) – mantive o id/var original
+    let chartMotivos = null, chartSeries = null, chartHora = null; // novos gráficos
+    let typingTimer = null;
 
     /** ============== UTILS ============== */
     const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
     const POLL_ACTIVE_MS = 5000, POLL_HIDDEN_MS = 30000;
     const fmtHoraBR = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
     const fmtDataBR = new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/Sao_Paulo' });
+    function fmtYMD(d) { const z = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}` }
     function qsParam(name) { return new URLSearchParams(location.search).get(name) }
     function escapeHtml(s) { if (!s) return ""; return s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])) }
     const __colorCache = new Map(); function gerarCor(nome) { const key = String(nome || "U"); if (__colorCache.has(key)) return __colorCache.get(key); let h = 0; for (const c of key) h = c.charCodeAt(0) + ((h << 5) - h); const v = `hsl(${h % 360},70%,60%)`; __colorCache.set(key, v); return v }
@@ -802,6 +863,10 @@
     const kpiTma = document.getElementById('kpiTma');
     const kpiFRT = document.getElementById('kpiFRT');
     const btnRefreshRel = document.getElementById('btnRefreshRel');
+    const relStart = document.getElementById('relStart');
+    const relEnd = document.getElementById('relEnd');
+    const relPeriodo = document.getElementById('relatorioPeriodo');
+    const relAgentePill = document.getElementById('relAgentePill');
 
     // Conversas
     const elAgenteNome = document.getElementById("agenteNome");
@@ -851,7 +916,7 @@
     renderMenuConcluir();
 
     /** ============== THEME ============== */
-    function themeKey() { return 'cz:theme:v2' }   // chave única global (migra das antigas)
+    function themeKey() { return 'cz:theme:v2' }
     function defaultTheme() { return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff", hover: "#f1f5f9", hoverStrong: "#e2e8f0", inputBg: "#ffffff", inputFg: "#0f172a", scrollbar: "#cbd5e1", replyBg: "rgba(0,0,0,.06)", replyBorder: "rgba(0,0,0,.08)", replyFg: "#334155" } }
     function applyTheme(t) {
       const r = document.documentElement.style; const base = defaultTheme(); const x = { ...base, ...t };
@@ -879,14 +944,12 @@
     function loadTheme() {
       try {
         const now = localStorage.getItem(themeKey()); if (now) return JSON.parse(now);
-        // migração automática (chaves antigas por agente/anon)
         const old1 = localStorage.getItem(`cz:theme:${agente.codigo || 'anon'}`); if (old1) { localStorage.setItem(themeKey(), old1); return JSON.parse(old1) }
         const old2 = localStorage.getItem('cz:theme:anon'); if (old2) { localStorage.setItem(themeKey(), old2); return JSON.parse(old2) }
       } catch { }
       return null;
     }
 
-    // refs do Theme
     const themeDrawer = document.getElementById('themeDrawer');
     const btnTheme = document.getElementById('btnTheme');
     const btnThemeClose = document.getElementById('btnThemeClose');
@@ -933,8 +996,14 @@
 
       updateAuthButton();
 
+      // datas padrão (hoje)
+      const today = new Date(); const ymd = fmtYMD(today);
+      relStart.value = ymd; relEnd.value = ymd;
+
       if (!agente.codigo) {
-        elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false); return;
+        elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false);
+        relAgentePill.textContent = '—';
+        return;
       }
 
       try {
@@ -949,6 +1018,7 @@
         elAgenteCarteira.textContent = agente.carteira;
         elHomeNome.textContent = agente.nome;
         elHomeCart.textContent = agente.carteira;
+        relAgentePill.textContent = `${agente.nome} (#${agente.codigo})`;
 
         loadUnread();
         await verificarOnline();
@@ -964,6 +1034,7 @@
         await refreshAtivosELimite();
         if (!tickets.length) btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
 
+        // RELATÓRIO (agora usa filtros + agente fixo)
         await refreshKPIs();
         wireComposer();
       } catch (e) {
@@ -1094,13 +1165,13 @@
     // Pegar próxima
     btnPegarProxima.onclick = async () => {
       if (!agente.online) { alert("Você está offline. Vá na Home e clique em “Ficar online”."); return; }
-      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosELimiteUI(); return; }
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return; }
       const spinner = document.getElementById('pegarSpinner'); const label = document.getElementById('pegarLabel');
       btnPegarProxima.disabled = true; spinner.classList.remove('hidden'); label.textContent = 'Buscando…';
       try {
         const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
         const j = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
-        if (r.status === 409 && j && (j.limit_per_agent !== undefined)) { limitPerAgent = Number(j.limit_per_agent || 0); ativosCount = Number(j.ativos || ativosCount); elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosELimite(); return; }
+        if (r.status === 409 && j && (j.limit_per_agent !== undefined)) { limitPerAgent = Number(j.limit_per_agent || 0); ativosCount = Number(j.ativos || ativosCount); elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimite(); return; }
         if (!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
         if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) { tickets.unshift(j.ticket); saveTickets(); }
         renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosLimiteUI();
@@ -1430,24 +1501,142 @@
 
     function limparChat() { chat.innerHTML = '<p id="loading" class="text-center text-gray-500">Pegue uma conversa para iniciar…</p>' }
 
-    /** ============== KPIs & Relatório ============== */
-    function humanMin(seconds) { if (!seconds && seconds !== 0) return '—'; const m = seconds / 60; return m < 1 ? m.toFixed(1) : Math.round(m) }
-    function humanSeg(seconds) { if (!seconds && seconds !== 0) return '—'; return Math.round(seconds) }
-    async function refreshKPIs() {
+    /** ============== KPIs & Relatório (com filtros + agente fixo) ============== */
+    function humanMin(seconds) { if (seconds === undefined || seconds === null) return '—'; const m = seconds / 60; return m < 1 ? m.toFixed(1) : Math.round(m) }
+    function humanSeg(seconds) { if (seconds === undefined || seconds === null) return '—'; return Math.round(seconds) }
+
+    function buildRelQS() {
+      const start = relStart.value || fmtYMD(new Date());
+      const end = relEnd.value || start;
+      const p = new URLSearchParams();
+      p.set('start', start);
+      p.set('end', end);
+      if (agente?.carteira) p.set('carteira', agente.carteira);
+      if (agente?.codigo) p.set('agentes', String(agente.codigo));
+      return `?${p.toString()}`;
+    }
+
+    function updatePeriodoLabel() {
       try {
-        const codigo = encodeURIComponent(String(agente.codigo || '')); const url = `${FILA_API}/relatorio_hoje?agente=${codigo}`;
-        const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status);
-        const data = await r.json();
-        kpiEm.textContent = typeof data.em_atendimento === 'number' ? String(data.em_atendimento) : '0';
-        kpiConc.textContent = typeof data.concluidos === 'number' ? String(data.concluidos) : '0';
-        kpiTma.textContent = humanMin(data.tma_segundos || 0);
-        kpiFRT.textContent = humanSeg(data.primeira_resposta_seg || 0);
-        const ativos = Number(kpiEm.textContent) || 0, conc = Number(kpiConc.textContent) || 0, outros = Math.max(0, Number(data.outros || 0));
-        const ctx = document.getElementById('pieStatus')?.getContext('2d');
-        if (ctx) { if (pieChart) pieChart.destroy(); pieChart = new Chart(ctx, { type: 'pie', data: { labels: ['Em atendimento', 'Concluídos', 'Outros'], datasets: [{ data: [ativos, conc, outros] }] }, options: { responsive: true, plugins: { legend: { display: true } } } }) }
-      } catch (e) {/* silencioso */ }
+        const s = relStart.value, e = relEnd.value;
+        if (!s || !e) { relPeriodo.textContent = '—'; return; }
+        const [sy, sm, sd] = s.split('-').map(Number);
+        const [ey, em, ed] = e.split('-').map(Number);
+        const ds = fmtDataBR.format(new Date(sy, sm - 1, sd));
+        const de = fmtDataBR.format(new Date(ey, em - 1, ed));
+        relPeriodo.textContent = (s === e) ? ds : `${ds} a ${de}`;
+      } catch { relPeriodo.textContent = '—'; }
+    }
+
+    function bindQuickRanges() {
+      document.querySelectorAll('[data-qk]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const qk = btn.getAttribute('data-qk');
+          const now = new Date(); const ymd = fmtYMD(now);
+          if (qk === 'hoje') { relStart.value = ymd; relEnd.value = ymd; }
+          else if (qk === 'ontem') {
+            const d = new Date(now); d.setDate(d.getDate() - 1);
+            const y1 = fmtYMD(d); relStart.value = y1; relEnd.value = y1;
+          } else if (qk === '7d') {
+            const d = new Date(now); d.setDate(d.getDate() - 6);
+            relStart.value = fmtYMD(d); relEnd.value = ymd;
+          } else if (qk === '30d') {
+            const d = new Date(now); d.setDate(d.getDate() - 29);
+            relStart.value = fmtYMD(d); relEnd.value = ymd;
+          }
+          updatePeriodoLabel();
+          refreshKPIs();
+        });
+      });
+    }
+
+    async function refreshKPIs() {
+      updatePeriodoLabel();
+
+      const qs = buildRelQS();
+      const urlResumo = `${API_BASE}/api/atendimentos/resumo${qs}`;
+      const urlMotivos = `${API_BASE}/api/atendimentos/motivos${qs}`;
+      const urlSeries = `${API_BASE}/api/atendimentos/series${qs}`;
+      const urlHora = `${API_BASE}/api/atendimentos/hora_hora${qs}`;
+
+      try {
+        // Resumo
+        const rRes = await fetch(urlResumo);
+        const resumo = rRes.ok ? await rRes.json() : {};
+        const em = Number(resumo.em_atendimento || 0);
+        const conc = Number(resumo.concluidos || 0);
+        const outros = Number(resumo.outros || Math.max(0, (resumo.total || 0) - em - conc));
+        kpiEm.textContent = String(em);
+        kpiConc.textContent = String(conc);
+        kpiTma.textContent = humanMin(resumo.tma_segundos);
+        kpiFRT.textContent = humanSeg(resumo.primeira_resposta_seg);
+
+        // Status pie
+        const ctxStatus = document.getElementById('pieStatus')?.getContext('2d');
+        if (ctxStatus) {
+          if (pieChart) pieChart.destroy();
+          pieChart = new Chart(ctxStatus, {
+            type: 'pie',
+            data: { labels: ['Em atendimento', 'Concluídos', 'Outros'], datasets: [{ data: [em, conc, outros] }] },
+            options: { responsive: true, plugins: { legend: { display: true } } }
+          });
+        }
+
+        // Motivos
+        try {
+          const rMot = await fetch(urlMotivos);
+          const motivos = rMot.ok ? await rMot.json() : [];
+          const labels = Array.isArray(motivos) ? motivos.map(m => m.motivo || m.label || '—') : [];
+          const vals = Array.isArray(motivos) ? motivos.map(m => Number(m.qtd || m.total || 0)) : [];
+          const ctxMot = document.getElementById('pieMotivos')?.getContext('2d');
+          if (ctxMot) {
+            if (chartMotivos) chartMotivos.destroy();
+            chartMotivos = new Chart(ctxMot, { type: 'pie', data: { labels, datasets: [{ data: vals }] } });
+          }
+        } catch { /* silencioso */ }
+
+        // Series (por dia)
+        try {
+          const rSer = await fetch(urlSeries);
+          const series = rSer.ok ? await rSer.json() : [];
+          const labels = Array.isArray(series) ? series.map(s => s.dia || s.data || '—') : [];
+          const totals = Array.isArray(series) ? series.map(s => Number(s.total || s.qtd || 0)) : [];
+          const ctxLine = document.getElementById('lineSeries')?.getContext('2d');
+          if (ctxLine) {
+            if (chartSeries) chartSeries.destroy();
+            chartSeries = new Chart(ctxLine, {
+              type: 'line',
+              data: { labels, datasets: [{ label: 'Atendimentos', data: totals, tension: .2, fill: false }] },
+              options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+          }
+        } catch { /* silencioso */ }
+
+        // Hora a hora
+        try {
+          const rH = await fetch(urlHora);
+          const hora = rH.ok ? await rH.json() : [];
+          const labels = Array.isArray(hora) ? hora.map(h => String(h.hora ?? h.h ?? '—')) : [];
+          const totals = Array.isArray(hora) ? hora.map(h => Number(h.total || h.qtd || 0)) : [];
+          const ctxBar = document.getElementById('barHora')?.getContext('2d');
+          if (ctxBar) {
+            if (chartHora) chartHora.destroy();
+            chartHora = new Chart(ctxBar, {
+              type: 'bar',
+              data: { labels, datasets: [{ label: 'Atendimentos', data: totals }] },
+              options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+          }
+        } catch { /* silencioso */ }
+
+      } catch (e) {
+        // fallback silencioso
+      }
     }
     if (btnRefreshRel) btnRefreshRel.onclick = refreshKPIs;
+    relStart?.addEventListener('change', () => { updatePeriodoLabel(); refreshKPIs(); });
+    relEnd?.addEventListener('change', () => { updatePeriodoLabel(); refreshKPIs(); });
+    bindQuickRanges();
 
     /** ============== Navegação inicial ============== */
     window.addEventListener('load', async () => {
