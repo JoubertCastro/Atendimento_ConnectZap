@@ -1054,7 +1054,7 @@
     const NOTICES_API_CANDIDATES = [
       `${API_BASE}/api/avisos`,
       `${API_BASE}/api/notices`,
-      `${FILA_API}/avisos`
+      `${FILA_API}/api/painel/avisos`
     ];
 
     /** ============== CARTEIRAS / Phone IDs ============== */
@@ -1978,7 +1978,7 @@
         atendimentos: Number(row.atendimentos || row.total || 0),
         inativo: Number(row.cliente_ficou_inativo || 0),
         duvidas: Number(row.duvidas_gerais || 0),
-        segunda_via: Number(row.solicitou_2ª_via_de_boleto || row.solicitou_2a_via_de_boleto || 0),
+        segunda_via: Number(row['solicitou_2ª_via_de_boleto'] || row.solicitou_2a_via_de_boleto || 0),
         recusou: Number(row.recusou_a_proposta || 0),
         negociacao: Number(row.realizou_negociacao || 0)
       };
@@ -2131,10 +2131,10 @@
       const soon = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString();
       const early = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString();
       return [
-        { id: "crit-maint", title: "Manutenção programada no WhatsApp API", body: "Hoje, 12:30–12:50 (horário de Brasília). Envios podem oscilar.\nImpacto: envio/consulta de mensagens.", severity: "crit", pinned: true, starts_at: early, ends_at: soon, created_at: early, tags: ["Infra", "WhatsApp"] },
+        { id: "crit-maint", title: "ATENÇÃO", body: "Os atendimentos não concluidos são encerrados automaticamente, apos a ultima mensagem do cliente atingir 24 horas.", severity: "crit", pinned: true, starts_at: early, ends_at: soon, created_at: early, tags: ["WhatsApp"] },
         { id: "warn-limite", title: "Atenção ao limite de tickets", body: "Conclua/Libere atendimentos antes de pegar novos para manter a fila fluindo.", severity: "warn", pinned: false, created_at: iso, tags: ["Operação"] },
-        { id: "info-dica", title: "Dica rápida", body: "Use o botão ‘Pedir prioridade’ para um cliente quente que retornou pelo mesmo número.", severity: "info", pinned: false, created_at: iso, tags: ["Boas práticas"] },
-        { id: "success-meta", title: "Meta batida na sua carteira 🎯", body: "Parabéns! Você ajudou a concluir 50 atendimentos hoje.", severity: "success", pinned: false, created_at: iso, carteira: agente?.carteira || null, tags: ["Reconhecimento"] }
+        { id: "info-dica", title: "Dica rápida", body: "Use o botão ‘Pedir prioridade’ para buscar um contato que já está na fila.", severity: "info", pinned: false, created_at: iso, tags: ["Operação"] }
+        //{ id: "success-meta", title: "Meta batida na sua carteira 🎯", body: "Parabéns! Você ajudou a concluir 50 atendimentos hoje.", severity: "success", pinned: false, created_at: iso, carteira: agente?.carteira || null, tags: ["Reconhecimento"] }
       ].map(normalizeNotice);
     }
 
