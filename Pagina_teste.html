@@ -559,6 +559,25 @@
       word-break: break-word;
     }
 
+    /* Destaque especial quando prioridade for 0 (CRÍTICO) */
+    .notice.crit {
+      border-left: 8px solid #dc2626 !important;
+      background: color-mix(in srgb, #dc2626 12%, var(--content-bg));
+    }
+
+    .crit-badge {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 6px;
+      font-size: 10px;
+      line-height: 1;
+      font-weight: 800;
+      border-radius: 9999px;
+      background: #dc2626;
+      color: #fff;
+      vertical-align: middle;
+    }
+
     .hero {
       border: 1px solid var(--border);
       border-left: 6px solid #dc2626;
@@ -2087,7 +2106,7 @@
     relEnd?.addEventListener('change', () => { updatePeriodoLabel(); refreshKPIs(); });
     bindQuickRanges();
 
-    /** ============== AVISOS (Painel) — NOVO FLUXO ============== */
+    /** ============== AVISOS (Painel) — NOVO FLUXO (com crítico=0 e ordenação crescente) ============== */
     function noticesKey() { return `cz:notices_read:${agente?.codigo || 'anon'}` }
     function loadNoticesReadSet() { try { const raw = localStorage.getItem(noticesKey()); if (!raw) return new Set(); const arr = JSON.parse(raw); return new Set(Array.isArray(arr) ? arr : []); } catch { return new Set(); } }
     function saveNoticesReadSet() { try { localStorage.setItem(noticesKey(), JSON.stringify(Array.from(noticesReadSet))); } catch { } }
@@ -2133,12 +2152,19 @@
       const t = Math.max(0, Math.min(10, Number(pri) || 0)) / 10; // 0..1
       const hue = 220 * t; // 0 → vermelho, 1 → azul
       const dark = isDarkTheme();
-      // No dark, fundo escuro com leve tinta; no light, fundo claro suave
       const border = dark ? `hsl(${hue} 80% 60%)` : `hsl(${hue} 85% 45%)`;
       const bg = dark
         ? `color-mix(in srgb, hsl(${hue} 90% 45%) 18%, var(--content-bg))`
         : `color-mix(in srgb, hsl(${hue} 90% 50%) 10%, var(--content-bg))`;
       return { border, bg };
+    }
+
+    function sevClass(pri) {
+      const p = Number(pri) || 0;
+      if (p === 0) return 'sev-crit';
+      if (p <= 3) return 'sev-warn';
+      if (p <= 6) return 'sev-info';
+      return 'sev-success';
     }
 
     async function fetchNotices() {
@@ -2158,26 +2184,49 @@
       // Oculta o hero do fluxo antigo (não usado aqui)
       heroWrap.classList.add('hidden');
 
+      // Ordenação crescente por prioridade (0 primeiro); empate: mais antigo primeiro
+      const sorted = [...(list || [])].sort((a, b) => {
+        if ((a.priority ?? 999) !== (b.priority ?? 999)) return (a.priority ?? 999) - (b.priority ?? 999);
+        const da = a.created_at ? +new Date(a.created_at) : 0;
+        const db = b.created_at ? +new Date(b.created_at) : 0;
+        return da - db;
+      });
+
       avisosWrap.innerHTML = "";
-      if (!Array.isArray(list) || !list.length) {
+      if (!sorted.length) {
         avisosWrap.innerHTML = `<div class="notice p-4 text-sm muted">Nenhum aviso para exibir.</div>`;
       } else {
-        for (const n of list) {
+        for (const n of sorted) {
+          const isCrit = Number(n.priority) === 0;
           const el = document.createElement('div');
-          el.className = 'notice';
+          el.className = `notice${isCrit ? ' crit' : ''}`;
           const c = priorityColors(n.priority);
-          el.style.borderLeft = `6px solid ${c.border}`;
+          el.style.borderLeft = isCrit ? '8px solid #dc2626' : `6px solid ${c.border}`;
           el.style.background = c.bg;
+
+          const when = n.created_at ? `${fmtDataBR.format(new Date(n.created_at))} ${fmtHoraBR.format(new Date(n.created_at))}` : '';
           el.innerHTML = `
-            <div class="notice-title">${escapeHtml(n.title)}</div>
+            <div class="notice-head">
+              <div class="notice-left">
+                <div class="sev ${sevClass(n.priority)}"></div>
+                <div class="min-w-0">
+                  <div class="notice-title">${isCrit ? '🚨 ' : ''}${escapeHtml(n.title)}${isCrit ? ' <span class="crit-badge">CRÍTICO</span>' : ''}</div>
+                  <div class="notice-meta">
+                    <span>Prioridade: ${Number.isFinite(n.priority) ? n.priority : '—'}</span>
+                    ${when ? `<span>${when}</span>` : ``}
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="notice-body">${escapeHtml(n.body)}</div>
           `;
           avisosWrap.appendChild(el);
         }
       }
 
-      avisosResumo.textContent = `${list.length} aviso(s)`;
-      avisosCountPill.textContent = String(list.length);
+      const critCount = sorted.filter(n => Number(n.priority) === 0).length;
+      avisosResumo.textContent = `${sorted.length} aviso(s) • ${critCount} crítico(s) • ordenados por prioridade crescente`;
+      avisosCountPill.textContent = String(sorted.length);
     }
 
     async function loadNoticesAndRender() {
