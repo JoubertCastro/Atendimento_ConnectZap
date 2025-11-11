@@ -345,7 +345,6 @@
         color: #fff
       }
 
-      /* Botões de navegação bloqueados (sem login) */
       .mini-sidebar .btn-mini.locked {
         opacity: .55;
         position: relative;
@@ -486,13 +485,12 @@
         background: color-mix(in srgb, var(--ghost-bg) 60%, transparent)
       }
 
-      /* ↓↓↓ gráficos compactos ↓↓↓ */
       .chart-sm {
         height: 160px !important;
         max-height: 160px;
       }
 
-      /* ======= SUPER PAINEL DE AVISOS ======= */
+      /* ======= PAINEL DE AVISOS ======= */
       .notice {
         border: 1px solid var(--border);
         background: var(--content-bg);
@@ -527,11 +525,11 @@
         margin-top: 2px;
       }
 
-      .sev-info {
+      .sev-success {
         background: #3b82f6;
       }
 
-      .sev-success {
+      .sev-info {
         background: #16a34a;
       }
 
@@ -594,7 +592,6 @@
         word-break: break-word;
       }
 
-      /* Destaque especial quando prioridade for 0 (CRÍTICO) */
       .notice.crit {
         border-left: 8px solid #dc2626 !important;
         background: color-mix(in srgb, #dc2626 12%, var(--content-bg));
@@ -653,23 +650,48 @@
   </head>
 
   <body class="h-screen flex with-mini">
+
     <!-- Mini Sidebar -->
     <nav class="mini-sidebar select-none">
-      <button id="tabBtnHome" class="btn-mini active" title="Home" aria-label="Home">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M12 3.172 2.293 12.88a1 1 0 0 0 1.414 1.415L5 13.001V20a1 1 0 0 0 1 1h5v-6h2v6h5a 1 1 0 0 0 1-1v-6.999l1.293 1.294a1 1 0 0 0 1.414-1.415L12 3.172z" />
+      <!-- Home -->
+      <button id="tabBtnHome" class="btn-mini active transition-transform active:scale-95" title="Home" aria-label="Home" aria-current="page">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <!-- telhado -->
+          <path d="M3 10.5L12 3l9 7.5"/>
+          <!-- paredes/porta -->
+          <path d="M5 10.5V21h6v-5h2v5h6V10.5"/>
         </svg>
+        <span class="sr-only">Home</span>
       </button>
-      <button id="tabBtnConversas" class="btn-mini" title="Conversas" aria-label="Conversas" data-requires-login>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a 2 2 0 0 0 2-2V4a 2 2 0 0 0-2-2z" />
+
+      <!-- Conversas -->
+      <button id="tabBtnConversas" class="btn-mini transition-transform active:scale-95" title="Conversas" aria-label="Conversas" data-requires-login>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <!-- balão principal -->
+          <rect x="3" y="5" width="18" height="12" rx="4" ry="4"/>
+          <path d="M7 17v4l4-4"/>
+          <!-- “mensagem” com três pontos -->
+          <circle cx="9" cy="11" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="11" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="15" cy="11" r="1.2" fill="currentColor" stroke="none"/>
         </svg>
+        <span class="sr-only">Conversas</span>
       </button>
-      <button id="tabBtnRelatorio" class="btn-mini" title="Relatório" aria-label="Relatório" data-requires-login>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M11 2a10 10 0 1 0 10 10h-8a2 2 0 0 1-2-2V2zM13 2.05V10h7.95A10.004 10.004 0 0 0 13 2.05z" />
+
+      <!-- Relatório -->
+      <button id="tabBtnRelatorio" class="btn-mini transition-transform active:scale-95" title="Relatório" aria-label="Relatório" data-requires-login>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <!-- linha do eixo -->
+          <path d="M4 19.5h16"/>
+          <!-- barras -->
+          <path d="M7 19.5V10"/>
+          <path d="M12 19.5V5"/>
+          <path d="M17 19.5v-8"/>
         </svg>
+        <span class="sr-only">Relatório</span>
       </button>
     </nav>
 
