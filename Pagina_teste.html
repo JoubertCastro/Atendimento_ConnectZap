@@ -463,7 +463,8 @@
       background: var(--content-bg);
       border-radius: 14px;
       padding: 12px;
-      transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+      transition: background .15s ease, border-color .15s ease, box-shadow .15s ease, color .15s ease;
+      color: var(--text);
     }
 
     .notice.unread {
@@ -510,6 +511,7 @@
     .notice-title {
       font-weight: 600;
       line-height: 1.2;
+      color: var(--text);
     }
 
     .notice-meta {
@@ -524,9 +526,10 @@
     .notice-tags .tag {
       font-size: 11px;
       border: 1px solid var(--border);
-      background: var(--ghost-bg);
+      background: color-mix(in srgb, var(--ghost-bg) 85%, transparent);
       border-radius: 9999px;
       padding: 2px 8px;
+      color: var(--text);
     }
 
     .notice-actions {
@@ -541,6 +544,7 @@
       padding: 4px 8px;
       border-radius: 8px;
       background: var(--ghost-bg);
+      color: var(--text);
     }
 
     .notice-actions button:hover {
@@ -578,6 +582,7 @@
       padding: 4px 8px;
       background: var(--ghost-bg);
       font-size: 12px;
+      color: var(--text);
     }
 
     .hero .close:hover {
@@ -588,6 +593,7 @@
       outline: 2px solid var(--primary);
       outline-offset: -2px;
       background: color-mix(in srgb, var(--primary) 10%, var(--ghost-bg));
+      color: var(--text);
     }
   </style>
 </head>
@@ -2097,14 +2103,42 @@
       };
     }
 
+    // Utilitários de cor para detectar tema escuro
+    function parseCssColorToRgb(c) {
+      if (!c) return [255, 255, 255];
+      c = c.trim();
+      if (c.startsWith('#')) {
+        const hex = c.replace('#', '');
+        const h = hex.length === 3 ? hex.split('').map(x => x + x).join('') : hex;
+        const r = parseInt(h.slice(0, 2), 16);
+        const g = parseInt(h.slice(2, 4), 16);
+        const b = parseInt(h.slice(4, 6), 16);
+        return [r, g, b];
+      }
+      const m = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+      if (m) return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
+      return [255, 255, 255];
+    }
+    function relLum([r, g, b]) {
+      const srgb = [r, g, b].map(v => v / 255).map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+      return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+    }
+    function isDarkTheme() {
+      const bg = getCss('--content-bg') || getCss('--bg') || '#ffffff';
+      return relLum(parseCssColorToRgb(bg)) < 0.45;
+    }
+
     // 0 (quente/vermelho) → 10 (frio/azul)
     function priorityColors(pri) {
       const t = Math.max(0, Math.min(10, Number(pri) || 0)) / 10; // 0..1
-      const hue = 220 * t; // 0 → 0 (red), 1 → 220 (blue)
-      return {
-        border: `hsl(${hue} 85% 50%)`,
-        bg: `hsl(${hue} 85% 96%)`
-      };
+      const hue = 220 * t; // 0 → vermelho, 1 → azul
+      const dark = isDarkTheme();
+      // No dark, fundo escuro com leve tinta; no light, fundo claro suave
+      const border = dark ? `hsl(${hue} 80% 60%)` : `hsl(${hue} 85% 45%)`;
+      const bg = dark
+        ? `color-mix(in srgb, hsl(${hue} 90% 45%) 18%, var(--content-bg))`
+        : `color-mix(in srgb, hsl(${hue} 90% 50%) 10%, var(--content-bg))`;
+      return { border, bg };
     }
 
     async function fetchNotices() {
@@ -2134,7 +2168,6 @@
           const c = priorityColors(n.priority);
           el.style.borderLeft = `6px solid ${c.border}`;
           el.style.background = c.bg;
-
           el.innerHTML = `
             <div class="notice-title">${escapeHtml(n.title)}</div>
             <div class="notice-body">${escapeHtml(n.body)}</div>
