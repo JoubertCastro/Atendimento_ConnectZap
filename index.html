@@ -715,6 +715,7 @@
             </div>
 
             <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <!-- STATUS / ONLINE -->
               <div class="p-4 border rounded-lg" style="border-color:var(--border)">
                 <div class="text-sm muted mb-1">Status</div>
                 <div id="homeStatus" class="font-medium"><span class="dot offline"></span>Offline</div>
@@ -731,12 +732,25 @@
                   </button>
                   <button id="btnLogout" class="btn btn-primary px-3 py-2">Login</button>
                 </div>
+
+                <!-- PENDENTES NA FILA (Home / Status) -->
+                <div class="mt-3">
+                  <div class="text-sm muted mb-1">Pendentes na sua fila</div>
+                  <div class="flex items-center gap-2">
+                    <span id="homePendentesBadge" class="badge" style="background:#64748b">—</span>
+                    <span class="text-xs muted">atualiza a cada 60s</span>
+                  </div>
+                </div>
+
                 <div id="homeAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
               </div>
 
+              <!-- ATALHOS -->
               <div class="p-4 border rounded-lg" style="border-color:var(--border)">
-                <div class="text-sm muted mb-1">Atalhos</div>
-                <div class="flex flex-wrap gap-2">
+                <div class="flex items-center justify-between">
+                  <div class="text-sm muted mb-1">Atalhos</div>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-1">
                   <button id="goToConversas1" class="btn btn-primary px-4 py-2">Ir para Conversas</button>
                   <button id="goToRelatorio1" class="btn btn-neutral px-4 py-2">Ver Relatório</button>
                 </div>
@@ -873,7 +887,7 @@
         <div id="priorityModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
           <div class="absolute inset-0 bg-black/60" onclick="fecharPriorityModal()" aria-hidden="true"></div>
           <div class="relative mx-auto mt-24 w-[95%] max-w-md rounded-xl shadow-xl border"
-            style="background: var(--content-bg); border-color:var(--border)">
+            style="background: var(--content-bg); border-color: var(--border)">
             <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
               <h3 class="font-semibold">Pedir prioridade</h3>
               <button class="muted" onclick="fecharPriorityModal()" aria-label="Fechar">✖</button>
@@ -1419,6 +1433,83 @@
         if (feedbackTimer) { clearTimeout(feedbackTimer); feedbackTimer = null; }
       }
 
+      /** ============== PENDENTES NA FILA (Home) — 60s ============== */
+      const PENDENTES_REFRESH_MS = 60000;
+      let pendentesInterval = null;
+
+      function PENDENTES_API_CANDIDATES() {
+        const cart = agente?.carteira || '';
+        const params = cart ? `?carteira=${encodeURIComponent(cart)}` : '';
+        return [
+          `${FILA_API}/fila/pendentes${params}`,
+          `${FILA_API}/fila/pendentes_por_carteira${params}`
+        ];
+      }
+      function extractPendentesCount(payload) {
+        if (payload == null) return null;
+        if (typeof payload === 'number') return payload;
+        if (Array.isArray(payload)) {
+          const cart = agente?.carteira;
+          let row = null;
+          if (cart) {
+            row = payload.find(r =>
+              (r && (
+                (r.carteira && String(r.carteira) === String(cart)) ||
+                (r.fila && String(r.fila) === String(cart)) ||
+                (r.nome && String(r.nome) === String(cart))
+              )));
+          }
+          if (!row && payload.length === 1) row = payload[0];
+          if (row) {
+            for (const k of ['pendentes','qtd','qtde','total','count','qtd_pendentes']) {
+              const v = Number(row[k]); if (!Number.isNaN(v)) return v;
+            }
+          }
+          const nums = payload.map(x => Number(x)).filter(v => !Number.isNaN(v));
+          if (nums.length) return nums.reduce((a,b)=>a+b,0);
+          return null;
+        }
+        if (typeof payload === 'object') {
+          for (const k of ['pendentes','qtd','qtde','total','count','qtd_pendentes']) {
+            const v = Number(payload[k]); if (!Number.isNaN(v) && v >= 0) return v;
+          }
+          const cart = agente?.carteira;
+          if (cart && payload[cart] != null) {
+            const v = Number(payload[cart]); if (!Number.isNaN(v)) return v;
+          }
+        }
+        return null;
+      }
+      async function fetchPendentesFilaOnce() {
+        if (!agente?.carteira) return null;
+        const els = [document.getElementById('homePendentesBadge'), document.getElementById('homePendentesBadge2')].filter(Boolean);
+        const setLoading = () => els.forEach(e => e && (e.textContent = '…'));
+        const setVal = (n) => els.forEach(e => e && (e.textContent = String(n)));
+        try {
+          setLoading();
+          const urls = PENDENTES_API_CANDIDATES();
+          for (const url of urls) {
+            try {
+              const r = await fetch(url);
+              if (!r.ok) continue;
+              const j = await r.json();
+              const n = extractPendentesCount(j);
+              if (n != null) { setVal(n); return n; }
+            } catch (_) {}
+          }
+          setVal('—');
+          return null;
+        } catch {
+          setVal('—');
+          return null;
+        }
+      }
+      function initPendentesFila() {
+        if (pendentesInterval) clearInterval(pendentesInterval);
+        fetchPendentesFilaOnce();
+        pendentesInterval = setInterval(fetchPendentesFilaOnce, PENDENTES_REFRESH_MS);
+      }
+
       /** ============== BOOT ============== */
       function getCss(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() }
       async function boot() {
@@ -1440,7 +1531,7 @@
         if (!agente.codigo) {
           elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false);
           relAgentePill.textContent = '—';
-          await loadNoticesAndRender(); 
+          await loadNoticesAndRender();
           return;
         }
 
@@ -1477,6 +1568,9 @@
 
           // AVISOS
           await loadNoticesAndRender();
+
+          // PENDENTES NA FILA (Home) — inicia e mantém em 60s
+          initPendentesFila();
 
           wireComposer();
         } catch (e) {
@@ -1977,6 +2071,7 @@
         } catch (_) { }
         if (pollingContatos) clearInterval(pollingContatos);
         if (pollingMensagens) clearInterval(pollingMensagens);
+        if (pendentesInterval) clearInterval(pendentesInterval);
 
         // Modal de confirmação de logout
         showModalFeedback('Agente deslogado com sucesso.', 'Logout', 900);
