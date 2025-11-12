@@ -1445,9 +1445,9 @@
         const cart = agente?.carteira || '';
         const params = cart ? `?carteira=${encodeURIComponent(cart)}` : '';
         return [
-          `${CONV_API}/api/supervisao/pendentes_por_fila${params}`,
-          `${CONV_API}/api/supervisao/pendentes-por-fila${params}`,
-          `${CONV_API}/api/supervisao/pendentes${params}`,
+          `${FILA_API}/api/supervisao/pendentes_por_fila${params}`,
+          `${FILA_API}/api/supervisao/pendentes-por-fila${params}`,
+          `${FILA_API}/api/supervisao/pendentes${params}`,
           `${FILA_API}/fila/pendentes${params}`
         ];
       }
