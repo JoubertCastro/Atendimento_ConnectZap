@@ -657,9 +657,7 @@
       <button id="tabBtnHome" class="btn-mini active transition-transform active:scale-95" title="Home" aria-label="Home" aria-current="page">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <!-- telhado -->
           <path d="M3 10.5L12 3l9 7.5"/>
-          <!-- paredes/porta -->
           <path d="M5 10.5V21h6v-5h2v5h6V10.5"/>
         </svg>
         <span class="sr-only">Home</span>
@@ -669,10 +667,8 @@
       <button id="tabBtnConversas" class="btn-mini transition-transform active:scale-95" title="Conversas" aria-label="Conversas" data-requires-login>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <!-- balão principal -->
           <rect x="3" y="5" width="18" height="12" rx="4" ry="4"/>
           <path d="M7 17v4l4-4"/>
-          <!-- “mensagem” com três pontos -->
           <circle cx="9" cy="11" r="1.2" fill="currentColor" stroke="none"/>
           <circle cx="12" cy="11" r="1.2" fill="currentColor" stroke="none"/>
           <circle cx="15" cy="11" r="1.2" fill="currentColor" stroke="none"/>
@@ -684,9 +680,7 @@
       <button id="tabBtnRelatorio" class="btn-mini transition-transform active:scale-95" title="Relatório" aria-label="Relatório" data-requires-login>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <!-- linha do eixo -->
           <path d="M4 19.5h16"/>
-          <!-- barras -->
           <path d="M7 19.5V10"/>
           <path d="M12 19.5V5"/>
           <path d="M17 19.5v-8"/>
@@ -706,7 +700,6 @@
             <p class="muted mt-2">Olá <span id="homeAgenteNome" class="font-semibold">—</span>!</p>
             <p class="muted">Carteira: <span id="homeAgenteCarteira" class="font-semibold">—</span></p>
 
-            <!-- HERO Aviso crítico/pinado (mantido, mas não usado pelo novo endpoint) -->
             <div id="homeAvisoHero" class="mt-4 hidden">
               <div class="hero flex items-start justify-between gap-3">
                 <div class="min-w-0">
@@ -722,6 +715,7 @@
             </div>
 
             <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <!-- STATUS / ONLINE -->
               <div class="p-4 border rounded-lg" style="border-color:var(--border)">
                 <div class="text-sm muted mb-1">Status</div>
                 <div id="homeStatus" class="font-medium"><span class="dot offline"></span>Offline</div>
@@ -736,22 +730,38 @@
                     </svg>
                     <span id="toggleLabel">Ficar online</span>
                   </button>
-                  <!-- Agora o botão alterna entre Login/Logout visualmente fortes -->
                   <button id="btnLogout" class="btn btn-primary px-3 py-2">Login</button>
                 </div>
+
+                <!-- PENDENTES NA FILA (Home / Status) -->
+                <div class="mt-3">
+                  <div class="text-sm muted mb-1">Pendentes na sua fila</div>
+                  <div class="flex items-center gap-2">
+                    <span id="homePendentesBadge" class="badge" style="background:#64748b">—</span>
+                    <span class="text-xs muted">atualiza a cada 60s</span>
+                  </div>
+                </div>
+
                 <div id="homeAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
               </div>
 
+              <!-- ATALHOS -->
               <div class="p-4 border rounded-lg" style="border-color:var(--border)">
-                <div class="text-sm muted mb-1">Atalhos</div>
-                <div class="flex flex-wrap gap-2">
+                <div class="flex items-center justify-between">
+                  <div class="text-sm muted mb-1">Atalhos</div>
+                  <div class="text-xs muted flex items-center gap-2">
+                    Fila:
+                    <span id="homePendentesBadge2" class="badge" style="background:#64748b">—</span>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-1">
                   <button id="goToConversas1" class="btn btn-primary px-4 py-2">Ir para Conversas</button>
                   <button id="goToRelatorio1" class="btn btn-neutral px-4 py-2">Ver Relatório</button>
                 </div>
               </div>
             </div>
 
-            <!-- SUPER PAINEL DE AVISOS -->
+            <!-- PAINEL DE AVISOS -->
             <div class="mt-6">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
@@ -759,7 +769,6 @@
                   <span id="avisosCountPill" class="pill">—</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <!-- Filtros mantidos visualmente -->
                   <button class="btn btn-neutral px-2 py-1 text-xs filter-btn active"
                     data-avisos-filter="all">Todos</button>
                   <button class="btn btn-neutral px-2 py-1 text-xs filter-btn" data-avisos-filter="unread"
@@ -882,7 +891,7 @@
         <div id="priorityModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
           <div class="absolute inset-0 bg-black/60" onclick="fecharPriorityModal()" aria-hidden="true"></div>
           <div class="relative mx-auto mt-24 w-[95%] max-w-md rounded-xl shadow-xl border"
-            style="background: var(--content-bg); border-color:var(--border)">
+            style="background: var(--content-bg); border-color: var(--border)">
             <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
               <h3 class="font-semibold">Pedir prioridade</h3>
               <button class="muted" onclick="fecharPriorityModal()" aria-label="Fechar">✖</button>
@@ -1151,7 +1160,6 @@
       const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
       const API_BASE = (window.API_BASE || "https://dashboard-production-4c05.up.railway.app").replace(/\/+$/, '');
       const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
-      // Novo endpoint de avisos (principal)
       const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
 
       /** ============== CARTEIRAS / Phone IDs ============== */
@@ -1429,6 +1437,85 @@
         if (feedbackTimer) { clearTimeout(feedbackTimer); feedbackTimer = null; }
       }
 
+      /** ============== PENDENTES NA FILA (Home) — 60s ============== */
+      const PENDENTES_REFRESH_MS = 60000;
+      let pendentesInterval = null;
+
+      function PENDENTES_API_CANDIDATES() {
+        const cart = agente?.carteira || '';
+        const params = cart ? `?carteira=${encodeURIComponent(cart)}` : '';
+        return [
+          `${CONV_API}/api/supervisao/pendentes_por_fila${params}`,
+          `${CONV_API}/api/supervisao/pendentes-por-fila${params}`,
+          `${CONV_API}/api/supervisao/pendentes${params}`,
+          `${FILA_API}/fila/pendentes${params}`
+        ];
+      }
+      function extractPendentesCount(payload) {
+        if (payload == null) return null;
+        if (typeof payload === 'number') return payload;
+        if (Array.isArray(payload)) {
+          const cart = agente?.carteira;
+          let row = null;
+          if (cart) {
+            row = payload.find(r =>
+              (r && (
+                (r.carteira && String(r.carteira) === String(cart)) ||
+                (r.fila && String(r.fila) === String(cart)) ||
+                (r.nome && String(r.nome) === String(cart))
+              )));
+          }
+          if (!row && payload.length === 1) row = payload[0];
+          if (row) {
+            for (const k of ['pendentes','qtd','qtde','total','count','qtd_pendentes']) {
+              const v = Number(row[k]); if (!Number.isNaN(v)) return v;
+            }
+          }
+          const nums = payload.map(x => Number(x)).filter(v => !Number.isNaN(v));
+          if (nums.length) return nums.reduce((a,b)=>a+b,0);
+          return null;
+        }
+        if (typeof payload === 'object') {
+          for (const k of ['pendentes','qtd','qtde','total','count','qtd_pendentes']) {
+            const v = Number(payload[k]); if (!Number.isNaN(v) && v >= 0) return v;
+          }
+          const cart = agente?.carteira;
+          if (cart && payload[cart] != null) {
+            const v = Number(payload[cart]); if (!Number.isNaN(v)) return v;
+          }
+        }
+        return null;
+      }
+      async function fetchPendentesFilaOnce() {
+        if (!agente?.carteira) return null;
+        const els = [document.getElementById('homePendentesBadge'), document.getElementById('homePendentesBadge2')].filter(Boolean);
+        const setLoading = () => els.forEach(e => e && (e.textContent = '…'));
+        const setVal = (n) => els.forEach(e => e && (e.textContent = String(n)));
+        try {
+          setLoading();
+          const urls = PENDENTES_API_CANDIDATES();
+          for (const url of urls) {
+            try {
+              const r = await fetch(url);
+              if (!r.ok) continue;
+              const j = await r.json();
+              const n = extractPendentesCount(j);
+              if (n != null) { setVal(n); return n; }
+            } catch (_) {}
+          }
+          setVal('—');
+          return null;
+        } catch {
+          setVal('—');
+          return null;
+        }
+      }
+      function initPendentesFila() {
+        if (pendentesInterval) clearInterval(pendentesInterval);
+        fetchPendentesFilaOnce();
+        pendentesInterval = setInterval(fetchPendentesFilaOnce, PENDENTES_REFRESH_MS);
+      }
+
       /** ============== BOOT ============== */
       function getCss(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() }
       async function boot() {
@@ -1439,19 +1526,18 @@
         agente.origem = localStorage.getItem("agente_origem") || qsParam("origem") || 'web';
 
         updateAuthButton();
-        toggleLoginLocks(); // aplica lock visual nas abas
+        toggleLoginLocks();
 
         // datas padrão (hoje)
         const today = new Date(); const ymd = fmtYMD(today);
         relStart.value = ymd; relEnd.value = ymd;
 
-        // (mantém) Avisos: carregar lidos (não usado no novo fluxo, mas inofensivo)
         noticesReadSet = loadNoticesReadSet();
 
         if (!agente.codigo) {
           elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false);
           relAgentePill.textContent = '—';
-          await loadNoticesAndRender(); // mostra avisos gerais
+          await loadNoticesAndRender();
           return;
         }
 
@@ -1488,6 +1574,9 @@
 
           // AVISOS
           await loadNoticesAndRender();
+
+          // PENDENTES NA FILA (Home) — inicia e mantém em 60s
+          initPendentesFila();
 
           wireComposer();
         } catch (e) {
@@ -1988,6 +2077,7 @@
         } catch (_) { }
         if (pollingContatos) clearInterval(pollingContatos);
         if (pollingMensagens) clearInterval(pollingMensagens);
+        if (pendentesInterval) clearInterval(pendentesInterval);
 
         // Modal de confirmação de logout
         showModalFeedback('Agente deslogado com sucesso.', 'Logout', 900);
@@ -2102,7 +2192,7 @@
               if (chartMotivos) chartMotivos.destroy();
               chartMotivos = new Chart(ctxMot, { type: 'pie', data: { labels, datasets: [{ data: vals }] }, options: { plugins: { legend: { labels: { color: chartTextColor() } } } } });
             }
-          } catch { /* silencioso */ }
+          } catch { }
 
           // Extrato (acordeão)
           await refreshExtrato();
@@ -2275,7 +2365,6 @@
           return relLum(parseCssColorToRgb(bg)) < 0.45;
         }
 
-        // 0 (quente/vermelho) → 10 (frio/azul)
         function priorityColors(pri) {
           const t = Math.max(0, Math.min(10, Number(pri) || 0)) / 10;
           const hue = 220 * t;
@@ -2297,7 +2386,7 @@
 
         async function fetchNotices() {
           try {
-            const url = NOTICES_API(); // inclui carteira quando houver
+            const url = NOTICES_API(); 
             const r = await fetch(url);
             if (!r.ok) throw new Error('HTTP ' + r.status);
             const arr = await r.json();
@@ -2351,7 +2440,7 @@
           }
 
           const critCount = sorted.filter(n => Number(n.priority) === 0).length;
-          avisosResumo.textContent = `${sorted.length} aviso(s) • ${critCount} crítico(s) • ordenados por prioridade crescente`;
+          avisosResumo.textContent = `${sorted.length} aviso(s) • ${critCount} crítico(s) • atenção aos recados da supervisão`;
           avisosCountPill.textContent = String(sorted.length);
         }
 
@@ -2381,8 +2470,6 @@
           toggleLoginLocks();
         });
     </script>
-
-    <!-- Presets + import/export (mantidos) -->
     <script>
         const presets = {
           corporate: { primary: "#2563eb", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", outG1: "#e0f2fe", outG2: "#bfdbfe", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6" },
