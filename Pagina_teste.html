@@ -1123,7 +1123,7 @@
           <label class="block text-sm muted">Informe seu código de agente</label>
           <input id="loginCodigoAgente" inputmode="numeric" pattern="[0-9]*" class="w-full p-2 border rounded-md"
             placeholder="Ex: 101" />
-          <p class="text-xs muted">Usaremos este código para carregar seu nome, carteira e permissões.</p>
+          <p class="text-xs muted">Seja bem-vindo(a) ao ConnectZap.</p>
           <div id="loginErro" class="text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
         </div>
         <div class="p-4 border-t flex items-center justify-end gap-2" style="border-color:var(--border)">
@@ -1159,7 +1159,7 @@
       const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
 
       /** ============== CARTEIRAS / Phone IDs ============== */
-      const phoneIdMap = { "828473960349364": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
+      const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
       const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
 
       /** ============== ESTADO ============== */
@@ -2332,7 +2332,7 @@
       relEnd?.addEventListener('change', () => { updatePeriodoLabel(); refreshKPIs(); });
       bindQuickRanges();
 
-      /** ============== AVISOS (Painel) — NOVO FLUXO ============== */
+      /** ============== AVISOS (Painel) ============== */
       function noticesKey() { return `cz:notices_read:${agente?.codigo || 'anon'}` }
       function loadNoticesReadSet() { try { const raw = localStorage.getItem(noticesKey()); if (!raw) return new Set(); const arr = JSON.parse(raw); return new Set(Array.isArray(arr) ? arr : []); } catch { return new Set(); } }
       function saveNoticesReadSet() { try { localStorage.setItem(noticesKey(), JSON.stringify(Array.from(noticesReadSet))); } catch { }}
@@ -2468,7 +2468,7 @@
           });
         });
 
-        /** ============== Navegação inicial (AJUSTADO p/ login) ============== */
+        /** ============== Navegação inicial ============== */
         window.addEventListener('load', async () => {
           const saved = loadTheme(); applyTheme(saved || defaultTheme());
           toggleLoginLocks();
