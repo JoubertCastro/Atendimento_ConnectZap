@@ -690,22 +690,6 @@
       </svg>
       <span class="sr-only">Relatório</span>
     </button>
-
-    <!-- Envio Individual (novo) -->
-    <button id="tabBtnEnvioIndividual"
-      class="btn-mini transition-transform active:scale-95 hidden"
-      title="Envio individual"
-      aria-label="Envio individual"
-      data-requires-login>
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" />
-        <path d="M4 20a8 8 0 0 1 16 0" />
-        <path d="M15 5h5v5" />
-        <path d="M15 10 20 5" />
-      </svg>
-      <span class="sr-only">Envio individual</span>
-    </button>
   </nav>
 
   <!-- Tabs Wrapper -->
@@ -855,6 +839,10 @@
             <div id="subInfo" class="text-sm muted truncate"></div>
           </div>
           <div class="flex items-center gap-2">
+            <!-- Botão Ligação caiu (envio individual) -->
+            <button id="btnLigacaoCaiu"
+              class="btn btn-neutral px-3 py-2 text-sm disabled:opacity-50 hidden">Ligação caiu</button>
+
             <button id="btnLiberar" class="btn btn-neutral px-3 py-2 text-sm disabled:opacity-50"
               disabled>Liberar</button>
             <div class="relative">
@@ -932,17 +920,6 @@
               <span id="priorityBtnLabel">Buscar e solicitar</span>
             </button>
           </div>
-        </div>
-      </div>
-
-      <!-- Modal envio individual (embed) -->
-      <div id="envioIndividualModal" class="modal" aria-modal="true" role="dialog">
-        <div class="modal-inner" style="width:min(1200px,95%);height:min(90vh,95%);padding:0;display:flex;flex-direction:column;overflow:hidden">
-          <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color:var(--border)">
-            <div class="font-semibold">Envio individual</div>
-            <button id="fecharEnvioIndividual" class="btn btn-neutral px-3 py-1 text-sm">Fechar</button>
-          </div>
-          <iframe id="envioIndividualFrame" title="Envio individual" style="flex:1;border:0;border-top:1px solid var(--border);background:var(--content-bg)"></iframe>
         </div>
       </div>
 
@@ -1187,9 +1164,11 @@
     const API_BASE = (window.API_BASE || "https://dashboard-production-4c05.up.railway.app").replace(/\/+$/, '');
     const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
     const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
+    // Endpoint fixo da "ligação caiu" (ajuste aqui se precisar)
+    const LIGACAO_CAIU_API = (window.LIGACAO_CAIU_API || `${API_BASE}/api/envios/ligacao_caiu`).replace(/\/+$/, '');
 
     /** ============== CARTEIRAS / Phone IDs ============== */
-    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
+    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
     const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
 
     /** ============== ESTADO ============== */
@@ -1299,6 +1278,7 @@
     const digitando = document.getElementById("digitando");
     const badgeAtivos = document.getElementById("badgeAtivos");
     const badgeLimite = document.getElementById("badgeLimite");
+    const btnLigacaoCaiu = document.getElementById("btnLigacaoCaiu");
 
     // Botões Home
     const btnToggleOnline = document.getElementById("btnToggleOnline");
@@ -1308,13 +1288,9 @@
     const tabBtnHome = document.getElementById('tabBtnHome');
     const tabBtnConversas = document.getElementById('tabBtnConversas');
     const tabBtnRelatorio = document.getElementById('tabBtnRelatorio');
-    const tabBtnEnvioIndividual = document.getElementById('tabBtnEnvioIndividual');
     const tabHome = document.getElementById('tabHome');
     const tabConversas = document.getElementById('tabConversas');
     const tabRelatorio = document.getElementById('tabRelatorio');
-    const envioIndividualModal = document.getElementById('envioIndividualModal');
-    const envioIndividualFrame = document.getElementById('envioIndividualFrame');
-    const fecharEnvioIndividualBtn = document.getElementById('fecharEnvioIndividual');
     document.getElementById('goToConversas1').onclick = () => switchTab('conversas');
     document.getElementById('goToRelatorio1').onclick = () => switchTab('relatorio');
 
@@ -1576,10 +1552,10 @@
       noticesReadSet = loadNoticesReadSet();
 
       if (!agente.codigo) {
+        agente.permite_envio_individual = false;
         elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false);
         relAgentePill.textContent = '—';
-        agente.permite_envio_individual = false;
-        updateEnvioIndividualButton();
+        updateLigacaoCaiuVisibility();
         await loadNoticesAndRender();
         return;
       }
@@ -1589,7 +1565,7 @@
         if (!j.ok) throw new Error(j.erro || "Agente não encontrado");
         agente.nome = j.agente?.nome || localStorage.getItem("agente_nome") || `Agente ${agente.codigo}`;
         agente.carteira = j.agente?.carteira || localStorage.getItem("agente_carteira") || 'ConnectZap';
-        agente.permite_envio_individual = !!(j.agente && j.agente.permite_envio_individual);
+        agente.permite_envio_individual = !!j.agente?.permite_envio_individual;
         localStorage.setItem("agente_nome", agente.nome);
         localStorage.setItem("agente_carteira", agente.carteira);
 
@@ -1598,8 +1574,6 @@
         elHomeNome.textContent = agente.nome;
         elHomeCart.textContent = agente.carteira;
         relAgentePill.textContent = `${agente.nome} (#${agente.codigo})`;
-
-        updateEnvioIndividualButton();
 
         loadUnread();
         await verificarOnline();
@@ -1625,11 +1599,10 @@
         initPendentesFila();
 
         wireComposer();
+        updateLigacaoCaiuVisibility();
       } catch (e) {
         elHomeAviso.classList.remove("hidden");
         elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
-        agente.permite_envio_individual = false;
-        updateEnvioIndividualButton();
         await loadNoticesAndRender();
       }
     }
@@ -1651,56 +1624,14 @@
       }
     }
 
-    // Atualiza visibilidade do botão de envio individual no sidebar
-    function updateEnvioIndividualButton() {
-      const btn = tabBtnEnvioIndividual;
-      if (!btn) return;
-      if (agente.permite_envio_individual) {
-        btn.classList.remove('hidden');
-            } else {
-        btn.classList.add('hidden');
-      }
-    }
-
-    // Modal para o embed de envio individual
-    function abrirEnvioIndividualInterno() {
-      if (!envioIndividualModal || !envioIndividualFrame) return;
-      if (!envioIndividualFrame.getAttribute('src')) {
-        envioIndividualFrame.src = 'envios_em_massa.html?tab=envio_individual';
-      }
-      envioIndividualModal.style.display = 'flex';
-      isModalOpen = true;
-    }
-    function fecharEnvioIndividualInterno() {
-      if (!envioIndividualModal) return;
-      envioIndividualModal.style.display = 'none';
-      isModalOpen = false;
-    }
-    if (envioIndividualModal) {
-      envioIndividualModal.addEventListener('click', (e) => {
-        if (e.target === envioIndividualModal) fecharEnvioIndividualInterno();
-      });
-    }
-    if (fecharEnvioIndividualBtn) fecharEnvioIndividualBtn.onclick = fecharEnvioIndividualInterno;
-    document.addEventListener('keydown', (e) => {
-      const isOpen = envioIndividualModal && envioIndividualModal.style.display === 'flex';
-      if (e.key === 'Escape' && isOpen) fecharEnvioIndividualInterno();
-    });
-
     // Trava visual nas abas que exigem login
     function toggleLoginLocks() {
       const locked = !isLogged();
-      [tabBtnConversas, tabBtnRelatorio, tabBtnEnvioIndividual].forEach(btn => {
+      [tabBtnConversas, tabBtnRelatorio].forEach(btn => {
         if (!btn) return;
         if (locked) btn.classList.add('locked'); else btn.classList.remove('locked');
         btn.setAttribute('aria-disabled', locked ? 'true' : 'false');
-        if (locked) {
-          btn.title = 'Faça login para acessar';
-        } else {
-          if (btn === tabBtnConversas) btn.title = 'Conversas';
-          else if (btn === tabBtnRelatorio) btn.title = 'Relatório';
-          else if (btn === tabBtnEnvioIndividual) btn.title = 'Envio individual';
-        }
+        btn.title = locked ? 'Faça login para acessar' : (btn === tabBtnConversas ? 'Conversas' : 'Relatório');
       });
     }
 
@@ -1721,22 +1652,6 @@
     tabBtnHome.onclick = () => switchTab('home');
     tabBtnConversas.onclick = () => switchTab('conversas');
     tabBtnRelatorio.onclick = () => switchTab('relatorio');
-
-    // Clique no botão de Envio Individual (sidebar)
-    if (tabBtnEnvioIndividual) {
-      tabBtnEnvioIndividual.onclick = () => {
-        if (!isLogged()) {
-          abrirModalLogin();
-          showModalFeedback('Faça login para acessar o envio individual.', 'Acesso restrito', 1400);
-          return;
-        }
-        if (!agente.permite_envio_individual) {
-          showModalFeedback('Você não possui permissão para usar o envio individual.', 'Recurso restrito', 1600);
-          return;
-        }
-        abrirEnvioIndividualInterno();
-      };
-    }
 
     /** ============== ONLINE/OFFLINE, LIMITES ============== */
     async function verificarOnline() {
@@ -1768,6 +1683,7 @@
           btnToggleOnline.classList.remove("btn-neutral");
         }
       }
+      updateLigacaoCaiuVisibility();
     }
     async function refreshOrdemCarteira() {
       if (!agente.carteira) return;
@@ -1815,6 +1731,18 @@
       else { elMsgLimite.classList.add("hidden"); elMsgLimite.textContent = "" }
       btnPegarProxima.disabled = !agente.online || atingiu;
       btnPrioridade.disabled = !agente.online || atingiu;
+    }
+
+    // Controle de visibilidade do botão Ligação caiu
+    function updateLigacaoCaiuVisibility() {
+      if (!btnLigacaoCaiu) return;
+      if (agente?.permite_envio_individual && selecionado) {
+        btnLigacaoCaiu.classList.remove('hidden');
+        btnLigacaoCaiu.disabled = false;
+      } else {
+        btnLigacaoCaiu.classList.add('hidden');
+        btnLigacaoCaiu.disabled = true;
+      }
     }
 
     // Toggle online
@@ -1965,6 +1893,7 @@
       await carregarMensagens(false);
       startMensagensPoll();
       wireComposer();
+      updateLigacaoCaiuVisibility();
     }
     function startMensagensPoll() { schedulePolls() }
 
@@ -2128,6 +2057,48 @@
       finally { userTyping = false; updateEnviarState(); }
     }
 
+    // Envio da mensagem "Ligação caiu" (envio individual)
+    async function enviarLigacaoCaiu() {
+      if (!selecionado) {
+        alert("Selecione um ticket antes de enviar a mensagem de ligação caída.");
+        return;
+      }
+      if (!agente?.permite_envio_individual) {
+        alert("Seu usuário não está habilitado para envio individual.");
+        return;
+      }
+      const originalLabel = btnLigacaoCaiu.textContent;
+      btnLigacaoCaiu.disabled = true;
+      btnLigacaoCaiu.textContent = 'Enviando…';
+      try {
+        const payload = {
+          remetente: selecionado.remetente,
+          phone_id: selecionado.phone_id,
+          codigo_do_agente: parseInt(agente.codigo || '0', 10),
+          carteira: agente.carteira
+        };
+        const r = await fetch(LIGACAO_CAIU_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || data.ok === false) {
+          const msg = data.erro || data.message || 'Não foi possível enviar a mensagem de ligação caída.';
+          alert(msg);
+        } else {
+          showModalFeedback('Mensagem de chamada perdida enviada pelo WhatsApp.', 'Envio individual', 1800);
+          try { await carregarMensagens(true); } catch (_) { }
+        }
+      } catch (e) {
+        alert('Erro ao acionar o envio da mensagem de ligação caída.');
+      } finally {
+        btnLigacaoCaiu.disabled = false;
+        btnLigacaoCaiu.textContent = originalLabel;
+      }
+    }
+    if (btnLigacaoCaiu) btnLigacaoCaiu.addEventListener('click', enviarLigacaoCaiu);
+
     // PDF upload
     async function enviarPDF(event) {
       const file = event.target.files[0]; if (!file) return;
@@ -2160,6 +2131,7 @@
         selecionado = null;
         if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
         if (typeof schedulePolls === 'function') schedulePolls();
+        updateLigacaoCaiuVisibility();
 
         if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
       } catch (e) { alert("Erro ao liberar.") }
@@ -2178,6 +2150,7 @@
         selecionado = null;
         if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
         if (typeof schedulePolls === 'function') schedulePolls();
+        updateLigacaoCaiuVisibility();
 
         if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
       } catch (e) { alert("Erro ao concluir."); btnConcluir.disabled = false; }
@@ -2194,6 +2167,8 @@
       if (pollingContatos) clearInterval(pollingContatos);
       if (pollingMensagens) clearInterval(pollingMensagens);
       if (pendentesInterval) clearInterval(pendentesInterval);
+      agente.permite_envio_individual = false;
+      updateLigacaoCaiuVisibility();
 
       // Modal de confirmação de logout
       showModalFeedback('Agente deslogado com sucesso.', 'Logout', 900);
@@ -2581,7 +2556,6 @@
     window.addEventListener('load', async () => {
       const saved = loadTheme(); applyTheme(saved || defaultTheme());
       toggleLoginLocks();
-      updateEnvioIndividualButton();
       if (isLogged()) {
         showApp();
         await boot();
