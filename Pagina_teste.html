@@ -1,3 +1,16 @@
+Segue o arquivo completo já ajustado, com o novo botão na mini-sidebar para o Envio Individual e lógica para que ele só apareça quando permite_envio_individual for true (vindo do backend em j.agente.permite_envio_individual), sem alterar nenhuma função existente.
+
+O botão:
+	•	Fica na mini-sidebar junto com Home / Conversas / Relatório.
+	•	Começa hidden no HTML.
+	•	No boot() ele lê permite_envio_individual do agente e chama updateEnvioIndividualButton() para mostrar/ocultar.
+	•	Respeita login: se não estiver logado, abre o modal de login e mostra feedback.
+	•	Se logado mas sem permissão, mostra um aviso curto.
+	•	Se logado e com permissão, abre a página de envios em massa com a aba de envio individual: envios_em_massa.html?tab=envio_individual (mantive esse padrão igual costumo usar lá; se o seu HTML de envios já está preparado para esse tab, ele já entra direto na aba; se não, apenas vai abrir a página normalmente).
+
+⸻
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -651,7 +664,7 @@
 
 <body class="h-screen flex with-mini">
 
-  <!-- Mini Sidebar (OCULTA até login) -->
+  <!-- Mini Sidebar -->
   <nav id="appSidebar" class="mini-sidebar select-none hidden">
     <!-- Home -->
     <button id="tabBtnHome" class="btn-mini active transition-transform active:scale-95" title="Home" aria-label="Home"
@@ -690,9 +703,25 @@
       </svg>
       <span class="sr-only">Relatório</span>
     </button>
+
+    <!-- Envio Individual (novo) -->
+    <button id="tabBtnEnvioIndividual"
+      class="btn-mini transition-transform active:scale-95 hidden"
+      title="Envio individual"
+      aria-label="Envio individual"
+      data-requires-login>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" />
+        <path d="M4 20a8 8 0 0 1 16 0" />
+        <path d="M15 5h5v5" />
+        <path d="M15 10 20 5" />
+      </svg>
+      <span class="sr-only">Envio individual</span>
+    </button>
   </nav>
 
-  <!-- Tabs Wrapper (OCULTO até login) -->
+  <!-- Tabs Wrapper -->
   <div id="tabsWrapper" class="flex-1 flex flex-col hidden">
 
     <!-- HOME -->
@@ -1162,11 +1191,11 @@
     const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
 
     /** ============== CARTEIRAS / Phone IDs ============== */
-    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
+    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
     const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
 
     /** ============== ESTADO ============== */
-    let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
+    let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false, permite_envio_individual: false };
     let tickets = []; let selecionado = null; let renderedKeys = new Set(); let lastTimestampMs = null; let lastDayRendered = null;
     let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
     let limitPerAgent = 0; let ativosCount = 0;
@@ -1281,6 +1310,7 @@
     const tabBtnHome = document.getElementById('tabBtnHome');
     const tabBtnConversas = document.getElementById('tabBtnConversas');
     const tabBtnRelatorio = document.getElementById('tabBtnRelatorio');
+    const tabBtnEnvioIndividual = document.getElementById('tabBtnEnvioIndividual');
     const tabHome = document.getElementById('tabHome');
     const tabConversas = document.getElementById('tabConversas');
     const tabRelatorio = document.getElementById('tabRelatorio');
@@ -1421,8 +1451,8 @@
         localStorage.setItem("agente_nome", j.agente?.nome || `Agente ${codigo}`);
         localStorage.setItem("agente_carteira", j.agente?.carteira || 'ConnectZap');
         fecharModalLogin();
-        showApp();                        // << NOVO: exibe a UI após login
-        await boot();                     // carrega dados
+        showApp();
+        await boot();
         switchTab('home');
         updateAuthButton();
       } catch (e) { erro.textContent = e?.message || 'Falha ao validar código.'; erro.classList.remove('hidden') }
@@ -1547,6 +1577,8 @@
       if (!agente.codigo) {
         elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false);
         relAgentePill.textContent = '—';
+        agente.permite_envio_individual = false;
+        updateEnvioIndividualButton();
         await loadNoticesAndRender();
         return;
       }
@@ -1556,6 +1588,7 @@
         if (!j.ok) throw new Error(j.erro || "Agente não encontrado");
         agente.nome = j.agente?.nome || localStorage.getItem("agente_nome") || `Agente ${agente.codigo}`;
         agente.carteira = j.agente?.carteira || localStorage.getItem("agente_carteira") || 'ConnectZap';
+        agente.permite_envio_individual = !!(j.agente && j.agente.permite_envio_individual);
         localStorage.setItem("agente_nome", agente.nome);
         localStorage.setItem("agente_carteira", agente.carteira);
 
@@ -1564,6 +1597,8 @@
         elHomeNome.textContent = agente.nome;
         elHomeCart.textContent = agente.carteira;
         relAgentePill.textContent = `${agente.nome} (#${agente.codigo})`;
+
+        updateEnvioIndividualButton();
 
         loadUnread();
         await verificarOnline();
@@ -1592,6 +1627,8 @@
       } catch (e) {
         elHomeAviso.classList.remove("hidden");
         elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
+        agente.permite_envio_individual = false;
+        updateEnvioIndividualButton();
         await loadNoticesAndRender();
       }
     }
@@ -1613,14 +1650,31 @@
       }
     }
 
+    // Atualiza visibilidade do botão de envio individual no sidebar
+    function updateEnvioIndividualButton() {
+      const btn = tabBtnEnvioIndividual;
+      if (!btn) return;
+      if (agente.permite_envio_individual) {
+        btn.classList.remove('hidden');
+      } else {
+        btn.classList.add('hidden');
+      }
+    }
+
     // Trava visual nas abas que exigem login
     function toggleLoginLocks() {
       const locked = !isLogged();
-      [tabBtnConversas, tabBtnRelatorio].forEach(btn => {
+      [tabBtnConversas, tabBtnRelatorio, tabBtnEnvioIndividual].forEach(btn => {
         if (!btn) return;
         if (locked) btn.classList.add('locked'); else btn.classList.remove('locked');
         btn.setAttribute('aria-disabled', locked ? 'true' : 'false');
-        btn.title = locked ? 'Faça login para acessar' : (btn === tabBtnConversas ? 'Conversas' : 'Relatório');
+        if (locked) {
+          btn.title = 'Faça login para acessar';
+        } else {
+          if (btn === tabBtnConversas) btn.title = 'Conversas';
+          else if (btn === tabBtnRelatorio) btn.title = 'Relatório';
+          else if (btn === tabBtnEnvioIndividual) btn.title = 'Envio individual';
+        }
       });
     }
 
@@ -1641,6 +1695,23 @@
     tabBtnHome.onclick = () => switchTab('home');
     tabBtnConversas.onclick = () => switchTab('conversas');
     tabBtnRelatorio.onclick = () => switchTab('relatorio');
+
+    // Clique no botão de Envio Individual (sidebar)
+    if (tabBtnEnvioIndividual) {
+      tabBtnEnvioIndividual.onclick = () => {
+        if (!isLogged()) {
+          abrirModalLogin();
+          showModalFeedback('Faça login para acessar o envio individual.', 'Acesso restrito', 1400);
+          return;
+        }
+        if (!agente.permite_envio_individual) {
+          showModalFeedback('Você não possui permissão para usar o envio individual.', 'Recurso restrito', 1600);
+          return;
+        }
+        // Abre a página de envios em massa já apontando para a aba de envio individual
+        window.open('envios_em_massa.html?tab=envio_individual', '_blank');
+      };
+    }
 
     /** ============== ONLINE/OFFLINE, LIMITES ============== */
     async function verificarOnline() {
@@ -2079,7 +2150,6 @@
         const k = keyFrom(selecionado.remetente, selecionado.phone_id); delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
         tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id))); saveTickets(); renderTickets(); limparChat();
         elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
-        // Segurança extra: ao concluir, removemos a seleção e interrompemos o polling de mensagens
         selecionado = null;
         if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
         if (typeof schedulePolls === 'function') schedulePolls();
@@ -2486,14 +2556,15 @@
     window.addEventListener('load', async () => {
       const saved = loadTheme(); applyTheme(saved || defaultTheme());
       toggleLoginLocks();
+      updateEnvioIndividualButton();
       if (isLogged()) {
-        showApp();                 // exibe painel
-        await boot();              // carrega dados
+        showApp();
+        await boot();
         switchTab('home');
         fecharModalLogin();
       } else {
-        hideApp();                 // oculta painel
-        abrirModalLogin();         // força login
+        hideApp();
+        abrirModalLogin();
       }
     });
   </script>
