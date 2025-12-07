@@ -935,6 +935,17 @@
         </div>
       </div>
 
+      <!-- Modal envio individual (embed) -->
+      <div id="envioIndividualModal" class="modal" aria-modal="true" role="dialog">
+        <div class="modal-inner" style="width:min(1200px,95%);height:min(90vh,95%);padding:0;display:flex;flex-direction:column;overflow:hidden">
+          <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color:var(--border)">
+            <div class="font-semibold">Envio individual</div>
+            <button id="fecharEnvioIndividual" class="btn btn-neutral px-3 py-1 text-sm">Fechar</button>
+          </div>
+          <iframe id="envioIndividualFrame" title="Envio individual" style="flex:1;border:0;border-top:1px solid var(--border);background:var(--content-bg)"></iframe>
+        </div>
+      </div>
+
       <!-- Theme Drawer -->
       <div id="themeDrawer" class="drawer" aria-hidden="true">
         <div class="h-full flex flex-col">
@@ -1301,6 +1312,9 @@
     const tabHome = document.getElementById('tabHome');
     const tabConversas = document.getElementById('tabConversas');
     const tabRelatorio = document.getElementById('tabRelatorio');
+    const envioIndividualModal = document.getElementById('envioIndividualModal');
+    const envioIndividualFrame = document.getElementById('envioIndividualFrame');
+    const fecharEnvioIndividualBtn = document.getElementById('fecharEnvioIndividual');
     document.getElementById('goToConversas1').onclick = () => switchTab('conversas');
     document.getElementById('goToRelatorio1').onclick = () => switchTab('relatorio');
 
@@ -1643,10 +1657,35 @@
       if (!btn) return;
       if (agente.permite_envio_individual) {
         btn.classList.remove('hidden');
-      } else {
+            } else {
         btn.classList.add('hidden');
       }
     }
+
+    // Modal para o embed de envio individual
+    function abrirEnvioIndividualInterno() {
+      if (!envioIndividualModal || !envioIndividualFrame) return;
+      if (!envioIndividualFrame.getAttribute('src')) {
+        envioIndividualFrame.src = 'envios_em_massa.html?tab=envio_individual';
+      }
+      envioIndividualModal.style.display = 'flex';
+      isModalOpen = true;
+    }
+    function fecharEnvioIndividualInterno() {
+      if (!envioIndividualModal) return;
+      envioIndividualModal.style.display = 'none';
+      isModalOpen = false;
+    }
+    if (envioIndividualModal) {
+      envioIndividualModal.addEventListener('click', (e) => {
+        if (e.target === envioIndividualModal) fecharEnvioIndividualInterno();
+      });
+    }
+    if (fecharEnvioIndividualBtn) fecharEnvioIndividualBtn.onclick = fecharEnvioIndividualInterno;
+    document.addEventListener('keydown', (e) => {
+      const isOpen = envioIndividualModal && envioIndividualModal.style.display === 'flex';
+      if (e.key === 'Escape' && isOpen) fecharEnvioIndividualInterno();
+    });
 
     // Trava visual nas abas que exigem login
     function toggleLoginLocks() {
@@ -1695,8 +1734,7 @@
           showModalFeedback('Você não possui permissão para usar o envio individual.', 'Recurso restrito', 1600);
           return;
         }
-        // Abre a página de envios em massa já apontando para a aba de envio individual
-        window.open('envios_em_massa.html?tab=envio_individual', '_blank');
+        abrirEnvioIndividualInterno();
       };
     }
 
