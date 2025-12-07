@@ -1,16 +1,3 @@
-Segue o arquivo completo já ajustado, com o novo botão na mini-sidebar para o Envio Individual e lógica para que ele só apareça quando permite_envio_individual for true (vindo do backend em j.agente.permite_envio_individual), sem alterar nenhuma função existente.
-
-O botão:
-	•	Fica na mini-sidebar junto com Home / Conversas / Relatório.
-	•	Começa hidden no HTML.
-	•	No boot() ele lê permite_envio_individual do agente e chama updateEnvioIndividualButton() para mostrar/ocultar.
-	•	Respeita login: se não estiver logado, abre o modal de login e mostra feedback.
-	•	Se logado mas sem permissão, mostra um aviso curto.
-	•	Se logado e com permissão, abre a página de envios em massa com a aba de envio individual: envios_em_massa.html?tab=envio_individual (mantive esse padrão igual costumo usar lá; se o seu HTML de envios já está preparado para esse tab, ele já entra direto na aba; se não, apenas vai abrir a página normalmente).
-
-⸻
-
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
