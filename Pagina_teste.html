@@ -1,7 +1,3 @@
-Perrfeito, isso mesmo, agora pode realizar essas implementações, com um bom css, na pagina dos agentes ?
-
-Atualize o codigo e me devolva 100% completo, já com essa nova função
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -650,6 +646,84 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
       background: color-mix(in srgb, var(--primary) 10%, var(--ghost-bg));
       color: var(--text);
     }
+
+    /* ======= ENVIO INDIVIDUAL (CSS extra) ======= */
+    .label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: var(--input-bg);
+      color: var(--input-fg);
+      transition: box-shadow .15s ease, border-color .15s ease, background .15s ease;
+    }
+
+    .input:focus {
+      box-shadow: 0 0 0 3px var(--ring);
+      border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .codeblock {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--ghost-bg) 70%, var(--content-bg));
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      color: var(--text);
+      overflow: auto;
+    }
+
+    .alert {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: var(--content-bg);
+    }
+
+    .alert-warn {
+      border-left: 6px solid #d97706;
+      background: color-mix(in srgb, #d97706 10%, var(--content-bg));
+    }
+
+    .btn-sm {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .btn-loading::after {
+      content: "";
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      width: 14px;
+      height: 14px;
+      margin-top: -7px;
+      border-radius: 9999px;
+      border: 2px solid rgba(255, 255, 255, .55);
+      border-top-color: rgba(255, 255, 255, 1);
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
@@ -682,15 +756,19 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
       <span class="sr-only">Conversas</span>
     </button>
 
-    <!-- Relatório -->
-      <button id="tabBtnEnvioIndividual" class="btn-mini hidden transition-transform active:scale-95" title="Envio individual" aria-label="Envio individual">
-        <!-- phone icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.31 1.7.57 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.09a2 2 0 0 1 2.11-.45c.8.26 1.64.45 2.5.57A2 2 0 0 1 22 16.92Z"/>
-        </svg>
-        <span class="sr-only">Envio individual</span>
-      </button>
+    <!-- Envio individual -->
+    <button id="tabBtnEnvioIndividual" class="btn-mini hidden transition-transform active:scale-95" title="Envio individual"
+      aria-label="Envio individual">
+      <!-- phone icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+        <path
+          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.31 1.7.57 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.09a2 2 0 0 1 2.11-.45c.8.26 1.64.45 2.5.57A2 2 0 0 1 22 16.92Z" />
+      </svg>
+      <span class="sr-only">Envio individual</span>
+    </button>
 
+    <!-- Relatório -->
     <button id="tabBtnRelatorio" class="btn-mini transition-transform active:scale-95" title="Relatório"
       aria-label="Relatório" data-requires-login>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -957,7 +1035,7 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
                   <div class="h-8 rounded" style="background:linear-gradient(90deg,#06b6d4,#10b981)"></div>
                   <div class="mt-1 text-xs">Ocean</div>
                 </div>
-                <div class="preset" data-ppreset="sunset">
+                <div class="preset" data-preset="sunset">
                   <div class="h-8 rounded" style="background:linear-gradient(90deg,#fb923c,#ef4444)"></div>
                   <div class="mt-1 text-xs">Sunset</div>
                 </div>
@@ -1043,14 +1121,15 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
       </div>
     </section>
 
-    <!-- RELATÓRIO -->
+    <!-- ENVIO INDIVIDUAL -->
     <section id="tabEnvioIndividual" class="hidden flex-1 p-6">
       <div class="max-w-5xl mx-auto space-y-4">
         <div class="card p-6">
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-xl font-bold">Envio individual</h2>
-              <p class="muted mt-1">Envio rápido de template fixo <span class="font-semibold">ligacao_caiu</span> (sem redirecionamento).</p>
+              <p class="muted mt-1">Envio rápido de template fixo <span class="font-semibold">ligacao_caiu</span> (sem
+                redirecionamento).</p>
             </div>
             <span class="pill">Template: ligacao_caiu</span>
           </div>
@@ -1059,20 +1138,30 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
             <div class="card p-4">
               <div class="flex items-center justify-between gap-2">
                 <h3 class="font-semibold">Dados do cliente</h3>
-                <button id="btnEnvIndUsarConversa" class="btn btn-ghost btn-sm" type="button" title="Preenche com a conversa selecionada">Usar conversa atual</button>
+                <button id="btnEnvIndUsarConversa" class="btn btn-ghost btn-sm" type="button"
+                  title="Preenche com a conversa selecionada">Usar conversa atual</button>
               </div>
 
               <div class="mt-3 grid gap-3">
                 <div>
                   <label class="label">Telefone</label>
                   <input id="envIndTelefone" class="input" placeholder="Ex: 61999998888 ou 5561999998888" />
-                  <p class="hint mt-1">Pode informar com ou sem 55. O backend normaliza automaticamente.</p>
+                  <p class="hint mt-1">Pode informar com ou sem 55. O frontend normaliza e o backend também.</p>
                 </div>
                 <div>
                   <label class="label">Nome (opcional)</label>
                   <input id="envIndNome" class="input" placeholder="Ex: José" />
                   <p class="hint mt-1">Se vier nome completo, será usado apenas o primeiro nome.</p>
                 </div>
+
+                <div class="alert" style="border-left:6px solid var(--primary);background:color-mix(in srgb, var(--primary) 8%, var(--content-bg));">
+                  <div class="text-sm font-semibold">Prévia do que será enviado</div>
+                  <div class="text-sm mt-1" id="envIndPreview">
+                    Olá, <span class="font-semibold">cliente</span>! Perdemos a sua ligação. Se estiver disponível,
+                    responda aqui para continuar.
+                  </div>
+                </div>
+
               </div>
             </div>
 
@@ -1082,13 +1171,13 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
               <div class="mt-3 grid gap-3">
                 <div>
                   <label class="label">Phone ID (opcional)</label>
-                  <input id="envIndPhoneId" class="input" placeholder="Se vazio, usa DEFAULT_PHONE_ID" />
+                  <input id="envIndPhoneId" class="input" placeholder="Se vazio, usa o phone_id da conversa (ou 1º da carteira)" />
                   <p class="hint mt-1">Se você estiver com uma conversa selecionada, este campo é preenchido automaticamente.</p>
                 </div>
 
                 <div class="flex flex-wrap gap-2">
-                  <button id="btnEnvIndEnviar" class="btn btn-primary" type="button">Enviar template</button>
-                  <button id="btnEnvIndLimpar" class="btn btn-ghost" type="button">Limpar</button>
+                  <button id="btnEnvIndEnviar" class="btn btn-primary px-4 py-2" type="button">Enviar template</button>
+                  <button id="btnEnvIndLimpar" class="btn btn-ghost px-4 py-2" type="button">Limpar</button>
                 </div>
 
                 <div>
@@ -1107,6 +1196,7 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
       </div>
     </section>
 
+    <!-- RELATÓRIO -->
     <section id="tabRelatorio" class="hidden p-4">
       <div class="max-w-6xl mx-auto space-y-4">
         <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -1357,34 +1447,38 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
     const tabBtnConversas = document.getElementById('tabBtnConversas');
     const tabBtnRelatorio = document.getElementById('tabBtnRelatorio');
 
-  const tabBtnEnvioIndividual = document.getElementById('tabBtnEnvioIndividual');
-  const tabEnvioIndividual = document.getElementById('tabEnvioIndividual');
+    const tabBtnEnvioIndividual = document.getElementById('tabBtnEnvioIndividual');
+    const tabEnvioIndividual = document.getElementById('tabEnvioIndividual');
 
-  function _bool(v) {
-    if (typeof v === 'boolean') return v;
-    if (v === null || v === undefined) return false;
-    const s = String(v).trim().toLowerCase();
-    return s === '1' || s === 'true' || s === 'sim' || s === 'yes';
-  }
-
-  function hasPermEnvioIndividual() {
-    return _bool(localStorage.getItem('agente_permite_envio_individual'));
-  }
-
-  function renderPermissaoEnvioIndividual() {
-    const ok = hasPermEnvioIndividual();
-    if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.classList.toggle('hidden', !ok);
-    const warn = document.getElementById('envIndSemPermissao');
-    if (warn) warn.classList.toggle('hidden', ok);
-    // se não tem permissão e estiver na aba, volta pro home
-    if (!ok && tabEnvioIndividual && !tabEnvioIndividual.classList.contains('hidden')) {
-      switchTab('home');
+    function _bool(v) {
+      if (typeof v === 'boolean') return v;
+      if (v === null || v === undefined) return false;
+      const s = String(v).trim().toLowerCase();
+      return s === '1' || s === 'true' || s === 'sim' || s === 'yes';
     }
-  }
+
+    function hasPermEnvioIndividual() {
+      return _bool(localStorage.getItem('agente_permite_envio_individual'));
+    }
+
+    function renderPermissaoEnvioIndividual() {
+      const ok = hasPermEnvioIndividual();
+      if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.classList.toggle('hidden', !ok);
+      const warn = document.getElementById('envIndSemPermissao');
+      if (warn) warn.classList.toggle('hidden', ok);
+      // se não tem permissão e estiver na aba, volta pro home
+      if (!ok && tabEnvioIndividual && !tabEnvioIndividual.classList.contains('hidden')) {
+        switchTab('home');
+      }
+      // travas / botões
+      const btnSend = document.getElementById('btnEnvIndEnviar');
+      if (btnSend) btnSend.disabled = !ok;
+    }
 
     const tabHome = document.getElementById('tabHome');
     const tabConversas = document.getElementById('tabConversas');
     const tabRelatorio = document.getElementById('tabRelatorio');
+
     document.getElementById('goToConversas1').onclick = () => switchTab('conversas');
     document.getElementById('goToRelatorio1').onclick = () => switchTab('relatorio');
 
@@ -1525,8 +1619,8 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
         localStorage.setItem("agente_permite_envio_individual", String(!!j.agente?.permite_envio_individual));
         renderPermissaoEnvioIndividual();
         fecharModalLogin();
-        showApp();                       
-        await boot();                    
+        showApp();
+        await boot();
         switchTab('home');
         updateAuthButton();
       } catch (e) { erro.textContent = e?.message || 'Falha ao validar código.'; erro.classList.remove('hidden') }
@@ -1573,11 +1667,11 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
         let row = null;
         if (cart) {
           row = payload.find(r =>
-          (r && (
-            (r.carteira && String(r.carteira) === String(cart)) ||
-            (r.fila && String(r.fila) === String(cart)) ||
-            (r.nome && String(r.nome) === String(cart))
-          )));
+            (r && (
+              (r.carteira && String(r.carteira) === String(cart)) ||
+              (r.fila && String(r.fila) === String(cart)) ||
+              (r.nome && String(r.nome) === String(cart))
+            )));
         }
         if (!row && payload.length === 1) row = payload[0];
         if (row) {
@@ -1662,9 +1756,9 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
         agente.carteira = j.agente?.carteira || localStorage.getItem("agente_carteira") || 'ConnectZap';
         localStorage.setItem("agente_nome", agente.nome);
         localStorage.setItem("agente_carteira", agente.carteira);
-      localStorage.setItem("agente_origem_bd", j.agente?.origem_bd || "");
-      localStorage.setItem("agente_permite_envio_individual", String(!!j.agente?.permite_envio_individual));
-      renderPermissaoEnvioIndividual();
+        localStorage.setItem("agente_origem_bd", j.agente?.origem_bd || "");
+        localStorage.setItem("agente_permite_envio_individual", String(!!j.agente?.permite_envio_individual));
+        renderPermissaoEnvioIndividual();
 
         elAgenteNome.textContent = `${agente.nome} (#${agente.codigo})`;
         elAgenteCarteira.textContent = agente.carteira;
@@ -1696,6 +1790,9 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
         initPendentesFila();
 
         wireComposer();
+
+        // ENVIO INDIVIDUAL: bind
+        initEnvioIndividual();
       } catch (e) {
         elHomeAviso.classList.remove("hidden");
         elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
@@ -1727,83 +1824,294 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
         if (!btn) return;
         if (locked) btn.classList.add('locked'); else btn.classList.remove('locked');
         btn.setAttribute('aria-disabled', locked ? 'true' : 'false');
-        btn.title = locked ? 'Faça login para acessar' : (btn === tabBtnConversas ? 'Conversas' : 'Relatório');
+        btn.title = locked
+          ? 'Faça login para acessar'
+          : (btn === tabBtnConversas ? 'Conversas' : (btn === tabBtnRelatorio ? 'Relatório' : 'Envio individual'));
       });
     }
 
-  /** ============== TABS ============== */
+    /** ============== TABS ============== */
 
-  // Bind dos botões (UMA vez)
-  function bindTabsOnce() {
-    if (tabBtnHome) tabBtnHome.onclick = () => switchTab('home');
+    // Bind dos botões (UMA vez)
+    function bindTabsOnce() {
+      if (tabBtnHome) tabBtnHome.onclick = () => switchTab('home');
 
-    if (tabBtnConversas) tabBtnConversas.onclick = () => {
-      if (!isLogged()) { abrirModalLogin(); return; }
-      switchTab('conversas');
-    };
+      if (tabBtnConversas) tabBtnConversas.onclick = () => {
+        if (!isLogged()) { abrirModalLogin(); return; }
+        switchTab('conversas');
+      };
 
-    if (tabBtnRelatorio) tabBtnRelatorio.onclick = () => {
-      if (!isLogged()) { abrirModalLogin(); return; }
-      switchTab('relatorio');
-    };
+      if (tabBtnRelatorio) tabBtnRelatorio.onclick = () => {
+        if (!isLogged()) { abrirModalLogin(); return; }
+        switchTab('relatorio');
+      };
 
-    if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.onclick = () => {
-      if (!isLogged()) { abrirModalLogin(); return; }
-      switchTab('envio_individual');
-    };
-  }
-  bindTabsOnce();
-
-  function switchTab(tab) {
-    // Gate de login (protege abas internas)
-    if (['conversas', 'relatorio', 'envio_individual'].includes(tab) && !isLogged()) {
-      abrirModalLogin();
-      return;
+      if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.onclick = () => {
+        if (!isLogged()) { abrirModalLogin(); return; }
+        switchTab('envio_individual');
+      };
     }
+    bindTabsOnce();
 
-    // Gate de permissão
-    if (tab === 'envio_individual' && !hasPermEnvioIndividual()) {
-      const warn = document.getElementById('envIndSemPermissao');
-      if (warn) warn.classList.remove('hidden');
-      if (typeof showModalFeedback === 'function') {
-        showModalFeedback('Seu usuário não possui permissão para Envio individual.', 'Sem permissão', 1400);
+    function switchTab(tab) {
+      // Gate de login (protege abas internas)
+      if (['conversas', 'relatorio', 'envio_individual'].includes(tab) && !isLogged()) {
+        abrirModalLogin();
+        return;
       }
-      tab = 'home';
+
+      // Gate de permissão
+      if (tab === 'envio_individual' && !hasPermEnvioIndividual()) {
+        const warn = document.getElementById('envIndSemPermissao');
+        if (warn) warn.classList.remove('hidden');
+        if (typeof showModalFeedback === 'function') {
+          showModalFeedback('Seu usuário não possui permissão para Envio individual.', 'Sem permissão', 1400);
+        }
+        tab = 'home';
+      }
+
+      // Esconde todas as tabs
+      [tabHome, tabConversas, tabRelatorio, tabEnvioIndividual]
+        .filter(Boolean)
+        .forEach(el => el.classList.add('hidden'));
+
+      // Remove "active" de todos os botões
+      [tabBtnHome, tabBtnConversas, tabBtnRelatorio, tabBtnEnvioIndividual]
+        .filter(Boolean)
+        .forEach(btn => btn.classList.remove('active'));
+
+      // Mostra a tab selecionada
+      if (tab === 'home') {
+        tabHome.classList.remove('hidden');
+        tabBtnHome.classList.add('active');
+
+      } else if (tab === 'conversas') {
+        tabConversas.classList.remove('hidden');
+        tabBtnConversas.classList.add('active');
+
+      } else if (tab === 'relatorio') {
+        tabRelatorio.classList.remove('hidden');
+        tabBtnRelatorio.classList.add('active');
+
+      } else if (tab === 'envio_individual') {
+        tabEnvioIndividual.classList.remove('hidden');
+        tabBtnEnvioIndividual.classList.add('active');
+
+      } else {
+        // fallback
+        tabHome.classList.remove('hidden');
+        tabBtnHome.classList.add('active');
+      }
     }
 
-    // Esconde todas as tabs
-    [tabHome, tabConversas, tabRelatorio, tabEnvioIndividual]
-      .filter(Boolean)
-      .forEach(el => el.classList.add('hidden'));
+    /** ============== ENVIO INDIVIDUAL (ligacao_caiu) ============== */
+    let __envIndBound = false;
 
-    // Remove "active" de todos os botões
-    [tabBtnHome, tabBtnConversas, tabBtnRelatorio, tabBtnEnvioIndividual]
-      .filter(Boolean)
-      .forEach(btn => btn.classList.remove('active'));
-
-    // Mostra a tab selecionada
-    if (tab === 'home') {
-      tabHome.classList.remove('hidden');
-      tabBtnHome.classList.add('active');
-
-    } else if (tab === 'conversas') {
-      tabConversas.classList.remove('hidden');
-      tabBtnConversas.classList.add('active');
-
-    } else if (tab === 'relatorio') {
-      tabRelatorio.classList.remove('hidden');
-      tabBtnRelatorio.classList.add('active');
-
-    } else if (tab === 'envio_individual') {
-      tabEnvioIndividual.classList.remove('hidden');
-      tabBtnEnvioIndividual.classList.add('active');
-
-    } else {
-      // fallback
-      tabHome.classList.remove('hidden');
-      tabBtnHome.classList.add('active');
+    function normalizeMsisdnBR(v) {
+      if (!v) return "";
+      let digits = String(v).replace(/\D+/g, "");
+      if (!digits) return "";
+      if (!digits.startsWith("55")) digits = "55" + digits;
+      return digits;
     }
-  }
+
+    function firstNameOf(n) {
+      const s = String(n || '').trim();
+      if (!s) return '';
+      return s.split(/\s+/)[0] || s;
+    }
+
+    function pickDefaultPhoneId() {
+      const ids = (carteiraToPhoneIds[agente?.carteira] || []).map(String);
+      return ids.length ? ids[0] : '';
+    }
+
+    function envIndSetPreview() {
+      const nome = firstNameOf(document.getElementById('envIndNome')?.value) || firstNameOf(selecionado?.nome_exibicao) || 'cliente';
+      const el = document.getElementById('envIndPreview');
+      if (!el) return;
+      el.innerHTML = `Olá, <span class="font-semibold">${escapeHtml(nome)}</span>! Perdemos a sua ligação. Se estiver disponível, responda aqui para continuar.`;
+    }
+
+    function envIndSetResult(obj, isError = false) {
+      const out = document.getElementById('envIndResultado');
+      if (!out) return;
+      try {
+        out.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+      } catch {
+        out.textContent = String(obj);
+      }
+      out.style.borderLeft = isError ? '6px solid #dc2626' : `6px solid ${getCss('--accent') || '#22c55e'}`;
+      out.style.background = isError
+        ? 'color-mix(in srgb, #dc2626 10%, var(--content-bg))'
+        : 'color-mix(in srgb, var(--accent) 10%, var(--content-bg))';
+    }
+
+    async function postJson(url, payload) {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      let j = null;
+      try { j = await r.json(); } catch { }
+      return { r, j };
+    }
+
+    async function enviarLigacaoCaiu() {
+      if (!hasPermEnvioIndividual()) {
+        showModalFeedback('Sem permissão para Envio individual.', 'Sem permissão', 1400);
+        return;
+      }
+
+      const telEl = document.getElementById('envIndTelefone');
+      const nomeEl = document.getElementById('envIndNome');
+      const phoneIdEl = document.getElementById('envIndPhoneId');
+      const btn = document.getElementById('btnEnvIndEnviar');
+
+      const rawTel = (telEl?.value || '').trim() || (selecionado?.remetente || '');
+      const to_msisdn = normalizeMsisdnBR(rawTel);
+      const primeiro_nome = firstNameOf((nomeEl?.value || '').trim() || selecionado?.nome_exibicao || '') || 'cliente';
+
+      // Phone ID segue o que já temos (preferência: conversa selecionada)
+      const phone_id = (phoneIdEl?.value || '').trim() || (selecionado?.phone_id ? String(selecionado.phone_id) : '') || pickDefaultPhoneId();
+
+      if (!to_msisdn || to_msisdn.length < 12) {
+        envIndSetResult({ ok: false, erro: 'Telefone inválido. Informe DDI+DDD+número (ex: 5561999998888).' }, true);
+        return;
+      }
+
+      // Payload com chaves "compatíveis" (caso o backend aceite variações)
+      const payload = {
+        to_msisdn,
+        phone_id,
+        primeiro_nome,
+        // aliases:
+        to: to_msisdn,
+        telefone: to_msisdn,
+        nome: primeiro_nome
+      };
+
+      // candidatos (bem parecido com o que você faz em outros pontos pra aguentar variações)
+      const candidates = [
+        `${FILA_API}/ligacao_caiu`,
+        `${FILA_API}/api/ligacao_caiu`,
+        `${FILA_API}/templates/ligacao_caiu`,
+        `${FILA_API}/api/templates/ligacao_caiu`,
+        `${CONV_API}/api/ligacao_caiu`,
+        `${CONV_API}/api/envio_individual/ligacao_caiu`,
+        `${CONV_API}/api/templates/ligacao_caiu`,
+        `${CONV_API}/api/templates/ligacao_caiu/send`,
+      ];
+
+      try {
+        if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); }
+        envIndSetResult({ ok: true, status: 'Enviando…', to_msisdn, primeiro_nome, phone_id }, false);
+
+        for (const url of candidates) {
+          try {
+            const { r, j } = await postJson(url, payload);
+            if (r && (r.ok || (j && (j.ok === true || j.messages || j.msg_id)))) {
+              envIndSetResult({
+                ok: true,
+                endpoint_usado: url,
+                http_status: r.status,
+                request: payload,
+                response: j ?? { raw: 'Resposta sem JSON' }
+              }, false);
+
+              showModalFeedback('Template enviado com sucesso.', 'Envio individual', 1200);
+              return;
+            }
+
+            // se veio JSON com erro explícito, mostra e tenta próximo
+            if (j && (j.erro || j.error || j.message)) {
+              envIndSetResult({
+                ok: false,
+                endpoint_testado: url,
+                http_status: r?.status,
+                erro: j.erro || j.error || j.message,
+                response: j
+              }, true);
+              continue;
+            }
+          } catch (err) {
+            // tenta o próximo
+          }
+        }
+
+        envIndSetResult({
+          ok: false,
+          erro: 'Não consegui enviar usando os endpoints candidatos. (Provável: caminho do endpoint diferente / CORS / backend offline).',
+          request: payload,
+          endpoints_testados: candidates
+        }, true);
+
+      } finally {
+        if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); }
+      }
+    }
+
+    function envIndUsarConversaAtual() {
+      if (!selecionado) {
+        showModalFeedback('Selecione uma conversa em "Conversas" antes.', 'Envio individual', 1600);
+        return;
+      }
+      const telEl = document.getElementById('envIndTelefone');
+      const nomeEl = document.getElementById('envIndNome');
+      const phoneIdEl = document.getElementById('envIndPhoneId');
+
+      if (telEl) telEl.value = String(selecionado.remetente || '');
+      if (nomeEl) nomeEl.value = firstNameOf(selecionado.nome_exibicao || '') || '';
+      if (phoneIdEl) phoneIdEl.value = String(selecionado.phone_id || '');
+
+      envIndSetPreview();
+      switchTab('envio_individual');
+    }
+
+    function initEnvioIndividual() {
+      if (__envIndBound) return;
+      __envIndBound = true;
+
+      const btnUse = document.getElementById('btnEnvIndUsarConversa');
+      const btnSend = document.getElementById('btnEnvIndEnviar');
+      const btnClear = document.getElementById('btnEnvIndLimpar');
+      const telEl = document.getElementById('envIndTelefone');
+      const nomeEl = document.getElementById('envIndNome');
+      const phoneIdEl = document.getElementById('envIndPhoneId');
+
+      if (btnUse) btnUse.addEventListener('click', envIndUsarConversaAtual);
+      if (btnSend) btnSend.addEventListener('click', enviarLigacaoCaiu);
+
+      if (btnClear) btnClear.addEventListener('click', () => {
+        if (telEl) telEl.value = '';
+        if (nomeEl) nomeEl.value = '';
+        if (phoneIdEl) phoneIdEl.value = '';
+        envIndSetPreview();
+        envIndSetResult('—', false);
+      });
+
+      if (telEl) telEl.addEventListener('input', () => {
+        // só para UX: normaliza visualmente quando sai do campo (blur)
+      });
+      if (telEl) telEl.addEventListener('blur', () => {
+        const v = telEl.value.trim();
+        if (!v) return;
+        const n = normalizeMsisdnBR(v);
+        if (n) telEl.value = n;
+      });
+
+      if (nomeEl) nomeEl.addEventListener('input', envIndSetPreview);
+
+      // prévia inicial
+      envIndSetPreview();
+
+      // se já tiver conversa selecionada e campo phone_id estiver vazio, preenche
+      if (phoneIdEl && !phoneIdEl.value && selecionado?.phone_id) phoneIdEl.value = String(selecionado.phone_id);
+
+      renderPermissaoEnvioIndividual();
+    }
+
     /** ============== ONLINE/OFFLINE, LIMITES ============== */
     async function verificarOnline() {
       try {
@@ -2018,6 +2326,12 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
     let msgsCtrl = null;
     async function abrirTicket(t) {
       selecionado = t;
+
+      // se o envio individual estiver habilitado, aproveita o phone_id da conversa (sem atrapalhar preenchimentos do usuário)
+      const phoneIdEl = document.getElementById('envIndPhoneId');
+      if (phoneIdEl && !phoneIdEl.value && t?.phone_id) phoneIdEl.value = String(t.phone_id || '');
+      envIndSetPreview();
+
       try { const k = keyFrom(t.remetente, t.phone_id); unreadCountByKey[k] = 0; lastContatoTsByKey[k] = Date.now(); persistUnread(); } catch { }
       renderTickets();
       elTitulo.textContent = t.nome_exibicao ? `${t.nome_exibicao} (${t.remetente})` : t.remetente;
@@ -2647,17 +2961,20 @@ Atualize o codigo e me devolva 100% completo, já com essa nova função
     window.addEventListener('load', async () => {
       const saved = loadTheme(); applyTheme(saved || defaultTheme());
       toggleLoginLocks();
+      renderPermissaoEnvioIndividual();
+
       if (isLogged()) {
-        showApp();                 
-        await boot();              
+        showApp();
+        await boot();
         switchTab('home');
         fecharModalLogin();
       } else {
-        hideApp();                 
-        abrirModalLogin();         
+        hideApp();
+        abrirModalLogin();
       }
     });
   </script>
+
   <script>
     const presets = {
       corporate: { primary: "#2563eb", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", outG1: "#e0f2fe", outG2: "#bfdbfe", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6" },
