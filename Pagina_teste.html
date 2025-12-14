@@ -679,6 +679,14 @@
     </button>
 
     <!-- Relatório -->
+      <button id="tabBtnEnvioIndividual" class="btn-mini hidden transition-transform active:scale-95" title="Envio individual" aria-label="Envio individual">
+        <!-- phone icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.31 1.7.57 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.09a2 2 0 0 1 2.11-.45c.8.26 1.64.45 2.5.57A2 2 0 0 1 22 16.92Z"/>
+        </svg>
+        <span class="sr-only">Envio individual</span>
+      </button>
+
     <button id="tabBtnRelatorio" class="btn-mini transition-transform active:scale-95" title="Relatório"
       aria-label="Relatório" data-requires-login>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -839,10 +847,6 @@
             <div id="subInfo" class="text-sm muted truncate"></div>
           </div>
           <div class="flex items-center gap-2">
-            <!-- Botão Ligação caiu (envio individual) -->
-            <button id="btnLigacaoCaiu"
-              class="btn btn-neutral px-3 py-2 text-sm disabled:opacity-50 hidden">Ligação caiu</button>
-
             <button id="btnLiberar" class="btn btn-neutral px-3 py-2 text-sm disabled:opacity-50"
               disabled>Liberar</button>
             <div class="relative">
@@ -1036,6 +1040,69 @@
     </section>
 
     <!-- RELATÓRIO -->
+    <section id="tabEnvioIndividual" class="hidden flex-1 p-6">
+      <div class="max-w-5xl mx-auto space-y-4">
+        <div class="card p-6">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-bold">Envio individual</h2>
+              <p class="muted mt-1">Envio rápido de template fixo <span class="font-semibold">ligacao_caiu</span> (sem redirecionamento).</p>
+            </div>
+            <span class="pill">Template: ligacao_caiu</span>
+          </div>
+
+          <div class="mt-4 grid md:grid-cols-2 gap-4">
+            <div class="card p-4">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="font-semibold">Dados do cliente</h3>
+                <button id="btnEnvIndUsarConversa" class="btn btn-ghost btn-sm" type="button" title="Preenche com a conversa selecionada">Usar conversa atual</button>
+              </div>
+
+              <div class="mt-3 grid gap-3">
+                <div>
+                  <label class="label">Telefone</label>
+                  <input id="envIndTelefone" class="input" placeholder="Ex: 61999998888 ou 5561999998888" />
+                  <p class="hint mt-1">Pode informar com ou sem 55. O backend normaliza automaticamente.</p>
+                </div>
+                <div>
+                  <label class="label">Nome (opcional)</label>
+                  <input id="envIndNome" class="input" placeholder="Ex: José" />
+                  <p class="hint mt-1">Se vier nome completo, será usado apenas o primeiro nome.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <h3 class="font-semibold">Configuração e envio</h3>
+
+              <div class="mt-3 grid gap-3">
+                <div>
+                  <label class="label">Phone ID (opcional)</label>
+                  <input id="envIndPhoneId" class="input" placeholder="Se vazio, usa DEFAULT_PHONE_ID" />
+                  <p class="hint mt-1">Se você estiver com uma conversa selecionada, este campo é preenchido automaticamente.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                  <button id="btnEnvIndEnviar" class="btn btn-primary" type="button">Enviar template</button>
+                  <button id="btnEnvIndLimpar" class="btn btn-ghost" type="button">Limpar</button>
+                </div>
+
+                <div>
+                  <label class="label">Resultado</label>
+                  <pre id="envIndResultado" class="codeblock min-h-[120px] whitespace-pre-wrap">—</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="envIndSemPermissao" class="hidden mt-4 alert alert-warn">
+            <div class="font-semibold">Sem permissão</div>
+            <div class="muted">Seu usuário não possui <code>permite_envio_individual</code> habilitado.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="tabRelatorio" class="hidden p-4">
       <div class="max-w-6xl mx-auto space-y-4">
         <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -1164,15 +1231,13 @@
     const API_BASE = (window.API_BASE || "https://dashboard-production-4c05.up.railway.app").replace(/\/+$/, '');
     const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
     const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
-    // Endpoint fixo da "ligação caiu" (ajuste aqui se precisar)
-    const LIGACAO_CAIU_API = (window.LIGACAO_CAIU_API || `${API_BASE}/api/envios/ligacao_caiu`).replace(/\/+$/, '');
 
     /** ============== CARTEIRAS / Phone IDs ============== */
-    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
+    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
     const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
 
     /** ============== ESTADO ============== */
-    let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false, permite_envio_individual: false };
+    let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
     let tickets = []; let selecionado = null; let renderedKeys = new Set(); let lastTimestampMs = null; let lastDayRendered = null;
     let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
     let limitPerAgent = 0; let ativosCount = 0;
@@ -1278,7 +1343,6 @@
     const digitando = document.getElementById("digitando");
     const badgeAtivos = document.getElementById("badgeAtivos");
     const badgeLimite = document.getElementById("badgeLimite");
-    const btnLigacaoCaiu = document.getElementById("btnLigacaoCaiu");
 
     // Botões Home
     const btnToggleOnline = document.getElementById("btnToggleOnline");
@@ -1288,6 +1352,32 @@
     const tabBtnHome = document.getElementById('tabBtnHome');
     const tabBtnConversas = document.getElementById('tabBtnConversas');
     const tabBtnRelatorio = document.getElementById('tabBtnRelatorio');
+
+  const tabBtnEnvioIndividual = document.getElementById('tabBtnEnvioIndividual');
+  const tabEnvioIndividual = document.getElementById('tabEnvioIndividual');
+
+  function _bool(v) {
+    if (typeof v === 'boolean') return v;
+    if (v === null || v === undefined) return false;
+    const s = String(v).trim().toLowerCase();
+    return s === '1' || s === 'true' || s === 'sim' || s === 'yes';
+  }
+
+  function hasPermEnvioIndividual() {
+    return _bool(localStorage.getItem('agente_permite_envio_individual'));
+  }
+
+  function renderPermissaoEnvioIndividual() {
+    const ok = hasPermEnvioIndividual();
+    if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.classList.toggle('hidden', !ok);
+    const warn = document.getElementById('envIndSemPermissao');
+    if (warn) warn.classList.toggle('hidden', ok);
+    // se não tem permissão e estiver na aba, volta pro home
+    if (!ok && tabEnvioIndividual && !tabEnvioIndividual.classList.contains('hidden')) {
+      switchTab('home');
+    }
+  }
+
     const tabHome = document.getElementById('tabHome');
     const tabConversas = document.getElementById('tabConversas');
     const tabRelatorio = document.getElementById('tabRelatorio');
@@ -1427,9 +1517,12 @@
         localStorage.setItem("agente_codigo", String(codigo));
         localStorage.setItem("agente_nome", j.agente?.nome || `Agente ${codigo}`);
         localStorage.setItem("agente_carteira", j.agente?.carteira || 'ConnectZap');
+        localStorage.setItem("agente_origem_bd", j.agente?.origem_bd || "");
+        localStorage.setItem("agente_permite_envio_individual", String(!!j.agente?.permite_envio_individual));
+        renderPermissaoEnvioIndividual();
         fecharModalLogin();
-        showApp();
-        await boot();
+        showApp();                       
+        await boot();                    
         switchTab('home');
         updateAuthButton();
       } catch (e) { erro.textContent = e?.message || 'Falha ao validar código.'; erro.classList.remove('hidden') }
@@ -1552,10 +1645,8 @@
       noticesReadSet = loadNoticesReadSet();
 
       if (!agente.codigo) {
-        agente.permite_envio_individual = false;
         elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false);
         relAgentePill.textContent = '—';
-        updateLigacaoCaiuVisibility();
         await loadNoticesAndRender();
         return;
       }
@@ -1565,9 +1656,11 @@
         if (!j.ok) throw new Error(j.erro || "Agente não encontrado");
         agente.nome = j.agente?.nome || localStorage.getItem("agente_nome") || `Agente ${agente.codigo}`;
         agente.carteira = j.agente?.carteira || localStorage.getItem("agente_carteira") || 'ConnectZap';
-        agente.permite_envio_individual = !!j.agente?.permite_envio_individual;
         localStorage.setItem("agente_nome", agente.nome);
         localStorage.setItem("agente_carteira", agente.carteira);
+      localStorage.setItem("agente_origem_bd", j.agente?.origem_bd || "");
+      localStorage.setItem("agente_permite_envio_individual", String(!!j.agente?.permite_envio_individual));
+      renderPermissaoEnvioIndividual();
 
         elAgenteNome.textContent = `${agente.nome} (#${agente.codigo})`;
         elAgenteCarteira.textContent = agente.carteira;
@@ -1599,7 +1692,6 @@
         initPendentesFila();
 
         wireComposer();
-        updateLigacaoCaiuVisibility();
       } catch (e) {
         elHomeAviso.classList.remove("hidden");
         elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
@@ -1636,22 +1728,48 @@
     }
 
     /** ============== TABS ============== */
-    function switchTab(tab) {
-      // Gate de login
-      if ((tab === 'conversas' || tab === 'relatorio') && !isLogged()) {
-        abrirModalLogin();
-        showModalFeedback('Faça login para acessar Conversas e Relatório.', 'Acesso restrito', 1400);
-        return;
-      }
+      function switchTab(tab) {
+    // permission gate
+    if (tab === 'envio_individual' && !hasPermEnvioIndividual()) {
+      const warn = document.getElementById('envIndSemPermissao');
+      if (warn) warn.classList.remove('hidden');
+      tab = 'home';
+    }
+
+    tabHome.classList.add('hidden');
+    tabConversas.classList.add('hidden');
+    tabRelatorio.classList.add('hidden');
+    if (tabEnvioIndividual) tabEnvioIndividual.classList.add('hidden');
+
+    tabBtnHome.classList.remove('active');
+    tabBtnConversas.classList.remove('active');
+    tabBtnRelatorio.classList.remove('active');
+    if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.classList.remove('active');
+
+    if (tab === 'home') {
+      tabHome.classList.remove('hidden');
+      tabBtnHome.classList.add('active');
+    } else if (tab === 'conversas') {
+      tabConversas.classList.remove('hidden');
+      tabBtnConversas.classList.add('active');
+    } else if (tab === 'envio_individual') {
+      if (tabEnvioIndividual) tabEnvioIndividual.classList.remove('hidden');
+      if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.classList.add('active');
+    } else if (tab === 'relatorio') {
+      tabRelatorio.classList.remove('hidden');
+      tabBtnRelatorio.classList.add('active');
+    }
+
       [tabBtnHome, tabBtnConversas, tabBtnRelatorio].forEach(b => b.classList.remove('active'));
       tabHome.classList.add('hidden'); tabConversas.classList.add('hidden'); tabRelatorio.classList.add('hidden');
       if (tab === 'conversas') { tabBtnConversas.classList.add('active'); tabConversas.classList.remove('hidden') }
       else if (tab === 'relatorio') { tabBtnRelatorio.classList.add('active'); tabRelatorio.classList.remove('hidden') }
       else { tabBtnHome.classList.add('active'); tabHome.classList.remove('hidden') }
-    }
+}
     tabBtnHome.onclick = () => switchTab('home');
     tabBtnConversas.onclick = () => switchTab('conversas');
     tabBtnRelatorio.onclick = () => switchTab('relatorio');
+  if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.onclick = () => switchTab('envio_individual');
 
     /** ============== ONLINE/OFFLINE, LIMITES ============== */
     async function verificarOnline() {
@@ -1683,7 +1801,6 @@
           btnToggleOnline.classList.remove("btn-neutral");
         }
       }
-      updateLigacaoCaiuVisibility();
     }
     async function refreshOrdemCarteira() {
       if (!agente.carteira) return;
@@ -1731,18 +1848,6 @@
       else { elMsgLimite.classList.add("hidden"); elMsgLimite.textContent = "" }
       btnPegarProxima.disabled = !agente.online || atingiu;
       btnPrioridade.disabled = !agente.online || atingiu;
-    }
-
-    // Controle de visibilidade do botão Ligação caiu
-    function updateLigacaoCaiuVisibility() {
-      if (!btnLigacaoCaiu) return;
-      if (agente?.permite_envio_individual && selecionado) {
-        btnLigacaoCaiu.classList.remove('hidden');
-        btnLigacaoCaiu.disabled = false;
-      } else {
-        btnLigacaoCaiu.classList.add('hidden');
-        btnLigacaoCaiu.disabled = true;
-      }
     }
 
     // Toggle online
@@ -1893,7 +1998,6 @@
       await carregarMensagens(false);
       startMensagensPoll();
       wireComposer();
-      updateLigacaoCaiuVisibility();
     }
     function startMensagensPoll() { schedulePolls() }
 
@@ -2057,48 +2161,6 @@
       finally { userTyping = false; updateEnviarState(); }
     }
 
-    // Envio da mensagem "Ligação caiu" (envio individual)
-    async function enviarLigacaoCaiu() {
-      if (!selecionado) {
-        alert("Selecione um ticket antes de enviar a mensagem de ligação caída.");
-        return;
-      }
-      if (!agente?.permite_envio_individual) {
-        alert("Seu usuário não está habilitado para envio individual.");
-        return;
-      }
-      const originalLabel = btnLigacaoCaiu.textContent;
-      btnLigacaoCaiu.disabled = true;
-      btnLigacaoCaiu.textContent = 'Enviando…';
-      try {
-        const payload = {
-          remetente: selecionado.remetente,
-          phone_id: selecionado.phone_id,
-          codigo_do_agente: parseInt(agente.codigo || '0', 10),
-          carteira: agente.carteira
-        };
-        const r = await fetch(LIGACAO_CAIU_API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || data.ok === false) {
-          const msg = data.erro || data.message || 'Não foi possível enviar a mensagem de ligação caída.';
-          alert(msg);
-        } else {
-          showModalFeedback('Mensagem de chamada perdida enviada pelo WhatsApp.', 'Envio individual', 1800);
-          try { await carregarMensagens(true); } catch (_) { }
-        }
-      } catch (e) {
-        alert('Erro ao acionar o envio da mensagem de ligação caída.');
-      } finally {
-        btnLigacaoCaiu.disabled = false;
-        btnLigacaoCaiu.textContent = originalLabel;
-      }
-    }
-    if (btnLigacaoCaiu) btnLigacaoCaiu.addEventListener('click', enviarLigacaoCaiu);
-
     // PDF upload
     async function enviarPDF(event) {
       const file = event.target.files[0]; if (!file) return;
@@ -2131,7 +2193,6 @@
         selecionado = null;
         if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
         if (typeof schedulePolls === 'function') schedulePolls();
-        updateLigacaoCaiuVisibility();
 
         if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
       } catch (e) { alert("Erro ao liberar.") }
@@ -2150,7 +2211,6 @@
         selecionado = null;
         if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
         if (typeof schedulePolls === 'function') schedulePolls();
-        updateLigacaoCaiuVisibility();
 
         if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
       } catch (e) { alert("Erro ao concluir."); btnConcluir.disabled = false; }
@@ -2167,8 +2227,6 @@
       if (pollingContatos) clearInterval(pollingContatos);
       if (pollingMensagens) clearInterval(pollingMensagens);
       if (pendentesInterval) clearInterval(pendentesInterval);
-      agente.permite_envio_individual = false;
-      updateLigacaoCaiuVisibility();
 
       // Modal de confirmação de logout
       showModalFeedback('Agente deslogado com sucesso.', 'Logout', 900);
@@ -2557,13 +2615,13 @@
       const saved = loadTheme(); applyTheme(saved || defaultTheme());
       toggleLoginLocks();
       if (isLogged()) {
-        showApp();
-        await boot();
+        showApp();                 
+        await boot();              
         switchTab('home');
         fecharModalLogin();
       } else {
-        hideApp();
-        abrirModalLogin();
+        hideApp();                 
+        abrirModalLogin();         
       }
     });
   </script>
