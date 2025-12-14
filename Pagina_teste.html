@@ -1719,7 +1719,7 @@
     // Trava visual nas abas que exigem login
     function toggleLoginLocks() {
       const locked = !isLogged();
-      [tabBtnConversas, tabBtnRelatorio].forEach(btn => {
+      [tabBtnConversas, tabBtnRelatorio, tabBtnEnvioIndividual].forEach(btn => {
         if (!btn) return;
         if (locked) btn.classList.add('locked'); else btn.classList.remove('locked');
         btn.setAttribute('aria-disabled', locked ? 'true' : 'false');
@@ -1727,50 +1727,79 @@
       });
     }
 
-    /** ============== TABS ============== */
-      function switchTab(tab) {
-    // permission gate
+  /** ============== TABS ============== */
+
+  // Bind dos botões (UMA vez)
+  function bindTabsOnce() {
+    if (tabBtnHome) tabBtnHome.onclick = () => switchTab('home');
+
+    if (tabBtnConversas) tabBtnConversas.onclick = () => {
+      if (!isLogged()) { abrirModalLogin(); return; }
+      switchTab('conversas');
+    };
+
+    if (tabBtnRelatorio) tabBtnRelatorio.onclick = () => {
+      if (!isLogged()) { abrirModalLogin(); return; }
+      switchTab('relatorio');
+    };
+
+    if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.onclick = () => {
+      if (!isLogged()) { abrirModalLogin(); return; }
+      switchTab('envio_individual');
+    };
+  }
+  bindTabsOnce();
+
+  function switchTab(tab) {
+    // Gate de login (protege abas internas)
+    if (['conversas', 'relatorio', 'envio_individual'].includes(tab) && !isLogged()) {
+      abrirModalLogin();
+      return;
+    }
+
+    // Gate de permissão
     if (tab === 'envio_individual' && !hasPermEnvioIndividual()) {
       const warn = document.getElementById('envIndSemPermissao');
       if (warn) warn.classList.remove('hidden');
+      if (typeof showModalFeedback === 'function') {
+        showModalFeedback('Seu usuário não possui permissão para Envio individual.', 'Sem permissão', 1400);
+      }
       tab = 'home';
     }
 
-    tabHome.classList.add('hidden');
-    tabConversas.classList.add('hidden');
-    tabRelatorio.classList.add('hidden');
-    if (tabEnvioIndividual) tabEnvioIndividual.classList.add('hidden');
+    // Esconde todas as tabs
+    [tabHome, tabConversas, tabRelatorio, tabEnvioIndividual]
+      .filter(Boolean)
+      .forEach(el => el.classList.add('hidden'));
 
-    tabBtnHome.classList.remove('active');
-    tabBtnConversas.classList.remove('active');
-    tabBtnRelatorio.classList.remove('active');
-    if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.classList.remove('active');
+    // Remove "active" de todos os botões
+    [tabBtnHome, tabBtnConversas, tabBtnRelatorio, tabBtnEnvioIndividual]
+      .filter(Boolean)
+      .forEach(btn => btn.classList.remove('active'));
 
+    // Mostra a tab selecionada
     if (tab === 'home') {
       tabHome.classList.remove('hidden');
       tabBtnHome.classList.add('active');
+
     } else if (tab === 'conversas') {
       tabConversas.classList.remove('hidden');
       tabBtnConversas.classList.add('active');
-    } else if (tab === 'envio_individual') {
-      if (tabEnvioIndividual) tabEnvioIndividual.classList.remove('hidden');
-      if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.classList.add('active');
+
     } else if (tab === 'relatorio') {
       tabRelatorio.classList.remove('hidden');
       tabBtnRelatorio.classList.add('active');
+
+    } else if (tab === 'envio_individual') {
+      tabEnvioIndividual.classList.remove('hidden');
+      tabBtnEnvioIndividual.classList.add('active');
+
+    } else {
+      // fallback
+      tabHome.classList.remove('hidden');
+      tabBtnHome.classList.add('active');
     }
   }
-      [tabBtnHome, tabBtnConversas, tabBtnRelatorio].forEach(b => b.classList.remove('active'));
-      tabHome.classList.add('hidden'); tabConversas.classList.add('hidden'); tabRelatorio.classList.add('hidden');
-      if (tab === 'conversas') { tabBtnConversas.classList.add('active'); tabConversas.classList.remove('hidden') }
-      else if (tab === 'relatorio') { tabBtnRelatorio.classList.add('active'); tabRelatorio.classList.remove('hidden') }
-      else { tabBtnHome.classList.add('active'); tabHome.classList.remove('hidden') }
-    
-    tabBtnHome.onclick = () => switchTab('home');
-    tabBtnConversas.onclick = () => switchTab('conversas');
-    tabBtnRelatorio.onclick = () => switchTab('relatorio');
-  if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.onclick = () => switchTab('envio_individual');
-
     /** ============== ONLINE/OFFLINE, LIMITES ============== */
     async function verificarOnline() {
       try {
