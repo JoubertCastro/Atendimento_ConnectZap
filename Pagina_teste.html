@@ -1759,13 +1759,13 @@
       tabRelatorio.classList.remove('hidden');
       tabBtnRelatorio.classList.add('active');
     }
-
+  }
       [tabBtnHome, tabBtnConversas, tabBtnRelatorio].forEach(b => b.classList.remove('active'));
       tabHome.classList.add('hidden'); tabConversas.classList.add('hidden'); tabRelatorio.classList.add('hidden');
       if (tab === 'conversas') { tabBtnConversas.classList.add('active'); tabConversas.classList.remove('hidden') }
       else if (tab === 'relatorio') { tabBtnRelatorio.classList.add('active'); tabRelatorio.classList.remove('hidden') }
       else { tabBtnHome.classList.add('active'); tabHome.classList.remove('hidden') }
-}
+    
     tabBtnHome.onclick = () => switchTab('home');
     tabBtnConversas.onclick = () => switchTab('conversas');
     tabBtnRelatorio.onclick = () => switchTab('relatorio');
