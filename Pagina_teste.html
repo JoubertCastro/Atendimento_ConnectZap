@@ -780,6 +780,27 @@
       background: color-mix(in srgb, var(--ghost-bg) 70%, var(--content-bg));
       color: var(--text);
     }
+  
+    /* Theme presets (Temas rápidos) */
+    .preset{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background: color-mix(in srgb, var(--ghost-bg) 85%, var(--content-bg));
+      border-radius: 14px;
+      padding: 10px;
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      user-select:none;
+    }
+    .preset:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(0,0,0,.08);
+      border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+    }
+    .preset.active{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
   </style>
 </head>
 
@@ -1634,8 +1655,10 @@
     function defaultTheme() {
       return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff", hover: "#f1f5f9", hoverStrong: "#e2e8f0", inputBg: "#ffffff", inputFg: "#0f172a", scrollbar: "#cbd5e1", replyBg: "rgba(0,0,0,.06)", replyBorder: "rgba(0,0,0,.08)", replyFg: "#334155" }
     }
+    let currentTheme = defaultTheme();
     function applyTheme(t) {
       const r = document.documentElement.style; const base = defaultTheme(); const x = { ...base, ...t };
+      currentTheme = x;
       r.setProperty('--ticket-selected-bg', x.ticketSelectedBg);
       r.setProperty('--sidebar-bg', x.sidebar); r.setProperty('--content-bg', x.contentBg);
       r.setProperty('--bg', x.bg); r.setProperty('--text', x.text);
@@ -1695,18 +1718,122 @@
       tBtnRadius: document.getElementById('tBtnRadius'),
       tCardRadius: document.getElementById('tCardRadius')
     };
-    if (btnTheme) btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
+        function syncThemeInputs(t) {
+      if (!t) return;
+      try {
+        if (inputs.tPrimary && t.primary) inputs.tPrimary.value = t.primary;
+        if (inputs.tAccent && t.accent) inputs.tAccent.value = t.accent;
+        if (inputs.tSidebar && t.sidebar) inputs.tSidebar.value = t.sidebar;
+        if (inputs.tContentBg && t.contentBg) inputs.tContentBg.value = t.contentBg;
+        if (inputs.tBg && t.bg) inputs.tBg.value = t.bg;
+        if (inputs.tText && t.text) inputs.tText.value = t.text;
+        if (inputs.tOutG1 && t.outG1) inputs.tOutG1.value = t.outG1;
+        if (inputs.tOutG2 && t.outG2) inputs.tOutG2.value = t.outG2;
+        if (inputs.tInBg && t.inBg) inputs.tInBg.value = t.inBg;
+        if (inputs.tInBorder && t.inBorder) inputs.tInBorder.value = t.inBorder;
+
+        if (inputs.tRadius && (t.bubbleRadius != null)) inputs.tRadius.value = String(t.bubbleRadius);
+        if (inputs.tBgOp && (t.wallOp != null)) inputs.tBgOp.value = String(t.wallOp);
+        if (inputs.tFontSize && (t.fontSize != null)) inputs.tFontSize.value = String(t.fontSize);
+        if (inputs.tBtnRadius && (t.btnRadius != null)) inputs.tBtnRadius.value = String(t.btnRadius);
+        if (inputs.tCardRadius && (t.cardRadius != null)) inputs.tCardRadius.value = String(t.cardRadius);
+      } catch (_) { }
+    }
+
+    const THEME_PRESETS = {
+      corporate: {
+        primary: "#2563eb", accent: "#0ea5e9",
+        outG1: "#0ea5e9", outG2: "#2563eb",
+        bg: "#f3f4f6", sidebar: "#ffffff", contentBg: "#ffffff",
+        text: "#0f172a"
+      },
+      ocean: {
+        primary: "#06b6d4", accent: "#10b981",
+        outG1: "#06b6d4", outG2: "#10b981",
+        bg: "#f1f5f9", sidebar: "#ffffff", contentBg: "#ffffff",
+        text: "#0f172a"
+      },
+      sunset: {
+        primary: "#ef4444", accent: "#fb923c",
+        outG1: "#fb923c", outG2: "#ef4444",
+        bg: "#fff7ed", sidebar: "#ffffff", contentBg: "#ffffff",
+        text: "#0f172a"
+      },
+      dark: {
+        primary: "#60a5fa", accent: "#22c55e",
+        sidebar: "#0b1220", contentBg: "#0f172a", bg: "#070b14",
+        text: "#e5e7eb", muted: "#94a3b8", border: "rgba(255,255,255,.10)",
+        link: "#60a5fa", ghostBg: "rgba(255,255,255,.06)",
+        outG1: "#111827", outG2: "#374151",
+        outFg: "#e5e7eb",
+        inBg: "#0f172a", inBorder: "rgba(255,255,255,.12)", inFg: "#e5e7eb",
+        ticketSelectedBg: "rgba(96,165,250,.18)"
+      },
+      minimal: {
+        primary: "#0f172a", accent: "#334155",
+        outG1: "#e2e8f0", outG2: "#f8fafc",
+        bg: "#f8fafc", sidebar: "#ffffff", contentBg: "#ffffff",
+        text: "#0f172a"
+      },
+      funky: {
+        primary: "#a78bfa", accent: "#ec4899",
+        outG1: "#a78bfa", outG2: "#ec4899",
+        bg: "#faf5ff", sidebar: "#ffffff", contentBg: "#ffffff",
+        text: "#0f172a"
+      }
+    };
+
+    function setActivePreset(name) {
+      document.querySelectorAll('.preset[data-preset]').forEach(el => {
+        el.classList.toggle('active', (el.dataset.preset || '') === String(name || ''));
+      });
+    }
+
+    function applyPreset(name) {
+      const p = THEME_PRESETS[name];
+      if (!p) return;
+      const t = { ...defaultTheme(), ...p };
+      applyTheme(t);
+      saveTheme(t);
+      syncThemeInputs(currentTheme);
+      setActivePreset(name);
+    }
+
+    document.querySelectorAll('.preset[data-preset]').forEach(el => {
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.addEventListener('click', () => applyPreset(el.dataset.preset));
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyPreset(el.dataset.preset); }
+      });
+    });
+
+    if (btnTheme) btnTheme.addEventListener('click', () => { syncThemeInputs(currentTheme); themeDrawer.classList.add('open'); });
     if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open') });
     [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
       .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
     if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open') });
-    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t) });
+    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); syncThemeInputs(currentTheme); setActivePreset(''); });
     if (btnRandom) btnRandom.addEventListener('click', () => {
       const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0'));
       const b1 = rand(), b2 = rand();
-      const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) };
-      applyTheme(t)
+      const t = {
+        ...defaultTheme(),
+        primary: rand(),
+        accent: rand(),
+        outG1: b1,
+        outG2: b2,
+        bg: '#f8fafc',
+        bubbleRadius: 16 + Math.floor(Math.random() * 18),
+        wallOp: Number((Math.random() * 0.25).toFixed(2)),
+        btnRadius: 10 + Math.floor(Math.random() * 8),
+        cardRadius: 14 + Math.floor(Math.random() * 8)
+      };
+      applyTheme(t);
+      saveTheme(t);
+      syncThemeInputs(currentTheme);
+      setActivePreset('');
     });
 
     /** ============== VISIBILIDADE DO APP (novo) ============== */
@@ -1845,6 +1972,7 @@
     function getCss(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() }
     async function boot() {
       const savedT = loadTheme(); applyTheme(savedT || defaultTheme());
+      try { syncThemeInputs(currentTheme); } catch (_) { }
 
       // agente
       agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
@@ -1863,6 +1991,7 @@
         elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false);
         relAgentePill.textContent = '—';
         await loadNoticesAndRender();
+        abrirModalLogin();
         return;
       }
 
