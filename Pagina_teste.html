@@ -3364,6 +3364,9 @@ function renderTickets(filtro = "") {
         switchTab('home');
       } else {
         hideApp();
+        // Mantém o mesmo comportamento da versão em produção: abre o modal imediatamente
+        // (sem isso, o app fica escondido e o usuário não consegue se identificar).
+        abrirModalLogin();
         try { await loadNoticesAndRender(); } catch { }
       }
     });
