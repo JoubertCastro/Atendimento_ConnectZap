@@ -1193,9 +1193,7 @@
             <div class="card p-4">
               <div class="flex items-center justify-between gap-2">
                 <h3 class="font-semibold">Dados do cliente</h3>
-                <button id="btnEnvIndUsarConversa" class="btn btn-ghost btn-sm" type="button"
-                  title="Preenche com a conversa selecionada">Usar conversa atual</button>
-              </div>
+</div>
 
               <!-- Phone ID: obrigatório, mas escondido (sem edição) -->
               <input id="envIndPhoneId" type="hidden" />
@@ -1590,6 +1588,46 @@
     function clickForaMenuConcluir(e) { const within = menuConcluir.contains(e.target) || btnConcluir.contains(e.target); if (!within) fecharMenuConcluir() }
     btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir() };
     renderMenuConcluir();
+
+/** ============== LIBERAR / CONCLUIR ============== */
+    btnLiberar.onclick = async () => {
+      if (!selecionado) return;
+      try {
+        const r = await fetch(`${CONV_API}/api/tickets/liberar`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id }) });
+        const j = await r.json();
+        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível liberar."); return; }
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id); delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
+        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id))); saveTickets(); renderTickets(); limparChat();
+        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
+
+        // Segurança extra: ao liberar, removemos a seleção e interrompemos o polling de mensagens
+        selecionado = null;
+        if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+        if (typeof schedulePolls === 'function') schedulePolls();
+
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+      } catch (e) { alert("Erro ao liberar.") }
+    };
+
+    async function concluirAtendimento(motivo) {
+      if (!selecionado) return;
+      try {
+        btnConcluir.disabled = true;
+        const r = await fetch(`${CONV_API}/api/tickets/concluir`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id, motivo }) });
+        const j = await r.json();
+        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível concluir."); btnConcluir.disabled = false; return; }
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id); delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
+        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id))); saveTickets(); renderTickets(); limparChat();
+        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
+        selecionado = null;
+        if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+        if (typeof schedulePolls === 'function') schedulePolls();
+
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+      } catch (e) { alert("Erro ao concluir."); btnConcluir.disabled = false; }
+    }
+
+
 
     /** ============== THEME ============== */
     function themeKey() { return 'cz:theme:v2' }
@@ -2532,7 +2570,79 @@
     };
 
     /** ============== LISTA / CHAT ============== */
-    function renderTickets(filtro = "") {
+    
+
+// Prioridade
+    const priorityModal = document.getElementById('priorityModal');
+    const priorityTelefone = document.getElementById('priorityTelefone');
+    const priorityInfo = document.getElementById('priorityInfo');
+    const priorityErro = document.getElementById('priorityErro');
+    const btnPriorityBuscar = document.getElementById('btnPriorityBuscar');
+    const prioritySpinner = document.getElementById('prioritySpinner');
+    const priorityBtnLabel = document.getElementById('priorityBtnLabel');
+    btnPrioridade.onclick = () => {
+      if (!agente.online) { alert('Você está offline. Vá na Home e clique em “Ficar online”.'); return }
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); return; }
+      abrirPriorityModal();
+    }
+    function abrirPriorityModal() { isModalOpen = true; priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden'); priorityTelefone.value = ''; priorityModal.classList.remove('hidden'); setTimeout(() => priorityTelefone.focus(), 50) }
+    function fecharPriorityModal() { isModalOpen = false; priorityModal.classList.add('hidden') }
+    priorityTelefone.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); btnPriorityBuscar.click() } })
+    function normalizarTelefone(raw) { let d = String(raw || '').replace(/\D/g, ''); if (!d) return ''; if (!d.startsWith('55')) d = '55' + d; const m = d.match(/^55(\d{2})(\d{8,9})(.*)$/); if (m) { const ddd = m[1]; let numero = m[2]; const tail = m[3] || ''; if (numero.length === 9 && numero.startsWith('9')) numero = numero.slice(1); d = '55' + ddd + numero + tail } return d }
+    function phoneIdsForCarteira() { return (carteiraToPhoneIds[agente.carteira] || []).map(String) }
+    function dedupe(arr) { return Array.from(new Set(arr.filter(Boolean))) }
+    async function preferPhoneIdDoContato(remetente) {
+      const hit = (ordemCache || []).find(x => String(x.remetente) === String(remetente));
+      if (hit && hit.phone_id) return String(hit.phone_id);
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/contatos`); const all = await r.json();
+        const ids = phoneIdsForCarteira(); const c = (all || []).find(x => ids.includes(String(x.phone_id)) && String(x.remetente) === String(remetente));
+        return c ? String(c.phone_id) : null;
+      } catch { return null }
+    }
+    async function tentarClaimComIds(remetente, ids) {
+      const candidatos = [];
+      if (ids && ids.length) { candidatos.push(ids); ids.forEach(id => candidatos.push([id])); }
+      else { candidatos.push([]) }
+      for (const arr of candidatos) {
+        const body = { codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira, remetente, ...(arr.length ? { phone_id: arr } : {}), prioridade: true };
+        const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
+        if (r.status === 404) continue;
+        return data;
+      }
+      return { ok: false, erro: 'Contato não está na fila desta carteira.' };
+    }
+    btnPriorityBuscar.onclick = async () => {
+      priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden');
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; priorityErro.classList.remove('hidden'); return; }
+      const nrm = normalizarTelefone(priorityTelefone.value);
+      if (nrm.length < 11) { priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).'; priorityErro.classList.remove('hidden'); return; }
+      priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`; priorityInfo.classList.remove('hidden');
+      const preferido = await preferPhoneIdDoContato(nrm);
+      const ordemIds = dedupe([preferido, ...phoneIdsForCarteira()]);
+      btnPriorityBuscar.disabled = true; prioritySpinner.classList.remove('hidden'); priorityBtnLabel.textContent = 'Solicitando…';
+      try {
+        const data = await tentarClaimComIds(nrm, ordemIds);
+        if (data && (data.limit_per_agent !== undefined)) { limitPerAgent = Number(data.limit_per_agent || 0); ativosCount = Number(data.ativos || ativosCount); priorityErro.textContent = data.erro || `Limite de ${limitPerAgent} atingido.`; priorityErro.classList.remove('hidden'); await refreshAtivosELimite(); return; }
+        if (data && data.ok && data.ticket) {
+          priorityInfo.innerHTML = `<span class="text-emerald-700 font-medium">Prioridade concedida.</span> Abrindo o ticket…`;
+          if (!tickets.find(t => t.remetente === data.ticket.remetente && t.phone_id === data.ticket.phone_id)) { tickets.unshift(data.ticket); saveTickets(); renderTickets(); }
+          fecharPriorityModal(); abrirTicket(data.ticket); ativosCount++; renderAtivosLimiteUI(); return;
+        }
+        if (data && (data.assigned_to || data.atendimento)) {
+          const owner = data.assigned_to || data.atendimento;
+          priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome || '—')}</strong> (#${escapeHtml(String(owner.codigo || '—'))}).`;
+          priorityErro.classList.remove('hidden'); return;
+        }
+        priorityErro.textContent = (data && (data.erro || data.message)) || 'Não foi possível conceder prioridade.'; priorityErro.classList.remove('hidden');
+      } catch (e) { priorityErro.textContent = 'Falha ao solicitar prioridade.'; priorityErro.classList.remove('hidden') }
+      finally { btnPriorityBuscar.disabled = false; prioritySpinner.classList.add('hidden'); priorityBtnLabel.textContent = 'Buscar e solicitar' }
+    };
+
+    
+
+function renderTickets(filtro = "") {
       const q = (filtro || "").toLowerCase().trim(); const frag = document.createDocumentFragment(); elListaTickets.innerHTML = "";
       tickets.forEach(t => {
         const nome = t.nome_exibicao || t.remetente; const hay = `${nome} ${t.remetente}`.toLowerCase(); if (q && !hay.includes(q)) return;
@@ -2682,7 +2792,7 @@
       try { await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), carteira: agente.carteira || '' }) }).catch(() => { }); } catch (_) { }
       try {
         localStorage.removeItem("agente_codigo"); localStorage.removeItem("agente_nome"); localStorage.removeItem("agente_carteira"); localStorage.removeItem("agente_origem");
-        Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:") || k.startsWith("cz:unreadCount:") || k.startsWith("cz:lastContatoTs:")) localStorage.removeItem(k) });
+        localStorage.removeItem("agente_origem_bd"); localStorage.removeItem("agente_permite_envio_individual"); Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:") || k.startsWith("cz:unreadCount:") || k.startsWith("cz:lastContatoTs:")) localStorage.removeItem(k) });
       } catch (_) { }
       if (pollingContatos) clearInterval(pollingContatos);
       if (pollingMensagens) clearInterval(pollingMensagens);
