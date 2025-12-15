@@ -1184,10 +1184,8 @@
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-xl font-bold">Envio individual</h2>
-              <p class="muted mt-1">Envio rápido de template fixo <span class="font-semibold">ligacao_caiu</span> (sem
-                redirecionamento).</p>
+              <p class="muted mt-1">Envio rápido de template fixo <span class="font-semibold">ligacao_caiu</span></p>
             </div>
-            <span class="pill">Template: ligacao_caiu</span>
           </div>
 
           <!-- AJUSTE DE LAYOUT: usa melhor o espaço -->
@@ -1204,12 +1202,12 @@
                 <div>
                   <label class="label">Telefone</label>
                   <input id="envIndTelefone" class="input" placeholder="Ex: 61999998888 ou 5561999998888" />
-                  <p class="hint mt-1">Pode informar com ou sem 55. O frontend normaliza e o backend também.</p>
+                  <p class="hint mt-1">Informar com ou sem o 9 adicional</p>
                 </div>
                 <div>
                   <label class="label">Nome (opcional)</label>
                   <input id="envIndNome" class="input" placeholder="Ex: José" />
-                  <p class="hint mt-1">Se vier nome completo, será usado apenas o primeiro nome.</p>
+                  <p class="hint mt-1">Apenas o primeiro nome.</p>
                 </div>
 
                 <div class="md:col-span-2">
@@ -1224,7 +1222,7 @@
                 </div>
 
                 <div class="md:col-span-2 flex flex-wrap gap-2 pt-1">
-                  <button id="btnEnvIndEnviar" class="btn btn-primary px-4 py-2" type="button">Enviar template</button>
+                  <button id="btnEnvIndEnviar" class="btn btn-primary px-4 py-2" type="button">Enviar mensagem</button>
                   <button id="btnEnvIndLimpar" class="btn btn-ghost px-4 py-2" type="button">Limpar</button>
                 </div>
               </div>
@@ -1236,40 +1234,41 @@
 
               <!-- Phone ID: obrigatório, mas escondido (sem edição) -->
               <input id="envIndPhoneId" type="hidden" />
-              <div class="mt-2 result-meta">
-                <span>Conta / Phone ID:</span>
-                <code id="envIndPhoneIdLabel">—</code>
-                <span class="muted" id="envIndPhoneIdHint">preenchido automaticamente</span>
-              </div>
 
-              <div class="mt-3 result-row">
-                <div class="flex items-start justify-between gap-2">
+              <!-- UX: Resultado simplificado (Sucesso/Falha) + botão de detalhes -->
+              <div class="mt-3">
+                <div class="flex items-start justify-between gap-3">
                   <div class="min-w-0">
                     <div class="flex items-center gap-2">
                       <span id="envIndResultPill" class="pill-state pill-neutral">—</span>
                       <span id="envIndResultMsg" class="text-sm font-medium truncate">—</span>
                     </div>
-
-                    <div class="result-meta mt-2">
-                      <span>Endpoint:</span>
-                      <code id="envIndResultEndpoint">—</code>
-                      <span>HTTP:</span>
-                      <code id="envIndResultHttp">—</code>
-                      <span>Msg ID:</span>
-                      <code id="envIndResultMsgId">—</code>
-                    </div>
+                    <div class="text-xs muted mt-1">O detalhe técnico (endpoint/HTTP/msg id) fica em “Detalhes”.</div>
                   </div>
 
                   <button id="envIndToggleDetails" class="btn btn-ghost btn-sm shrink-0" type="button"
-                    aria-expanded="false">+ Detalhes</button>
+                    aria-expanded="false" disabled>+ Detalhes</button>
                 </div>
 
-                <pre id="envIndDetalhes" class="codeblock hidden whitespace-pre-wrap">—</pre>
-              </div>
+                <div id="envIndDetalhesWrap" class="hidden mt-3">
+                  <div class="result-meta mb-2">
+                    <span>Conta / Phone ID:</span>
+                    <code id="envIndPhoneIdLabel">—</code>
+                    <span>Endpoint:</span>
+                    <code id="envIndResultEndpoint">—</code>
+                    <span>HTTP:</span>
+                    <code id="envIndResultHttp">—</code>
+                    <span>Msg ID:</span>
+                    <code id="envIndResultMsgId">—</code>
+                  </div>
 
-              <div class="mt-3 alert alert-warn hidden" id="envIndResultWarn">
-                <div class="font-semibold">Falha</div>
-                <div class="muted" id="envIndResultWarnText">—</div>
+                  <pre id="envIndDetalhes" class="codeblock whitespace-pre-wrap">—</pre>
+                </div>
+
+                <div class="mt-3 alert alert-warn hidden" id="envIndResultWarn">
+                  <div class="font-semibold">Falha</div>
+                  <div class="muted" id="envIndResultWarnText">—</div>
+                </div>
               </div>
             </div>
           </div>
@@ -2010,6 +2009,7 @@
       const ep = document.getElementById('envIndResultEndpoint');
       const hs = document.getElementById('envIndResultHttp');
       const mid = document.getElementById('envIndResultMsgId');
+      const detailsWrap = document.getElementById('envIndDetalhesWrap');
       const details = document.getElementById('envIndDetalhes');
       const toggle = document.getElementById('envIndToggleDetails');
       const warnBox = document.getElementById('envIndResultWarn');
@@ -2043,14 +2043,12 @@
         try { details.textContent = JSON.stringify(obj.__raw ?? obj, null, 2); } catch { details.textContent = String(obj.__raw ?? obj); }
       }
       if (toggle) {
-        toggle.disabled = false;
-        toggle.classList.remove('hidden');
+        toggle.disabled = (statusKind === 'neutral');
         // por padrão recolhido
-        if (details) details.classList.add('hidden');
+        if (detailsWrap) detailsWrap.classList.add('hidden');
         toggle.textContent = '+ Detalhes';
         toggle.setAttribute('aria-expanded', 'false');
       }
-
       // caixa de erro “amigável”
       const errMsg = obj.erro || obj.error || obj.message || obj.__err;
       if (warnBox && warnText) {
@@ -2069,13 +2067,19 @@
 
     function envIndResetResultUI() {
       envIndSetResultCompact({ __kind: 'neutral', __statusText: '—', __statusMsg: '—', endpoint_usado: '—', http_status: '—', response: { msg_id: '—' }, __raw: '—' });
+
       const toggle = document.getElementById('envIndToggleDetails');
+      const detailsWrap = document.getElementById('envIndDetalhesWrap');
       const details = document.getElementById('envIndDetalhes');
-      if (toggle && details) {
-        details.classList.add('hidden');
+
+      if (detailsWrap) detailsWrap.classList.add('hidden');
+      if (details) details.textContent = '—';
+      if (toggle) {
         toggle.textContent = '+ Detalhes';
         toggle.setAttribute('aria-expanded', 'false');
+        toggle.disabled = true;
       }
+
       const warnBox = document.getElementById('envIndResultWarn');
       if (warnBox) warnBox.classList.add('hidden');
     }
@@ -2279,6 +2283,7 @@
       const phoneIdEl = document.getElementById('envIndPhoneId');
 
       const toggle = document.getElementById('envIndToggleDetails');
+      const detailsWrap = document.getElementById('envIndDetalhesWrap');
       const details = document.getElementById('envIndDetalhes');
 
       if (btnUse) btnUse.addEventListener('click', envIndUsarConversaAtual);
@@ -2303,15 +2308,14 @@
       if (nomeEl) nomeEl.addEventListener('input', envIndSetPreview);
 
       // Detalhes: botão + (toggle)
-      if (toggle && details) {
+      if (toggle && detailsWrap) {
         toggle.addEventListener('click', () => {
-          const open = !details.classList.contains('hidden');
-          details.classList.toggle('hidden');
+          const open = !detailsWrap.classList.contains('hidden');
+          detailsWrap.classList.toggle('hidden');
           toggle.textContent = open ? '+ Detalhes' : '− Detalhes';
           toggle.setAttribute('aria-expanded', String(!open));
         });
       }
-
       envIndSetPreview();
       envIndResetResultUI();
 
@@ -3039,7 +3043,6 @@
         switchTab('home');
       } else {
         hideApp();
-        // ainda assim carrega avisos (se carteira não existir, retorna vazio)
         try { await loadNoticesAndRender(); } catch { }
       }
     });
