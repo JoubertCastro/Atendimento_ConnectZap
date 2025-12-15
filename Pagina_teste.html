@@ -1201,16 +1201,56 @@
               <input id="envIndPhoneId" type="hidden" />
 
               <div class="mt-3 grid md:grid-cols-2 gap-3">
-                <div>
-                  <label class="label">Telefone</label>
-                  <input id="envIndTelefone" class="input" placeholder="Ex: 61999998888 ou 5561999998888" />
-                  <p class="hint mt-1">Informar com ou sem o 9 adicional</p>
-                </div>
+                
+                <!-- Busca de cadastro (substitui digitação manual) -->
+                <div class="md:col-span-2">
+                  <label class="label">Buscar cadastro</label>
 
-                <div>
-                  <label class="label">Nome (opcional)</label>
-                  <input id="envIndNome" class="input" placeholder="Ex: José" />
-                  <p class="hint mt-1">Apenas o primeiro nome.</p>
+                  <div class="grid md:grid-cols-3 gap-2">
+                    <div>
+                      <label class="label text-xs muted">Base</label>
+                      <select id="envIndBase" class="input">
+                        <option value="bd5">BD5</option>
+                        <option value="bd4">BD4</option>
+                        <option value="bd7">BD7</option>
+                        <option value="bd8">BD8</option>
+                      </select>
+                    </div>
+
+                    <div class="md:col-span-2">
+                      <label class="label text-xs muted">Código do cliente</label>
+                      <div class="flex flex-wrap gap-2">
+                        <input id="envIndCodigo" class="input flex-1" placeholder="Ex: 123456" />
+                        <button id="btnEnvIndBuscar" class="btn btn-ghost px-4 py-2" type="button">Buscar</button>
+                      </div>
+                      <p class="hint mt-1">Pesquise o cadastro e selecione o telefone que deseja usar.</p>
+                    </div>
+                  </div>
+
+                  <div id="envIndBuscaBox" class="mt-3 hidden">
+                    <div id="envIndBuscaMsg" class="text-sm muted">—</div>
+
+                    <div id="envIndResultadosWrap" class="mt-3 hidden">
+                      <div class="flex items-center flex-wrap gap-2">
+                        <span class="text-sm muted">Selecionado:</span>
+                        <span id="envIndTelefoneEscolhido" class="pill-state pill-neutral">Nenhum</span>
+                        <span id="envIndNomeEscolhido" class="text-sm muted"></span>
+                      </div>
+
+                      <div class="mt-2 overflow-x-auto">
+                        <table class="table-soft">
+                          <thead>
+                            <tr>
+                              <th class="w-40">Telefone</th>
+                              <th>Nome</th>
+                              <th class="w-28 text-right">Ação</th>
+                            </tr>
+                          </thead>
+                          <tbody id="envIndResultados"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="md:col-span-2">
@@ -1379,6 +1419,7 @@
     const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/, '');
     const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
     const API_BASE = (window.API_BASE || "https://dashboard-production-4c05.up.railway.app").replace(/\/+$/, '');
+    const ESTRAT_API = (window.ESTRAT_API || "https://consultasic-production.up.railway.app").replace(/\/+$/, '');
     const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
     const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
 
@@ -1923,6 +1964,7 @@
       } else if (tab === 'envio_individual') {
         tabEnvioIndividual.classList.remove('hidden');
         tabBtnEnvioIndividual.classList.add('active');
+        envIndSyncFromConversa();
       } else {
         tabHome.classList.remove('hidden');
         tabBtnHome.classList.add('active');
@@ -1931,6 +1973,9 @@
 
     /** ============== ENVIO INDIVIDUAL (ligacao_caiu) — AJUSTE 1 ============== */
     let __envIndBound = false;
+    let envIndContatoSelecionado = null;
+    let envIndBuscaRows = [];
+
 
     function normalizeMsisdnBR(v) {
       if (!v) return "";
@@ -1952,7 +1997,10 @@
     }
 
     function envIndSetPreview() {
-      const nome = firstNameOf(document.getElementById('envIndNome')?.value) || firstNameOf(selecionado?.nome_exibicao) || 'cliente';
+      const nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome)
+        || firstNameOf(selecionado?.nome_exibicao)
+        || 'cliente';
+
       const el = document.getElementById('envIndPreview');
       if (!el) return;
       el.innerHTML = `Olá, <span class="font-semibold">${escapeHtml(nome)}</span>! Perdemos a sua ligação. Se estiver disponível, responda aqui para continuar.`;
@@ -2003,6 +2051,173 @@
     }
 
 
+    // ===== Busca de cadastro (SIC) — Envio Individual =====
+    function formatTelefoneBR(msisdn) {
+      const d = String(msisdn || '').replace(/\D+/g, '');
+      let x = d;
+      if (x.startsWith('55')) x = x.slice(2);
+      if (x.length < 10) return msisdn || '';
+      const dd = x.slice(0, 2);
+      const num = x.slice(2);
+      if (num.length === 9) return `(${dd}) ${num.slice(0, 5)}-${num.slice(5)}`;
+      if (num.length === 8) return `(${dd}) ${num.slice(0, 4)}-${num.slice(4)}`;
+      return `(${dd}) ${num}`;
+    }
+
+    function envIndUpdateChosenUI() {
+      const pill = document.getElementById('envIndTelefoneEscolhido');
+      const nomeEl = document.getElementById('envIndNomeEscolhido');
+
+      const tel = envIndContatoSelecionado?.to_msisdn ? formatTelefoneBR(envIndContatoSelecionado.to_msisdn) : '';
+      const nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome);
+
+      if (pill) {
+        pill.classList.remove('pill-success', 'pill-fail', 'pill-neutral');
+        pill.classList.add(tel ? 'pill-success' : 'pill-neutral');
+        pill.textContent = tel || 'Nenhum';
+      }
+      if (nomeEl) {
+        nomeEl.textContent = nome ? `• ${nome}` : '';
+      }
+    }
+
+    function envIndResetBuscaUI() {
+      envIndBuscaRows = [];
+      envIndContatoSelecionado = null;
+
+      const box = document.getElementById('envIndBuscaBox');
+      const msg = document.getElementById('envIndBuscaMsg');
+      const wrap = document.getElementById('envIndResultadosWrap');
+      const tbody = document.getElementById('envIndResultados');
+
+      if (box) box.classList.add('hidden');
+      if (msg) msg.textContent = '—';
+      if (wrap) wrap.classList.add('hidden');
+      if (tbody) tbody.innerHTML = '';
+      envIndUpdateChosenUI();
+      envIndSetPreview();
+    }
+
+    function envIndRenderResultados(rows) {
+      const tbody = document.getElementById('envIndResultados');
+      const wrap = document.getElementById('envIndResultadosWrap');
+      if (!tbody || !wrap) return;
+
+      tbody.innerHTML = '';
+      rows.forEach((r, i) => {
+        const tel = normalizeMsisdnBR(r.TELEFONE || r.telefone || r.to_msisdn || r.to || '');
+        const nome = firstNameOf(r.PrimeiroNome || r.primeiro_nome || r.nome || '');
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="font-mono text-sm">${escapeHtml(formatTelefoneBR(tel))}</td>
+          <td class="text-sm">${escapeHtml(nome || '—')}</td>
+          <td class="text-right">
+            <button class="btn btn-ghost btn-sm" type="button" onclick="envIndSelectFromBusca(${i})">Selecionar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      wrap.classList.remove('hidden');
+    }
+
+    function envIndSelectFromBusca(i) {
+      const r = envIndBuscaRows?.[i];
+      if (!r) return;
+      const tel = normalizeMsisdnBR(r.TELEFONE || r.telefone || '');
+      const nome = firstNameOf(r.PrimeiroNome || r.primeiro_nome || r.nome || '');
+
+      envIndContatoSelecionado = {
+        to_msisdn: tel,
+        primeiro_nome: nome,
+        __raw: r,
+        __from: 'busca'
+      };
+
+      envIndUpdateChosenUI();
+      envIndSetPreview();
+    }
+
+    async function pesquisarCadastroEnvInd() {
+      const base = (document.getElementById('envIndBase')?.value || '').trim();
+      const codigo = (document.getElementById('envIndCodigo')?.value || '').trim();
+
+      const box = document.getElementById('envIndBuscaBox');
+      const msg = document.getElementById('envIndBuscaMsg');
+      const wrap = document.getElementById('envIndResultadosWrap');
+
+      if (box) box.classList.remove('hidden');
+      if (msg) msg.textContent = '⏳ Buscando cadastro...';
+      if (wrap) wrap.classList.add('hidden');
+
+      envIndBuscaRows = [];
+      envIndContatoSelecionado = null;
+      envIndUpdateChosenUI();
+      envIndSetPreview();
+
+      if (!base || !codigo) {
+        if (msg) msg.textContent = 'Informe a base e o código do cliente.';
+        return;
+      }
+
+      try {
+        const url = `${ESTRAT_API}/api/estrategias/pesquisa/${encodeURIComponent(base)}/${encodeURIComponent(codigo)}`;
+        const res = await fetch(url, {
+          method: 'GET',
+          mode: 'cors',
+          credentials: 'omit',
+          cache: 'no-store'
+        });
+
+        if (!res.ok) {
+          const t = await res.text();
+          throw new Error(`Falha ao buscar cadastro (${res.status}): ${t}`);
+        }
+
+        const data = await res.json();
+        const rows = Array.isArray(data) ? data : (Array.isArray(data?.dados) ? data.dados : []);
+        const norm = rows
+          .map(r => ({
+            ...r,
+            TELEFONE: normalizeMsisdnBR(r.TELEFONE || r.telefone || r.to_msisdn || r.to || ''),
+            PrimeiroNome: firstNameOf(r.PrimeiroNome || r.primeiro_nome || r.nome || '')
+          }))
+          .filter(r => r.TELEFONE && r.TELEFONE.length >= 12);
+
+        if (!norm.length) {
+          if (msg) msg.textContent = 'Nenhum telefone encontrado para esse código.';
+          envIndBuscaRows = [];
+          return;
+        }
+
+        envIndBuscaRows = norm;
+        if (msg) msg.textContent = `✅ ${norm.length} telefone(s) encontrado(s). Selecione um para enviar.`;
+        envIndRenderResultados(norm);
+      } catch (err) {
+        if (msg) msg.textContent = `❌ ${err?.message || 'Falha ao buscar cadastro.'}`;
+      }
+    }
+
+    function envIndSyncFromConversa() {
+      const phoneIdEl = document.getElementById('envIndPhoneId');
+      if (phoneIdEl && !phoneIdEl.value && selecionado?.phone_id) phoneIdEl.value = String(selecionado.phone_id || '');
+
+      // Se já há um telefone selecionado pela busca, não sobrescreve
+      if (!envIndContatoSelecionado && selecionado?.remetente) {
+        const tel = normalizeMsisdnBR(selecionado.remetente || '');
+        const nome = firstNameOf(selecionado.nome_exibicao || '');
+        if (tel) {
+          envIndContatoSelecionado = { to_msisdn: tel, primeiro_nome: nome, __from: 'conversa' };
+        }
+      }
+
+      envIndUpdateChosenUI();
+      envIndUpdatePhoneIdLabel(phoneIdEl?.value || '');
+      envIndSetPreview();
+    }
+
+
     async function postJson(url, payload) {
       const r = await fetch(url, {
         method: 'POST',
@@ -2020,16 +2235,14 @@
         return;
       }
 
-      const telEl = document.getElementById('envIndTelefone');
-      const nomeEl = document.getElementById('envIndNome');
-      const phoneIdEl = document.getElementById('envIndPhoneId');
+            const phoneIdEl = document.getElementById('envIndPhoneId');
       const btn = document.getElementById('btnEnvIndEnviar');
 
-      const rawTel = (telEl?.value || '').trim() || (selecionado?.remetente || '');
+      const rawTel = (envIndContatoSelecionado?.to_msisdn || '').trim() || (selecionado?.remetente || '');
       const to_msisdn = normalizeMsisdnBR(rawTel);
-      const primeiro_nome = firstNameOf((nomeEl?.value || '').trim() || selecionado?.nome_exibicao || '') || 'cliente';
+      const primeiro_nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome || '') || firstNameOf(selecionado?.nome_exibicao || '') || 'cliente';
 
-      // Phone ID é obrigatório (mas UI fica escondida)
+// Phone ID é obrigatório (mas UI fica escondida)
       const phone_id = (phoneIdEl?.value || '').trim()
         || (selecionado?.phone_id ? String(selecionado.phone_id) : '')
         || pickDefaultPhoneId();
@@ -2138,58 +2351,62 @@
         showModalFeedback('Selecione uma conversa em "Conversas" antes.', 'Envio individual', 1600);
         return;
       }
-      const telEl = document.getElementById('envIndTelefone');
-      const nomeEl = document.getElementById('envIndNome');
       const phoneIdEl = document.getElementById('envIndPhoneId');
-
-      if (telEl) telEl.value = String(selecionado.remetente || '');
-      if (nomeEl) nomeEl.value = firstNameOf(selecionado.nome_exibicao || '') || '';
       if (phoneIdEl) phoneIdEl.value = String(selecionado.phone_id || '');
 
+      const tel = normalizeMsisdnBR(selecionado.remetente || '');
+      const nome = firstNameOf(selecionado.nome_exibicao || '') || '';
+
+      envIndContatoSelecionado = tel ? { to_msisdn: tel, primeiro_nome: nome, __from: 'conversa' } : null;
+
+      envIndUpdateChosenUI();
       envIndUpdatePhoneIdLabel(phoneIdEl?.value || '');
       envIndSetPreview();
       switchTab('envio_individual');
     }
 
+
     function initEnvioIndividual() {
       if (__envIndBound) return;
       __envIndBound = true;
 
-      const btnUse = document.getElementById('btnEnvIndUsarConversa');
       const btnSend = document.getElementById('btnEnvIndEnviar');
       const btnClear = document.getElementById('btnEnvIndLimpar');
-      const telEl = document.getElementById('envIndTelefone');
-      const nomeEl = document.getElementById('envIndNome');
+      const btnBuscar = document.getElementById('btnEnvIndBuscar');
+      const codigoEl = document.getElementById('envIndCodigo');
+      const baseEl = document.getElementById('envIndBase');
       const phoneIdEl = document.getElementById('envIndPhoneId');
 
-      if (btnUse) btnUse.addEventListener('click', envIndUsarConversaAtual);
       if (btnSend) btnSend.addEventListener('click', enviarLigacaoCaiu);
 
+      if (btnBuscar) btnBuscar.addEventListener('click', pesquisarCadastroEnvInd);
+
+      if (codigoEl) {
+        codigoEl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            pesquisarCadastroEnvInd();
+          }
+        });
+      }
+
       if (btnClear) btnClear.addEventListener('click', () => {
-        if (telEl) telEl.value = '';
-        if (nomeEl) nomeEl.value = '';
+        if (codigoEl) codigoEl.value = '';
+        if (baseEl && !baseEl.value) baseEl.value = 'bd5';
         if (phoneIdEl) phoneIdEl.value = '';
-        envIndSetPreview();
+        envIndResetBuscaUI();
         envIndResetResultUI();
       });
 
-      if (telEl) telEl.addEventListener('blur', () => {
-        const v = telEl.value.trim();
-        if (!v) return;
-        const n = normalizeMsisdnBR(v);
-        if (n) telEl.value = n;
-      });
-
-      if (nomeEl) nomeEl.addEventListener('input', envIndSetPreview);
-
-      envIndSetPreview();
       envIndResetResultUI();
+      envIndUpdateChosenUI();
 
-      // se já tiver conversa selecionada e campo phone_id estiver vazio, preenche
-      if (phoneIdEl && !phoneIdEl.value && selecionado?.phone_id) phoneIdEl.value = String(selecionado.phone_id);
+      // Se já tiver conversa selecionada, usa como contexto (sem precisar de botão)
+      envIndSyncFromConversa();
 
       renderPermissaoEnvioIndividual();
     }
+
 
     /** ============== ONLINE/OFFLINE, LIMITES ============== */
     async function verificarOnline() {
