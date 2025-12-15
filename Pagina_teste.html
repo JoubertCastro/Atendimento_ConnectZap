@@ -1188,15 +1188,17 @@
             </div>
           </div>
 
-          <!-- AJUSTE DE LAYOUT: usa melhor o espaço -->
-          <div class="mt-4 grid lg:grid-cols-3 gap-4">
-            <!-- COLUNA 1/2 -->
-            <div class="card p-4 lg:col-span-2">
+          <!-- AJUSTE DE LAYOUT: UX mais simples (status abaixo do botão) -->
+          <div class="mt-4">
+            <div class="card p-4">
               <div class="flex items-center justify-between gap-2">
                 <h3 class="font-semibold">Dados do cliente</h3>
                 <button id="btnEnvIndUsarConversa" class="btn btn-ghost btn-sm" type="button"
                   title="Preenche com a conversa selecionada">Usar conversa atual</button>
               </div>
+
+              <!-- Phone ID: obrigatório, mas escondido (sem edição) -->
+              <input id="envIndPhoneId" type="hidden" />
 
               <div class="mt-3 grid md:grid-cols-2 gap-3">
                 <div>
@@ -1204,6 +1206,7 @@
                   <input id="envIndTelefone" class="input" placeholder="Ex: 61999998888 ou 5561999998888" />
                   <p class="hint mt-1">Informar com ou sem o 9 adicional</p>
                 </div>
+
                 <div>
                   <label class="label">Nome (opcional)</label>
                   <input id="envIndNome" class="input" placeholder="Ex: José" />
@@ -1225,53 +1228,21 @@
                   <button id="btnEnvIndEnviar" class="btn btn-primary px-4 py-2" type="button">Enviar mensagem</button>
                   <button id="btnEnvIndLimpar" class="btn btn-ghost px-4 py-2" type="button">Limpar</button>
                 </div>
-              </div>
-            </div>
 
-            <!-- COLUNA 3 -->
-            <div class="card p-4">
-              <h3 class="font-semibold">Resultado</h3>
-
-              <!-- Phone ID: obrigatório, mas escondido (sem edição) -->
-              <input id="envIndPhoneId" type="hidden" />
-
-              <!-- UX: Resultado simplificado (Sucesso/Falha) + botão de detalhes -->
-              <div class="mt-3">
-                <div class="flex items-start justify-between gap-3">
-                  <div class="min-w-0">
+                <!-- Status do envio (somente Sucesso/Falha/Enviando) -->
+                <div class="md:col-span-2">
+                  <div id="envIndStatusWrap" class="hidden mt-2">
                     <div class="flex items-center gap-2">
-                      <span id="envIndResultPill" class="pill-state pill-neutral">—</span>
-                      <span id="envIndResultMsg" class="text-sm font-medium truncate">—</span>
+                      <span class="text-sm muted">Status:</span>
+                      <span id="envIndStatusPill" class="pill-state pill-neutral">—</span>
                     </div>
-                    <div class="text-xs muted mt-1">O detalhe técnico (endpoint/HTTP/msg id) fica em “Detalhes”.</div>
                   </div>
-
-                  <button id="envIndToggleDetails" class="btn btn-ghost btn-sm shrink-0" type="button"
-                    aria-expanded="false" disabled>+ Detalhes</button>
                 </div>
 
-                <div id="envIndDetalhesWrap" class="hidden mt-3">
-                  <div class="result-meta mb-2">
-                    <span>Conta / Phone ID:</span>
-                    <code id="envIndPhoneIdLabel">—</code>
-                    <span>Endpoint:</span>
-                    <code id="envIndResultEndpoint">—</code>
-                    <span>HTTP:</span>
-                    <code id="envIndResultHttp">—</code>
-                    <span>Msg ID:</span>
-                    <code id="envIndResultMsgId">—</code>
-                  </div>
-
-                  <pre id="envIndDetalhes" class="codeblock whitespace-pre-wrap">—</pre>
-                </div>
-
-                <div class="mt-3 alert alert-warn hidden" id="envIndResultWarn">
-                  <div class="font-semibold">Falha</div>
-                  <div class="muted" id="envIndResultWarnText">—</div>
-                </div>
               </div>
             </div>
           </div>
+
 
           <div id="envIndSemPermissao" class="hidden mt-4 alert alert-warn">
             <div class="font-semibold">Sem permissão</div>
@@ -2002,87 +1973,35 @@
       if (hint) hint.textContent = 'preenchido automaticamente';
     }
 
-    // Resultado “limpo”: só Sucesso/Falha + botão de detalhes
+    // Resultado “mínimo”: somente Sucesso/Falha/Enviando (sem detalhes na tela)
     function envIndSetResultCompact(payload) {
-      const pill = document.getElementById('envIndResultPill');
-      const msg = document.getElementById('envIndResultMsg');
-      const ep = document.getElementById('envIndResultEndpoint');
-      const hs = document.getElementById('envIndResultHttp');
-      const mid = document.getElementById('envIndResultMsgId');
-      const detailsWrap = document.getElementById('envIndDetalhesWrap');
-      const details = document.getElementById('envIndDetalhes');
-      const toggle = document.getElementById('envIndToggleDetails');
-      const warnBox = document.getElementById('envIndResultWarn');
-      const warnText = document.getElementById('envIndResultWarnText');
+      const wrap = document.getElementById('envIndStatusWrap');
+      const pill = document.getElementById('envIndStatusPill');
 
       const obj = payload || {};
       const statusKind = obj.__kind || 'neutral'; // 'success' | 'fail' | 'neutral'
       const statusText = obj.__statusText || '—';
-      const statusMsg = obj.__statusMsg || '—';
 
       if (pill) {
         pill.classList.remove('pill-success', 'pill-fail', 'pill-neutral');
-        pill.classList.add(statusKind === 'success' ? 'pill-success' : statusKind === 'fail' ? 'pill-fail' : 'pill-neutral');
+        pill.classList.add(
+          statusKind === 'success' ? 'pill-success' :
+          statusKind === 'fail' ? 'pill-fail' : 'pill-neutral'
+        );
         pill.textContent = statusText;
       }
-      if (msg) msg.textContent = statusMsg;
 
-      if (ep) ep.textContent = obj.endpoint_usado || obj.endpoint_testado || '—';
-      if (hs) hs.textContent = (obj.http_status != null ? String(obj.http_status) : '—');
-
-      const msgId =
-        obj?.response?.msg_id ||
-        obj?.response?.meta_response?.messages?.[0]?.id ||
-        obj?.meta_response?.messages?.[0]?.id ||
-        obj?.msg_id ||
-        '—';
-      if (mid) mid.textContent = msgId || '—';
-
-      // detalhes sempre ficam prontos, mas escondidos
-      if (details) {
-        try { details.textContent = JSON.stringify(obj.__raw ?? obj, null, 2); } catch { details.textContent = String(obj.__raw ?? obj); }
+      if (wrap) {
+        const shouldShow = !(statusKind === 'neutral' && (statusText === '—' || !statusText));
+        wrap.classList.toggle('hidden', !shouldShow);
       }
-      if (toggle) {
-        toggle.disabled = (statusKind === 'neutral');
-        // por padrão recolhido
-        if (detailsWrap) detailsWrap.classList.add('hidden');
-        toggle.textContent = '+ Detalhes';
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-      // caixa de erro “amigável”
-      const errMsg = obj.erro || obj.error || obj.message || obj.__err;
-      if (warnBox && warnText) {
-        if (statusKind === 'fail' && errMsg) {
-          warnText.textContent = String(errMsg);
-          warnBox.classList.remove('hidden');
-        } else {
-          warnText.textContent = '—';
-          warnBox.classList.add('hidden');
-        }
-      }
-
-      // sincroniza label do phone_id (se vier)
-      if (obj?.request?.phone_id) envIndUpdatePhoneIdLabel(obj.request.phone_id);
     }
 
     function envIndResetResultUI() {
-      envIndSetResultCompact({ __kind: 'neutral', __statusText: '—', __statusMsg: '—', endpoint_usado: '—', http_status: '—', response: { msg_id: '—' }, __raw: '—' });
-
-      const toggle = document.getElementById('envIndToggleDetails');
-      const detailsWrap = document.getElementById('envIndDetalhesWrap');
-      const details = document.getElementById('envIndDetalhes');
-
-      if (detailsWrap) detailsWrap.classList.add('hidden');
-      if (details) details.textContent = '—';
-      if (toggle) {
-        toggle.textContent = '+ Detalhes';
-        toggle.setAttribute('aria-expanded', 'false');
-        toggle.disabled = true;
-      }
-
-      const warnBox = document.getElementById('envIndResultWarn');
-      if (warnBox) warnBox.classList.add('hidden');
+      // esconde o status (mostra apenas após Sucesso/Falha)
+      envIndSetResultCompact({ __kind: 'neutral', __statusText: '—' });
     }
+
 
     async function postJson(url, payload) {
       const r = await fetch(url, {
@@ -2116,26 +2035,12 @@
         || pickDefaultPhoneId();
 
       if (!to_msisdn || to_msisdn.length < 12) {
-        envIndSetResultCompact({
-          __kind: 'fail',
-          __statusText: 'Falha',
-          __statusMsg: 'Telefone inválido',
-          __err: 'Telefone inválido. Informe DDI+DDD+número (ex: 5561999998888).',
-          erro: 'Telefone inválido. Informe DDI+DDD+número (ex: 5561999998888).',
-          __raw: { ok: false, erro: 'Telefone inválido' }
-        });
+        envIndSetResultCompact({ __kind: 'fail', __statusText: 'Falha' });
         return;
       }
 
       if (!phone_id) {
-        envIndSetResultCompact({
-          __kind: 'fail',
-          __statusText: 'Falha',
-          __statusMsg: 'Phone ID não identificado',
-          __err: 'Não foi possível identificar o Phone ID da carteira/conversa. (Obrigatório).',
-          erro: 'Não foi possível identificar o Phone ID da carteira/conversa. (Obrigatório).',
-          __raw: { ok: false, erro: 'phone_id ausente' }
-        });
+        envIndSetResultCompact({ __kind: 'fail', __statusText: 'Falha' });
         return;
       }
 
@@ -2166,16 +2071,7 @@
         if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); }
 
         // estado “neutro” enquanto envia (sem JSON sujo)
-        envIndSetResultCompact({
-          __kind: 'neutral',
-          __statusText: 'Enviando',
-          __statusMsg: `para ${to_msisdn}`,
-          endpoint_usado: '—',
-          http_status: '—',
-          request: payload,
-          response: { msg_id: '—' },
-          __raw: { ok: true, status: 'enviando', request: payload }
-        });
+        envIndSetResultCompact({ __kind: 'neutral', __statusText: '—' });
 
         for (const url of candidates) {
           try {
@@ -2184,23 +2080,7 @@
             const okByJson = !!(j && (j.ok === true || j.messages || j.msg_id || j.meta_response));
             const okByHttp = !!(r && r.ok);
             if (okByHttp || okByJson) {
-              envIndSetResultCompact({
-                __kind: 'success',
-                __statusText: 'Sucesso',
-                __statusMsg: 'Template enviado',
-                ok: true,
-                endpoint_usado: url,
-                http_status: r.status,
-                request: payload,
-                response: j ?? { raw: 'Resposta sem JSON' },
-                __raw: {
-                  ok: true,
-                  endpoint_usado: url,
-                  http_status: r.status,
-                  request: payload,
-                  response: j ?? { raw: 'Resposta sem JSON' }
-                }
-              });
+              envIndSetResultCompact({ __kind: 'success', __statusText: 'Sucesso' });
               showModalFeedback('Template enviado com sucesso.', 'Envio individual', 1200);
               return;
             }
@@ -2282,10 +2162,6 @@
       const nomeEl = document.getElementById('envIndNome');
       const phoneIdEl = document.getElementById('envIndPhoneId');
 
-      const toggle = document.getElementById('envIndToggleDetails');
-      const detailsWrap = document.getElementById('envIndDetalhesWrap');
-      const details = document.getElementById('envIndDetalhes');
-
       if (btnUse) btnUse.addEventListener('click', envIndUsarConversaAtual);
       if (btnSend) btnSend.addEventListener('click', enviarLigacaoCaiu);
 
@@ -2293,7 +2169,6 @@
         if (telEl) telEl.value = '';
         if (nomeEl) nomeEl.value = '';
         if (phoneIdEl) phoneIdEl.value = '';
-        envIndUpdatePhoneIdLabel('');
         envIndSetPreview();
         envIndResetResultUI();
       });
@@ -2307,21 +2182,11 @@
 
       if (nomeEl) nomeEl.addEventListener('input', envIndSetPreview);
 
-      // Detalhes: botão + (toggle)
-      if (toggle && detailsWrap) {
-        toggle.addEventListener('click', () => {
-          const open = !detailsWrap.classList.contains('hidden');
-          detailsWrap.classList.toggle('hidden');
-          toggle.textContent = open ? '+ Detalhes' : '− Detalhes';
-          toggle.setAttribute('aria-expanded', String(!open));
-        });
-      }
       envIndSetPreview();
       envIndResetResultUI();
 
       // se já tiver conversa selecionada e campo phone_id estiver vazio, preenche
       if (phoneIdEl && !phoneIdEl.value && selecionado?.phone_id) phoneIdEl.value = String(selecionado.phone_id);
-      envIndUpdatePhoneIdLabel(phoneIdEl?.value || selecionado?.phone_id || pickDefaultPhoneId());
 
       renderPermissaoEnvioIndividual();
     }
