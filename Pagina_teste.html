@@ -1234,6 +1234,7 @@
                         <option value="bd7">BD7</option>
                         <option value="bd8">BD8</option>
                       </select>
+              <p id="envIndBaseHint" class="mt-1 text-xs text-slate-500 hidden">Definida pelo seu perfil.</p>
                     </div>
 
                     <div class="md:col-span-2">
@@ -1443,8 +1444,8 @@
     const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
 
     /** ============== CARTEIRAS / Phone IDs ============== */
-    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
-    const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
+    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "802977069563598": "Recovery PF", "938298879357445": "Recovery Preventivo", "897647883433681": "Recovery Manutenção", "821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
+        const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
 
     /** ============== ESTADO ============== */
     let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
@@ -2544,6 +2545,37 @@
       const baseEl = document.getElementById('envIndBase');
       const phoneIdEl = document.getElementById('envIndPhoneId');
 
+      // Origem BD vem no payload do agente (origem_bd). Se existir, travamos a seleção.
+      let lockedOrigem = '';
+      try {
+        lockedOrigem = String((agente && agente.origem_bd) ? agente.origem_bd : (localStorage.getItem('agente_origem_bd') || '')).trim().toLowerCase();
+      } catch (e) { lockedOrigem = ''; }
+
+      if (baseEl) {
+        const hintEl = document.getElementById('envIndBaseHint');
+        if (lockedOrigem) {
+          const hasOpt = Array.from(baseEl.options).some(o => String(o.value).toLowerCase() === lockedOrigem);
+          if (!hasOpt) {
+            const opt = document.createElement('option');
+            opt.value = lockedOrigem;
+            opt.textContent = lockedOrigem.toUpperCase();
+            baseEl.appendChild(opt);
+          }
+          baseEl.value = lockedOrigem;
+          baseEl.disabled = true;
+          baseEl.classList.add('opacity-70', 'cursor-not-allowed');
+          baseEl.title = 'Origem definida pelo seu perfil';
+          if (hintEl) {
+            hintEl.textContent = `Definida pelo seu perfil (${lockedOrigem.toUpperCase()}).`;
+            hintEl.classList.remove('hidden');
+          }
+        } else {
+          baseEl.disabled = false;
+          if (hintEl) hintEl.classList.add('hidden');
+        }
+      }
+
+
       if (btnSend) btnSend.addEventListener('click', enviarLigacaoCaiu);
 
       if (btnBuscar) btnBuscar.addEventListener('click', pesquisarCadastroEnvInd);
@@ -2559,7 +2591,10 @@
 
       if (btnClear) btnClear.addEventListener('click', () => {
         if (codigoEl) codigoEl.value = '';
-        if (baseEl && !baseEl.value) baseEl.value = 'bd5';
+        if (baseEl) {
+          if (lockedOrigem) baseEl.value = lockedOrigem;
+          else if (!baseEl.value) baseEl.value = 'bd5';
+        }
         if (phoneIdEl) phoneIdEl.value = '';
         envIndResetBuscaUI();
         envIndResetResultUI();
