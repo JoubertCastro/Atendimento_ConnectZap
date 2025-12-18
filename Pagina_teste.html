@@ -780,6 +780,27 @@
       background: color-mix(in srgb, var(--ghost-bg) 70%, var(--content-bg));
       color: var(--text);
     }
+  
+    /* Theme presets (Temas rápidos) */
+    .preset{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background: color-mix(in srgb, var(--ghost-bg) 85%, var(--content-bg));
+      border-radius: 14px;
+      padding: 10px;
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      user-select:none;
+    }
+    .preset:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(0,0,0,.08);
+      border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+    }
+    .preset.active{
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
   </style>
 </head>
 
@@ -950,7 +971,7 @@
               </div>
             </div>
             <div class="flex flex-col items-end gap-2">
-              <button id="btnPegarProxima" type="button"
+              <button id="btnPegarProxima"
                 class="btn btn-primary px-3 py-2 text-sm text-white disabled:opacity-50 flex items-center gap-2"
                 disabled>
                 <svg id="pegarSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -960,7 +981,7 @@
                 </svg>
                 <span id="pegarLabel">Pegar próxima</span>
               </button>
-              <button id="btnPrioridade" type="button" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50"
+              <button id="btnPrioridade" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50"
                 disabled style="background: rebeccapurple">Pedir prioridade</button>
               <button id="btnTheme" class="mt-2 btn btn-ghost px-3 py-1 text-xs" aria-haspopup="true"
                 aria-controls="themeDrawer">🎨 Tema</button>
@@ -985,10 +1006,10 @@
             <div id="subInfo" class="text-sm muted truncate"></div>
           </div>
           <div class="flex items-center gap-2">
-            <button id="btnLiberar" type="button" class="btn btn-neutral px-3 py-2 text-sm disabled:opacity-50"
+            <button id="btnLiberar" class="btn btn-neutral px-3 py-2 text-sm disabled:opacity-50"
               disabled>Liberar</button>
             <div class="relative">
-              <button id="btnConcluir" type="button" class="btn px-3 py-2 text-sm text-white disabled:opacity-50"
+              <button id="btnConcluir" class="btn px-3 py-2 text-sm text-white disabled:opacity-50"
                 style="background:var(--accent)" disabled aria-haspopup="true" aria-expanded="false">Concluir</button>
               <div id="menuConcluir" class="hidden absolute right-0 mt-2 w-64 border rounded-lg shadow-lg z-20"
                 style="background: var(--content-bg); border-color: var(--border)"></div>
@@ -1019,7 +1040,7 @@
             PDF</button>
           <textarea id="textoMensagem" rows="1" class="flex-1 border rounded-md p-2 resize-none"
             style="border-color:var(--border)" placeholder="Digite uma mensagem…" disabled></textarea>
-          <button id="btnEnviar" type="button" class="btn px-4 py-2 text-white disabled:opacity-50" style="background:var(--accent)"
+          <button id="btnEnviar" class="btn px-4 py-2 text-white disabled:opacity-50" style="background:var(--accent)"
             disabled>Enviar</button>
         </div>
       </main>
@@ -1188,26 +1209,68 @@
             </div>
           </div>
 
-          <!-- AJUSTE DE LAYOUT: usa melhor o espaço -->
-          <div class="mt-4 grid lg:grid-cols-3 gap-4">
-            <!-- COLUNA 1/2 -->
-            <div class="card p-4 lg:col-span-2">
+          <!-- AJUSTE DE LAYOUT: UX mais simples (status abaixo do botão) -->
+          <div class="mt-4">
+            <div class="card p-4">
               <div class="flex items-center justify-between gap-2">
                 <h3 class="font-semibold">Dados do cliente</h3>
-                <button id="btnEnvIndUsarConversa" class="btn btn-ghost btn-sm" type="button"
-                  title="Preenche com a conversa selecionada">Usar conversa atual</button>
-              </div>
+</div>
+
+              <!-- Phone ID: obrigatório, mas escondido (sem edição) -->
+              <input id="envIndPhoneId" type="hidden" />
 
               <div class="mt-3 grid md:grid-cols-2 gap-3">
-                <div>
-                  <label class="label">Telefone</label>
-                  <input id="envIndTelefone" class="input" placeholder="Ex: 61999998888 ou 5561999998888" />
-                  <p class="hint mt-1">Informar com ou sem o 9 adicional</p>
-                </div>
-                <div>
-                  <label class="label">Nome (opcional)</label>
-                  <input id="envIndNome" class="input" placeholder="Ex: José" />
-                  <p class="hint mt-1">Apenas o primeiro nome.</p>
+                
+                <!-- Busca de cadastro (substitui digitação manual) -->
+                <div class="md:col-span-2">
+                  <label class="label">Buscar cadastro</label>
+
+                  <div class="grid md:grid-cols-3 gap-2">
+                    <div>
+                      <label class="label text-xs muted">Base</label>
+                      <select id="envIndBase" class="input">
+                        <option value="bd5">BD5</option>
+                        <option value="bd4">BD4</option>
+                        <option value="bd7">BD7</option>
+                        <option value="bd8">BD8</option>
+                      </select>
+              <p id="envIndBaseHint" class="mt-1 text-xs text-slate-500 hidden">Definida pelo seu perfil.</p>
+                    </div>
+
+                    <div class="md:col-span-2">
+                      <label class="label text-xs muted">Código do cliente</label>
+                      <div class="flex flex-wrap gap-2">
+                        <input id="envIndCodigo" class="input flex-1" placeholder="Ex: 123456" />
+                        <button id="btnEnvIndBuscar" class="btn btn-ghost px-4 py-2" type="button">Buscar</button>
+                      </div>
+                      <p class="hint mt-1">Pesquise o cadastro usando o codigo interno e selecione o telefone que deseja usar.</p>
+                    </div>
+                  </div>
+
+                  <div id="envIndBuscaBox" class="mt-3 hidden">
+                    <div id="envIndBuscaMsg" class="text-sm muted">—</div>
+
+                    <div id="envIndResultadosWrap" class="mt-3 hidden">
+                      <div class="flex items-center flex-wrap gap-2">
+                        <span class="text-sm muted">Selecionado:</span>
+                        <span id="envIndTelefoneEscolhido" class="pill-state pill-neutral">Nenhum</span>
+                        <span id="envIndNomeEscolhido" class="text-sm muted"></span>
+                      </div>
+
+                      <div class="mt-2 overflow-x-auto">
+                        <table class="table-soft">
+                          <thead>
+                            <tr>
+                              <th class="w-40">Telefone</th>
+                              <th>Nome</th>
+                              <th class="w-28 text-right">Ação</th>
+                            </tr>
+                          </thead>
+                          <tbody id="envIndResultados"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="md:col-span-2">
@@ -1225,52 +1288,21 @@
                   <button id="btnEnvIndEnviar" class="btn btn-primary px-4 py-2" type="button">Enviar mensagem</button>
                   <button id="btnEnvIndLimpar" class="btn btn-ghost px-4 py-2" type="button">Limpar</button>
                 </div>
-              </div>
-            </div>
 
-            <!-- COLUNA 3 -->
-            <div class="card p-4">
-              <h3 class="font-semibold">Resultado</h3>
-
-              <!-- Phone ID: obrigatório, mas escondido (sem edição) -->
-              <input id="envIndPhoneId" type="hidden" />
-              <div class="mt-2 result-meta">
-                <span>Conta / Phone ID:</span>
-                <code id="envIndPhoneIdLabel">—</code>
-                <span class="muted" id="envIndPhoneIdHint">preenchido automaticamente</span>
-              </div>
-
-              <div class="mt-3 result-row">
-                <div class="flex items-start justify-between gap-2">
-                  <div class="min-w-0">
+                <!-- Status do envio (somente Sucesso/Falha/Enviando) -->
+                <div class="md:col-span-2">
+                  <div id="envIndStatusWrap" class="hidden mt-2">
                     <div class="flex items-center gap-2">
-                      <span id="envIndResultPill" class="pill-state pill-neutral">—</span>
-                      <span id="envIndResultMsg" class="text-sm font-medium truncate">—</span>
-                    </div>
-
-                    <div class="result-meta mt-2">
-                      <span>Endpoint:</span>
-                      <code id="envIndResultEndpoint">—</code>
-                      <span>HTTP:</span>
-                      <code id="envIndResultHttp">—</code>
-                      <span>Msg ID:</span>
-                      <code id="envIndResultMsgId">—</code>
+                      <span class="text-sm muted">Status:</span>
+                      <span id="envIndStatusPill" class="pill-state pill-neutral">—</span>
                     </div>
                   </div>
-
-                  <button id="envIndToggleDetails" class="btn btn-ghost btn-sm shrink-0" type="button"
-                    aria-expanded="false">+ Detalhes</button>
                 </div>
 
-                <pre id="envIndDetalhes" class="codeblock hidden whitespace-pre-wrap">—</pre>
-              </div>
-
-              <div class="mt-3 alert alert-warn hidden" id="envIndResultWarn">
-                <div class="font-semibold">Falha</div>
-                <div class="muted" id="envIndResultWarnText">—</div>
               </div>
             </div>
           </div>
+
 
           <div id="envIndSemPermissao" class="hidden mt-4 alert alert-warn">
             <div class="font-semibold">Sem permissão</div>
@@ -1407,12 +1439,13 @@
     const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/, '');
     const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
     const API_BASE = (window.API_BASE || "https://dashboard-production-4c05.up.railway.app").replace(/\/+$/, '');
+    const ESTRAT_API = (window.ESTRAT_API || "https://consultasic-production.up.railway.app").replace(/\/+$/, '');
     const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
     const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
 
     /** ============== CARTEIRAS / Phone IDs ============== */
-    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U", "905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
-    const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
+    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "802977069563598": "Recovery PF", "938298879357445": "Recovery Preventivo", "897647883433681": "Recovery Manutenção", "821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
+        const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
 
     /** ============== ESTADO ============== */
     let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
@@ -1578,30 +1611,7 @@
     btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir() };
     renderMenuConcluir();
 
-    /** ============== LIBERAR / CONCLUIR ============== */
-    function resetAtendimentoUI() {
-      selecionado = null;
-      elTitulo.textContent = "Selecione um ticket";
-      elSubInfo.textContent = "";
-      limparChat();
-
-      textarea.value = "";
-      textarea.disabled = true;
-      btnEnviar.disabled = true;
-      btnLiberar.disabled = true;
-      btnConcluir.disabled = true;
-
-      // Envio Individual: volta para o estado padrão (sem ticket selecionado)
-      try {
-        envIndPhoneId = null;
-        envIndUpdatePhoneIdLabel();
-        envIndSetPreview(null);
-      } catch (_) {}
-
-      try { updateEnviarState(); } catch (_) {}
-    }
-
-    /** ============== LIBERAR / CONCLUIR / LOGOUT ============== */
+/** ============== LIBERAR / CONCLUIR ============== */
     btnLiberar.onclick = async () => {
       if (!selecionado) return;
       try {
@@ -1640,13 +1650,16 @@
     }
 
 
+
     /** ============== THEME ============== */
     function themeKey() { return 'cz:theme:v2' }
     function defaultTheme() {
       return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff", hover: "#f1f5f9", hoverStrong: "#e2e8f0", inputBg: "#ffffff", inputFg: "#0f172a", scrollbar: "#cbd5e1", replyBg: "rgba(0,0,0,.06)", replyBorder: "rgba(0,0,0,.08)", replyFg: "#334155" }
     }
+    let currentTheme = defaultTheme();
     function applyTheme(t) {
       const r = document.documentElement.style; const base = defaultTheme(); const x = { ...base, ...t };
+      currentTheme = x;
       r.setProperty('--ticket-selected-bg', x.ticketSelectedBg);
       r.setProperty('--sidebar-bg', x.sidebar); r.setProperty('--content-bg', x.contentBg);
       r.setProperty('--bg', x.bg); r.setProperty('--text', x.text);
@@ -1706,18 +1719,122 @@
       tBtnRadius: document.getElementById('tBtnRadius'),
       tCardRadius: document.getElementById('tCardRadius')
     };
-    if (btnTheme) btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
+        function syncThemeInputs(t) {
+      if (!t) return;
+      try {
+        if (inputs.tPrimary && t.primary) inputs.tPrimary.value = t.primary;
+        if (inputs.tAccent && t.accent) inputs.tAccent.value = t.accent;
+        if (inputs.tSidebar && t.sidebar) inputs.tSidebar.value = t.sidebar;
+        if (inputs.tContentBg && t.contentBg) inputs.tContentBg.value = t.contentBg;
+        if (inputs.tBg && t.bg) inputs.tBg.value = t.bg;
+        if (inputs.tText && t.text) inputs.tText.value = t.text;
+        if (inputs.tOutG1 && t.outG1) inputs.tOutG1.value = t.outG1;
+        if (inputs.tOutG2 && t.outG2) inputs.tOutG2.value = t.outG2;
+        if (inputs.tInBg && t.inBg) inputs.tInBg.value = t.inBg;
+        if (inputs.tInBorder && t.inBorder) inputs.tInBorder.value = t.inBorder;
+
+        if (inputs.tRadius && (t.bubbleRadius != null)) inputs.tRadius.value = String(t.bubbleRadius);
+        if (inputs.tBgOp && (t.wallOp != null)) inputs.tBgOp.value = String(t.wallOp);
+        if (inputs.tFontSize && (t.fontSize != null)) inputs.tFontSize.value = String(t.fontSize);
+        if (inputs.tBtnRadius && (t.btnRadius != null)) inputs.tBtnRadius.value = String(t.btnRadius);
+        if (inputs.tCardRadius && (t.cardRadius != null)) inputs.tCardRadius.value = String(t.cardRadius);
+      } catch (_) { }
+    }
+
+    const THEME_PRESETS = {
+      corporate: {
+        primary: "#2563eb", accent: "#0ea5e9",
+        outG1: "#0ea5e9", outG2: "#2563eb",
+        bg: "#f3f4f6", sidebar: "#ffffff", contentBg: "#ffffff",
+        text: "#0f172a"
+      },
+      ocean: {
+        primary: "#06b6d4", accent: "#10b981",
+        outG1: "#06b6d4", outG2: "#10b981",
+        bg: "#f1f5f9", sidebar: "#ffffff", contentBg: "#ffffff",
+        text: "#0f172a"
+      },
+      sunset: {
+        primary: "#ef4444", accent: "#fb923c",
+        outG1: "#fb923c", outG2: "#ef4444",
+        bg: "#fff7ed", sidebar: "#ffffff", contentBg: "#ffffff",
+        text: "#0f172a"
+      },
+      dark: {
+        primary: "#60a5fa", accent: "#22c55e",
+        sidebar: "#0b1220", contentBg: "#0f172a", bg: "#070b14",
+        text: "#e5e7eb", muted: "#94a3b8", border: "rgba(255,255,255,.10)",
+        link: "#60a5fa", ghostBg: "rgba(255,255,255,.06)",
+        outG1: "#111827", outG2: "#374151",
+        outFg: "#e5e7eb",
+        inBg: "#0f172a", inBorder: "rgba(255,255,255,.12)", inFg: "#e5e7eb",
+        ticketSelectedBg: "rgba(96,165,250,.18)"
+      },
+      minimal: {
+        primary: "#0f172a", accent: "#334155",
+        outG1: "#e2e8f0", outG2: "#f8fafc",
+        bg: "#f8fafc", sidebar: "#ffffff", contentBg: "#ffffff",
+        text: "#0f172a"
+      },
+      funky: {
+        primary: "#a78bfa", accent: "#ec4899",
+        outG1: "#a78bfa", outG2: "#ec4899",
+        bg: "#faf5ff", sidebar: "#ffffff", contentBg: "#ffffff",
+        text: "#0f172a"
+      }
+    };
+
+    function setActivePreset(name) {
+      document.querySelectorAll('.preset[data-preset]').forEach(el => {
+        el.classList.toggle('active', (el.dataset.preset || '') === String(name || ''));
+      });
+    }
+
+    function applyPreset(name) {
+      const p = THEME_PRESETS[name];
+      if (!p) return;
+      const t = { ...defaultTheme(), ...p };
+      applyTheme(t);
+      saveTheme(t);
+      syncThemeInputs(currentTheme);
+      setActivePreset(name);
+    }
+
+    document.querySelectorAll('.preset[data-preset]').forEach(el => {
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.addEventListener('click', () => applyPreset(el.dataset.preset));
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyPreset(el.dataset.preset); }
+      });
+    });
+
+    if (btnTheme) btnTheme.addEventListener('click', () => { syncThemeInputs(currentTheme); themeDrawer.classList.add('open'); });
     if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open') });
     [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
       .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
     if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open') });
-    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t) });
+    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); syncThemeInputs(currentTheme); setActivePreset(''); });
     if (btnRandom) btnRandom.addEventListener('click', () => {
       const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0'));
       const b1 = rand(), b2 = rand();
-      const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) };
-      applyTheme(t)
+      const t = {
+        ...defaultTheme(),
+        primary: rand(),
+        accent: rand(),
+        outG1: b1,
+        outG2: b2,
+        bg: '#f8fafc',
+        bubbleRadius: 16 + Math.floor(Math.random() * 18),
+        wallOp: Number((Math.random() * 0.25).toFixed(2)),
+        btnRadius: 10 + Math.floor(Math.random() * 8),
+        cardRadius: 14 + Math.floor(Math.random() * 8)
+      };
+      applyTheme(t);
+      saveTheme(t);
+      syncThemeInputs(currentTheme);
+      setActivePreset('');
     });
 
     /** ============== VISIBILIDADE DO APP (novo) ============== */
@@ -1856,6 +1973,7 @@
     function getCss(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() }
     async function boot() {
       const savedT = loadTheme(); applyTheme(savedT || defaultTheme());
+      try { syncThemeInputs(currentTheme); } catch (_) { }
 
       // agente
       agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
@@ -1874,6 +1992,7 @@
         elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false);
         relAgentePill.textContent = '—';
         await loadNoticesAndRender();
+        abrirModalLogin();
         return;
       }
 
@@ -2013,6 +2132,7 @@
       } else if (tab === 'envio_individual') {
         tabEnvioIndividual.classList.remove('hidden');
         tabBtnEnvioIndividual.classList.add('active');
+        envIndSyncFromConversa();
       } else {
         tabHome.classList.remove('hidden');
         tabBtnHome.classList.add('active');
@@ -2021,6 +2141,9 @@
 
     /** ============== ENVIO INDIVIDUAL (ligacao_caiu) — AJUSTE 1 ============== */
     let __envIndBound = false;
+    let envIndContatoSelecionado = null;
+    let envIndBuscaRows = [];
+
 
     function normalizeMsisdnBR(v) {
       if (!v) return "";
@@ -2042,7 +2165,10 @@
     }
 
     function envIndSetPreview() {
-      const nome = firstNameOf(document.getElementById('envIndNome')?.value) || firstNameOf(selecionado?.nome_exibicao) || 'cliente';
+      const nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome)
+        || firstNameOf(selecionado?.nome_exibicao)
+        || 'cliente';
+
       const el = document.getElementById('envIndPreview');
       if (!el) return;
       el.innerHTML = `Olá, <span class="font-semibold">${escapeHtml(nome)}</span>! Perdemos a sua ligação. Se estiver disponível, responda aqui para continuar.`;
@@ -2063,82 +2189,202 @@
       if (hint) hint.textContent = 'preenchido automaticamente';
     }
 
-    // Resultado “limpo”: só Sucesso/Falha + botão de detalhes
+    // Resultado “mínimo”: somente Sucesso/Falha/Enviando (sem detalhes na tela)
     function envIndSetResultCompact(payload) {
-      const pill = document.getElementById('envIndResultPill');
-      const msg = document.getElementById('envIndResultMsg');
-      const ep = document.getElementById('envIndResultEndpoint');
-      const hs = document.getElementById('envIndResultHttp');
-      const mid = document.getElementById('envIndResultMsgId');
-      const details = document.getElementById('envIndDetalhes');
-      const toggle = document.getElementById('envIndToggleDetails');
-      const warnBox = document.getElementById('envIndResultWarn');
-      const warnText = document.getElementById('envIndResultWarnText');
+      const wrap = document.getElementById('envIndStatusWrap');
+      const pill = document.getElementById('envIndStatusPill');
 
       const obj = payload || {};
       const statusKind = obj.__kind || 'neutral'; // 'success' | 'fail' | 'neutral'
       const statusText = obj.__statusText || '—';
-      const statusMsg = obj.__statusMsg || '—';
 
       if (pill) {
         pill.classList.remove('pill-success', 'pill-fail', 'pill-neutral');
-        pill.classList.add(statusKind === 'success' ? 'pill-success' : statusKind === 'fail' ? 'pill-fail' : 'pill-neutral');
+        pill.classList.add(
+          statusKind === 'success' ? 'pill-success' :
+          statusKind === 'fail' ? 'pill-fail' : 'pill-neutral'
+        );
         pill.textContent = statusText;
       }
-      if (msg) msg.textContent = statusMsg;
 
-      if (ep) ep.textContent = obj.endpoint_usado || obj.endpoint_testado || '—';
-      if (hs) hs.textContent = (obj.http_status != null ? String(obj.http_status) : '—');
-
-      const msgId =
-        obj?.response?.msg_id ||
-        obj?.response?.meta_response?.messages?.[0]?.id ||
-        obj?.meta_response?.messages?.[0]?.id ||
-        obj?.msg_id ||
-        '—';
-      if (mid) mid.textContent = msgId || '—';
-
-      // detalhes sempre ficam prontos, mas escondidos
-      if (details) {
-        try { details.textContent = JSON.stringify(obj.__raw ?? obj, null, 2); } catch { details.textContent = String(obj.__raw ?? obj); }
+      if (wrap) {
+        const shouldShow = !(statusKind === 'neutral' && (statusText === '—' || !statusText));
+        wrap.classList.toggle('hidden', !shouldShow);
       }
-      if (toggle) {
-        toggle.disabled = false;
-        toggle.classList.remove('hidden');
-        // por padrão recolhido
-        if (details) details.classList.add('hidden');
-        toggle.textContent = '+ Detalhes';
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-
-      // caixa de erro “amigável”
-      const errMsg = obj.erro || obj.error || obj.message || obj.__err;
-      if (warnBox && warnText) {
-        if (statusKind === 'fail' && errMsg) {
-          warnText.textContent = String(errMsg);
-          warnBox.classList.remove('hidden');
-        } else {
-          warnText.textContent = '—';
-          warnBox.classList.add('hidden');
-        }
-      }
-
-      // sincroniza label do phone_id (se vier)
-      if (obj?.request?.phone_id) envIndUpdatePhoneIdLabel(obj.request.phone_id);
     }
 
     function envIndResetResultUI() {
-      envIndSetResultCompact({ __kind: 'neutral', __statusText: '—', __statusMsg: '—', endpoint_usado: '—', http_status: '—', response: { msg_id: '—' }, __raw: '—' });
-      const toggle = document.getElementById('envIndToggleDetails');
-      const details = document.getElementById('envIndDetalhes');
-      if (toggle && details) {
-        details.classList.add('hidden');
-        toggle.textContent = '+ Detalhes';
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-      const warnBox = document.getElementById('envIndResultWarn');
-      if (warnBox) warnBox.classList.add('hidden');
+      // esconde o status (mostra apenas após Sucesso/Falha)
+      envIndSetResultCompact({ __kind: 'neutral', __statusText: '—' });
     }
+
+
+    // ===== Busca de cadastro (SIC) — Envio Individual =====
+    function formatTelefoneBR(msisdn) {
+      const d = String(msisdn || '').replace(/\D+/g, '');
+      let x = d;
+      if (x.startsWith('55')) x = x.slice(2);
+      if (x.length < 10) return msisdn || '';
+      const dd = x.slice(0, 2);
+      const num = x.slice(2);
+      if (num.length === 9) return `(${dd}) ${num.slice(0, 5)}-${num.slice(5)}`;
+      if (num.length === 8) return `(${dd}) ${num.slice(0, 4)}-${num.slice(4)}`;
+      return `(${dd}) ${num}`;
+    }
+
+    function envIndUpdateChosenUI() {
+      const pill = document.getElementById('envIndTelefoneEscolhido');
+      const nomeEl = document.getElementById('envIndNomeEscolhido');
+
+      const tel = envIndContatoSelecionado?.to_msisdn ? formatTelefoneBR(envIndContatoSelecionado.to_msisdn) : '';
+      const nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome);
+
+      if (pill) {
+        pill.classList.remove('pill-success', 'pill-fail', 'pill-neutral');
+        pill.classList.add(tel ? 'pill-success' : 'pill-neutral');
+        pill.textContent = tel || 'Nenhum';
+      }
+      if (nomeEl) {
+        nomeEl.textContent = nome ? `• ${nome}` : '';
+      }
+    }
+
+    function envIndResetBuscaUI() {
+      envIndBuscaRows = [];
+      envIndContatoSelecionado = null;
+
+      const box = document.getElementById('envIndBuscaBox');
+      const msg = document.getElementById('envIndBuscaMsg');
+      const wrap = document.getElementById('envIndResultadosWrap');
+      const tbody = document.getElementById('envIndResultados');
+
+      if (box) box.classList.add('hidden');
+      if (msg) msg.textContent = '—';
+      if (wrap) wrap.classList.add('hidden');
+      if (tbody) tbody.innerHTML = '';
+      envIndUpdateChosenUI();
+      envIndSetPreview();
+    }
+
+    function envIndRenderResultados(rows) {
+      const tbody = document.getElementById('envIndResultados');
+      const wrap = document.getElementById('envIndResultadosWrap');
+      if (!tbody || !wrap) return;
+
+      tbody.innerHTML = '';
+      rows.forEach((r, i) => {
+        const tel = normalizeMsisdnBR(r.TELEFONE || r.telefone || r.to_msisdn || r.to || '');
+        const nome = firstNameOf(r.PrimeiroNome || r.primeiro_nome || r.nome || '');
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="font-mono text-sm">${escapeHtml(formatTelefoneBR(tel))}</td>
+          <td class="text-sm">${escapeHtml(nome || '—')}</td>
+          <td class="text-right">
+            <button class="btn btn-ghost btn-sm" type="button" onclick="envIndSelectFromBusca(${i})">Selecionar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      wrap.classList.remove('hidden');
+    }
+
+    function envIndSelectFromBusca(i) {
+      const r = envIndBuscaRows?.[i];
+      if (!r) return;
+      const tel = normalizeMsisdnBR(r.TELEFONE || r.telefone || '');
+      const nome = firstNameOf(r.PrimeiroNome || r.primeiro_nome || r.nome || '');
+
+      envIndContatoSelecionado = {
+        to_msisdn: tel,
+        primeiro_nome: nome,
+        __raw: r,
+        __from: 'busca'
+      };
+
+      envIndUpdateChosenUI();
+      envIndSetPreview();
+    }
+
+    async function pesquisarCadastroEnvInd() {
+      const base = (document.getElementById('envIndBase')?.value || '').trim();
+      const codigo = (document.getElementById('envIndCodigo')?.value || '').trim();
+
+      const box = document.getElementById('envIndBuscaBox');
+      const msg = document.getElementById('envIndBuscaMsg');
+      const wrap = document.getElementById('envIndResultadosWrap');
+
+      if (box) box.classList.remove('hidden');
+      if (msg) msg.textContent = '⏳ Buscando cadastro...';
+      if (wrap) wrap.classList.add('hidden');
+
+      envIndBuscaRows = [];
+      envIndContatoSelecionado = null;
+      envIndUpdateChosenUI();
+      envIndSetPreview();
+
+      if (!base || !codigo) {
+        if (msg) msg.textContent = 'Informe a base e o código do cliente.';
+        return;
+      }
+
+      try {
+        const url = `${ESTRAT_API}/api/estrategias/pesquisa/${encodeURIComponent(base)}/${encodeURIComponent(codigo)}`;
+        const res = await fetch(url, {
+          method: 'GET',
+          mode: 'cors',
+          credentials: 'omit',
+          cache: 'no-store'
+        });
+
+        if (!res.ok) {
+          const t = await res.text();
+          throw new Error(`Falha ao buscar cadastro (${res.status}): ${t}`);
+        }
+
+        const data = await res.json();
+        const rows = Array.isArray(data) ? data : (Array.isArray(data?.dados) ? data.dados : []);
+        const norm = rows
+          .map(r => ({
+            ...r,
+            TELEFONE: normalizeMsisdnBR(r.TELEFONE || r.telefone || r.to_msisdn || r.to || ''),
+            PrimeiroNome: firstNameOf(r.PrimeiroNome || r.primeiro_nome || r.nome || '')
+          }))
+          .filter(r => r.TELEFONE && r.TELEFONE.length >= 12);
+
+        if (!norm.length) {
+          if (msg) msg.textContent = 'Nenhum telefone encontrado para esse código.';
+          envIndBuscaRows = [];
+          return;
+        }
+
+        envIndBuscaRows = norm;
+        if (msg) msg.textContent = `✅ ${norm.length} telefone(s) encontrado(s). Selecione um para enviar.`;
+        envIndRenderResultados(norm);
+      } catch (err) {
+        if (msg) msg.textContent = `❌ ${err?.message || 'Falha ao buscar cadastro.'}`;
+      }
+    }
+
+    function envIndSyncFromConversa() {
+      const phoneIdEl = document.getElementById('envIndPhoneId');
+      if (phoneIdEl && !phoneIdEl.value && selecionado?.phone_id) phoneIdEl.value = String(selecionado.phone_id || '');
+
+      // Se já há um telefone selecionado pela busca, não sobrescreve
+      if (!envIndContatoSelecionado && selecionado?.remetente) {
+        const tel = normalizeMsisdnBR(selecionado.remetente || '');
+        const nome = firstNameOf(selecionado.nome_exibicao || '');
+        if (tel) {
+          envIndContatoSelecionado = { to_msisdn: tel, primeiro_nome: nome, __from: 'conversa' };
+        }
+      }
+
+      envIndUpdateChosenUI();
+      envIndUpdatePhoneIdLabel(phoneIdEl?.value || '');
+      envIndSetPreview();
+    }
+
 
     async function postJson(url, payload) {
       const r = await fetch(url, {
@@ -2157,41 +2403,25 @@
         return;
       }
 
-      const telEl = document.getElementById('envIndTelefone');
-      const nomeEl = document.getElementById('envIndNome');
-      const phoneIdEl = document.getElementById('envIndPhoneId');
+            const phoneIdEl = document.getElementById('envIndPhoneId');
       const btn = document.getElementById('btnEnvIndEnviar');
 
-      const rawTel = (telEl?.value || '').trim() || (selecionado?.remetente || '');
+      const rawTel = (envIndContatoSelecionado?.to_msisdn || '').trim() || (selecionado?.remetente || '');
       const to_msisdn = normalizeMsisdnBR(rawTel);
-      const primeiro_nome = firstNameOf((nomeEl?.value || '').trim() || selecionado?.nome_exibicao || '') || 'cliente';
+      const primeiro_nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome || '') || firstNameOf(selecionado?.nome_exibicao || '') || 'cliente';
 
-      // Phone ID é obrigatório (mas UI fica escondida)
+// Phone ID é obrigatório (mas UI fica escondida)
       const phone_id = (phoneIdEl?.value || '').trim()
         || (selecionado?.phone_id ? String(selecionado.phone_id) : '')
         || pickDefaultPhoneId();
 
       if (!to_msisdn || to_msisdn.length < 12) {
-        envIndSetResultCompact({
-          __kind: 'fail',
-          __statusText: 'Falha',
-          __statusMsg: 'Telefone inválido',
-          __err: 'Telefone inválido. Informe DDI+DDD+número (ex: 5561999998888).',
-          erro: 'Telefone inválido. Informe DDI+DDD+número (ex: 5561999998888).',
-          __raw: { ok: false, erro: 'Telefone inválido' }
-        });
+        envIndSetResultCompact({ __kind: 'fail', __statusText: 'Falha' });
         return;
       }
 
       if (!phone_id) {
-        envIndSetResultCompact({
-          __kind: 'fail',
-          __statusText: 'Falha',
-          __statusMsg: 'Phone ID não identificado',
-          __err: 'Não foi possível identificar o Phone ID da carteira/conversa. (Obrigatório).',
-          erro: 'Não foi possível identificar o Phone ID da carteira/conversa. (Obrigatório).',
-          __raw: { ok: false, erro: 'phone_id ausente' }
-        });
+        envIndSetResultCompact({ __kind: 'fail', __statusText: 'Falha' });
         return;
       }
 
@@ -2222,16 +2452,7 @@
         if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); }
 
         // estado “neutro” enquanto envia (sem JSON sujo)
-        envIndSetResultCompact({
-          __kind: 'neutral',
-          __statusText: 'Enviando',
-          __statusMsg: `para ${to_msisdn}`,
-          endpoint_usado: '—',
-          http_status: '—',
-          request: payload,
-          response: { msg_id: '—' },
-          __raw: { ok: true, status: 'enviando', request: payload }
-        });
+        envIndSetResultCompact({ __kind: 'neutral', __statusText: '—' });
 
         for (const url of candidates) {
           try {
@@ -2240,95 +2461,9 @@
             const okByJson = !!(j && (j.ok === true || j.messages || j.msg_id || j.meta_response));
             const okByHttp = !!(r && r.ok);
             if (okByHttp || okByJson) {
-
-              // Interpreta retorno do backend (pode sinalizar conversa já em andamento / conversa criada)
-
-              const jSafe = (j && typeof j === 'object') ? j : {};
-
-              const reserva = (jSafe.reserva && typeof jSafe.reserva === 'object') ? jSafe.reserva : {};
-
-
-              const jaEmAtendimento =
-
-                !!(jSafe.ja_em_atendimento || jSafe.em_atendimento || jSafe.conversa_em_andamento || jSafe.conversa_existente ||
-
-                   jSafe.ja_existe_conversa || jSafe.em_atendimento_por_outro || jSafe.outro_operador ||
-
-                   reserva.ja_em_atendimento || reserva.em_atendimento || reserva.conversa_existente || reserva.ja_existia);
-
-
-              const conversaCriada =
-
-                !!(jSafe.conversa_criada || jSafe.criou_conversa || jSafe.created_conversa || jSafe.created_conversation ||
-
-                   reserva.conversa_criada || reserva.criou_conversa || reserva.created);
-
-
-              const atendenteNome =
-
-                (jSafe.atendente_nome || jSafe.operador_nome || jSafe.agente_nome || jSafe.atendido_por_nome ||
-
-                 jSafe.atendente || jSafe.operador || jSafe.agente || jSafe.atendido_por ||
-
-                 reserva.atendente_nome || reserva.operador_nome || reserva.agente_nome || reserva.atendido_por_nome ||
-
-                 reserva.atendente || reserva.operador || reserva.agente || reserva.atendido_por || '') + '';
-
-
-              let feedback = 'Template enviado com sucesso.';
-
-              let statusText = 'Sucesso';
-
-
-              if (jaEmAtendimento) {
-
-                feedback = `Template enviado. Atenção: cliente já está em atendimento${(atendenteNome && atendenteNome !== 'undefined') ? ' (' + atendenteNome + ')' : ''}.`;
-
-                statusText = 'Sucesso (já em atendimento)';
-
-              } else if (conversaCriada) {
-
-                feedback = 'Template enviado e conversa criada para este atendimento.';
-
-                statusText = 'Sucesso (conversa criada)';
-
-              }
-
-
-              envIndSetResultCompact({
-
-                __kind: jaEmAtendimento ? 'warning' : 'success',
-
-                __statusText: statusText,
-
-                endpoint_usado: url,
-
-                http_status: r.status,
-
-                request: payload,
-
-                response: jSafe,
-
-                __raw: {
-
-                  ok: true,
-
-                  endpoint_usado: url,
-
-                  http_status: r.status,
-
-                  request: payload,
-
-                  response: jSafe
-
-                }
-
-              });
-
-              showModalFeedback(feedback, 'Envio individual', 1600);
-
+              envIndSetResultCompact({ __kind: 'success', __statusText: 'Sucesso' });
+              showModalFeedback('Template enviado com sucesso.', 'Envio individual', 1200);
               return;
-
             }
 
             // JSON de erro explícito
@@ -2384,73 +2519,96 @@
         showModalFeedback('Selecione uma conversa em "Conversas" antes.', 'Envio individual', 1600);
         return;
       }
-      const telEl = document.getElementById('envIndTelefone');
-      const nomeEl = document.getElementById('envIndNome');
       const phoneIdEl = document.getElementById('envIndPhoneId');
-
-      if (telEl) telEl.value = String(selecionado.remetente || '');
-      if (nomeEl) nomeEl.value = firstNameOf(selecionado.nome_exibicao || '') || '';
       if (phoneIdEl) phoneIdEl.value = String(selecionado.phone_id || '');
 
+      const tel = normalizeMsisdnBR(selecionado.remetente || '');
+      const nome = firstNameOf(selecionado.nome_exibicao || '') || '';
+
+      envIndContatoSelecionado = tel ? { to_msisdn: tel, primeiro_nome: nome, __from: 'conversa' } : null;
+
+      envIndUpdateChosenUI();
       envIndUpdatePhoneIdLabel(phoneIdEl?.value || '');
       envIndSetPreview();
       switchTab('envio_individual');
     }
 
+
     function initEnvioIndividual() {
       if (__envIndBound) return;
       __envIndBound = true;
 
-      const btnUse = document.getElementById('btnEnvIndUsarConversa');
       const btnSend = document.getElementById('btnEnvIndEnviar');
       const btnClear = document.getElementById('btnEnvIndLimpar');
-      const telEl = document.getElementById('envIndTelefone');
-      const nomeEl = document.getElementById('envIndNome');
+      const btnBuscar = document.getElementById('btnEnvIndBuscar');
+      const codigoEl = document.getElementById('envIndCodigo');
+      const baseEl = document.getElementById('envIndBase');
       const phoneIdEl = document.getElementById('envIndPhoneId');
 
-      const toggle = document.getElementById('envIndToggleDetails');
-      const details = document.getElementById('envIndDetalhes');
+      // Origem BD vem no payload do agente (origem_bd). Se existir, travamos a seleção.
+      let lockedOrigem = '';
+      try {
+        lockedOrigem = String((agente && agente.origem_bd) ? agente.origem_bd : (localStorage.getItem('agente_origem_bd') || '')).trim().toLowerCase();
+      } catch (e) { lockedOrigem = ''; }
 
-      if (btnUse) btnUse.addEventListener('click', envIndUsarConversaAtual);
+      if (baseEl) {
+        const hintEl = document.getElementById('envIndBaseHint');
+        if (lockedOrigem) {
+          const hasOpt = Array.from(baseEl.options).some(o => String(o.value).toLowerCase() === lockedOrigem);
+          if (!hasOpt) {
+            const opt = document.createElement('option');
+            opt.value = lockedOrigem;
+            opt.textContent = lockedOrigem.toUpperCase();
+            baseEl.appendChild(opt);
+          }
+          baseEl.value = lockedOrigem;
+          baseEl.disabled = true;
+          baseEl.classList.add('opacity-70', 'cursor-not-allowed');
+          baseEl.title = 'Origem definida pelo seu perfil';
+          if (hintEl) {
+            hintEl.textContent = `Definida pelo seu perfil (${lockedOrigem.toUpperCase()}).`;
+            hintEl.classList.remove('hidden');
+          }
+        } else {
+          baseEl.disabled = false;
+          if (hintEl) hintEl.classList.add('hidden');
+        }
+      }
+
+
       if (btnSend) btnSend.addEventListener('click', enviarLigacaoCaiu);
 
-      if (btnClear) btnClear.addEventListener('click', () => {
-        if (telEl) telEl.value = '';
-        if (nomeEl) nomeEl.value = '';
-        if (phoneIdEl) phoneIdEl.value = '';
-        envIndUpdatePhoneIdLabel('');
-        envIndSetPreview();
-        envIndResetResultUI();
-      });
+      if (btnBuscar) btnBuscar.addEventListener('click', pesquisarCadastroEnvInd);
 
-      if (telEl) telEl.addEventListener('blur', () => {
-        const v = telEl.value.trim();
-        if (!v) return;
-        const n = normalizeMsisdnBR(v);
-        if (n) telEl.value = n;
-      });
-
-      if (nomeEl) nomeEl.addEventListener('input', envIndSetPreview);
-
-      // Detalhes: botão + (toggle)
-      if (toggle && details) {
-        toggle.addEventListener('click', () => {
-          const open = !details.classList.contains('hidden');
-          details.classList.toggle('hidden');
-          toggle.textContent = open ? '+ Detalhes' : '− Detalhes';
-          toggle.setAttribute('aria-expanded', String(!open));
+      if (codigoEl) {
+        codigoEl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            pesquisarCadastroEnvInd();
+          }
         });
       }
 
-      envIndSetPreview();
-      envIndResetResultUI();
+      if (btnClear) btnClear.addEventListener('click', () => {
+        if (codigoEl) codigoEl.value = '';
+        if (baseEl) {
+          if (lockedOrigem) baseEl.value = lockedOrigem;
+          else if (!baseEl.value) baseEl.value = 'bd5';
+        }
+        if (phoneIdEl) phoneIdEl.value = '';
+        envIndResetBuscaUI();
+        envIndResetResultUI();
+      });
 
-      // se já tiver conversa selecionada e campo phone_id estiver vazio, preenche
-      if (phoneIdEl && !phoneIdEl.value && selecionado?.phone_id) phoneIdEl.value = String(selecionado.phone_id);
-      envIndUpdatePhoneIdLabel(phoneIdEl?.value || selecionado?.phone_id || pickDefaultPhoneId());
+      envIndResetResultUI();
+      envIndUpdateChosenUI();
+
+      // Se já tiver conversa selecionada, usa como contexto (sem precisar de botão)
+      envIndSyncFromConversa();
 
       renderPermissaoEnvioIndividual();
     }
+
 
     /** ============== ONLINE/OFFLINE, LIMITES ============== */
     async function verificarOnline() {
@@ -2576,7 +2734,79 @@
     };
 
     /** ============== LISTA / CHAT ============== */
-    function renderTickets(filtro = "") {
+    
+
+// Prioridade
+    const priorityModal = document.getElementById('priorityModal');
+    const priorityTelefone = document.getElementById('priorityTelefone');
+    const priorityInfo = document.getElementById('priorityInfo');
+    const priorityErro = document.getElementById('priorityErro');
+    const btnPriorityBuscar = document.getElementById('btnPriorityBuscar');
+    const prioritySpinner = document.getElementById('prioritySpinner');
+    const priorityBtnLabel = document.getElementById('priorityBtnLabel');
+    btnPrioridade.onclick = () => {
+      if (!agente.online) { alert('Você está offline. Vá na Home e clique em “Ficar online”.'); return }
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); return; }
+      abrirPriorityModal();
+    }
+    function abrirPriorityModal() { isModalOpen = true; priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden'); priorityTelefone.value = ''; priorityModal.classList.remove('hidden'); setTimeout(() => priorityTelefone.focus(), 50) }
+    function fecharPriorityModal() { isModalOpen = false; priorityModal.classList.add('hidden') }
+    priorityTelefone.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); btnPriorityBuscar.click() } })
+    function normalizarTelefone(raw) { let d = String(raw || '').replace(/\D/g, ''); if (!d) return ''; if (!d.startsWith('55')) d = '55' + d; const m = d.match(/^55(\d{2})(\d{8,9})(.*)$/); if (m) { const ddd = m[1]; let numero = m[2]; const tail = m[3] || ''; if (numero.length === 9 && numero.startsWith('9')) numero = numero.slice(1); d = '55' + ddd + numero + tail } return d }
+    function phoneIdsForCarteira() { return (carteiraToPhoneIds[agente.carteira] || []).map(String) }
+    function dedupe(arr) { return Array.from(new Set(arr.filter(Boolean))) }
+    async function preferPhoneIdDoContato(remetente) {
+      const hit = (ordemCache || []).find(x => String(x.remetente) === String(remetente));
+      if (hit && hit.phone_id) return String(hit.phone_id);
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/contatos`); const all = await r.json();
+        const ids = phoneIdsForCarteira(); const c = (all || []).find(x => ids.includes(String(x.phone_id)) && String(x.remetente) === String(remetente));
+        return c ? String(c.phone_id) : null;
+      } catch { return null }
+    }
+    async function tentarClaimComIds(remetente, ids) {
+      const candidatos = [];
+      if (ids && ids.length) { candidatos.push(ids); ids.forEach(id => candidatos.push([id])); }
+      else { candidatos.push([]) }
+      for (const arr of candidatos) {
+        const body = { codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira, remetente, ...(arr.length ? { phone_id: arr } : {}), prioridade: true };
+        const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
+        if (r.status === 404) continue;
+        return data;
+      }
+      return { ok: false, erro: 'Contato não está na fila desta carteira.' };
+    }
+    btnPriorityBuscar.onclick = async () => {
+      priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden');
+      if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { priorityErro.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; priorityErro.classList.remove('hidden'); return; }
+      const nrm = normalizarTelefone(priorityTelefone.value);
+      if (nrm.length < 11) { priorityErro.textContent = 'Informe ao menos DDI (55) + DDD (2) + número (8).'; priorityErro.classList.remove('hidden'); return; }
+      priorityInfo.innerHTML = `Buscando por: <code>${nrm}</code>`; priorityInfo.classList.remove('hidden');
+      const preferido = await preferPhoneIdDoContato(nrm);
+      const ordemIds = dedupe([preferido, ...phoneIdsForCarteira()]);
+      btnPriorityBuscar.disabled = true; prioritySpinner.classList.remove('hidden'); priorityBtnLabel.textContent = 'Solicitando…';
+      try {
+        const data = await tentarClaimComIds(nrm, ordemIds);
+        if (data && (data.limit_per_agent !== undefined)) { limitPerAgent = Number(data.limit_per_agent || 0); ativosCount = Number(data.ativos || ativosCount); priorityErro.textContent = data.erro || `Limite de ${limitPerAgent} atingido.`; priorityErro.classList.remove('hidden'); await refreshAtivosELimite(); return; }
+        if (data && data.ok && data.ticket) {
+          priorityInfo.innerHTML = `<span class="text-emerald-700 font-medium">Prioridade concedida.</span> Abrindo o ticket…`;
+          if (!tickets.find(t => t.remetente === data.ticket.remetente && t.phone_id === data.ticket.phone_id)) { tickets.unshift(data.ticket); saveTickets(); renderTickets(); }
+          fecharPriorityModal(); abrirTicket(data.ticket); ativosCount++; renderAtivosLimiteUI(); return;
+        }
+        if (data && (data.assigned_to || data.atendimento)) {
+          const owner = data.assigned_to || data.atendimento;
+          priorityErro.innerHTML = `Outro agente já está atendendo: <strong>${escapeHtml(owner.nome || '—')}</strong> (#${escapeHtml(String(owner.codigo || '—'))}).`;
+          priorityErro.classList.remove('hidden'); return;
+        }
+        priorityErro.textContent = (data && (data.erro || data.message)) || 'Não foi possível conceder prioridade.'; priorityErro.classList.remove('hidden');
+      } catch (e) { priorityErro.textContent = 'Falha ao solicitar prioridade.'; priorityErro.classList.remove('hidden') }
+      finally { btnPriorityBuscar.disabled = false; prioritySpinner.classList.add('hidden'); priorityBtnLabel.textContent = 'Buscar e solicitar' }
+    };
+
+    
+
+function renderTickets(filtro = "") {
       const q = (filtro || "").toLowerCase().trim(); const frag = document.createDocumentFragment(); elListaTickets.innerHTML = "";
       tickets.forEach(t => {
         const nome = t.nome_exibicao || t.remetente; const hay = `${nome} ${t.remetente}`.toLowerCase(); if (q && !hay.includes(q)) return;
@@ -2726,7 +2956,7 @@
       try { await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), carteira: agente.carteira || '' }) }).catch(() => { }); } catch (_) { }
       try {
         localStorage.removeItem("agente_codigo"); localStorage.removeItem("agente_nome"); localStorage.removeItem("agente_carteira"); localStorage.removeItem("agente_origem");
-        Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:") || k.startsWith("cz:unreadCount:") || k.startsWith("cz:lastContatoTs:")) localStorage.removeItem(k) });
+        localStorage.removeItem("agente_origem_bd"); localStorage.removeItem("agente_permite_envio_individual"); Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:") || k.startsWith("cz:unreadCount:") || k.startsWith("cz:lastContatoTs:")) localStorage.removeItem(k) });
       } catch (_) { }
       if (pollingContatos) clearInterval(pollingContatos);
       if (pollingMensagens) clearInterval(pollingMensagens);
@@ -3169,6 +3399,9 @@
         switchTab('home');
       } else {
         hideApp();
+        // Mantém o mesmo comportamento da versão em produção: abre o modal imediatamente
+        // (sem isso, o app fica escondido e o usuário não consegue se identificar).
+        abrirModalLogin();
         try { await loadNoticesAndRender(); } catch { }
       }
     });
