@@ -1,14 +1,34 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ConnectZap — Agentes</title>
-  <link rel="icon" href="https://joubertcastro.github.io/ConnectZap/favicon.ico" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
+<html lang="pt-BR">
+<head><script>
+// ConnectZap bootstrap error capture (mostra erro mesmo se a tela ficar branca)
+window.__czErrors = window.__czErrors || [];
+window.addEventListener('error', function(e){
+  try{
+    window.__czErrors.push({
+      type: 'error',
+      message: e && (e.message || e.type) || 'error',
+      filename: e && e.filename,
+      lineno: e && e.lineno,
+      colno: e && e.colno
+    });
+  }catch(_){}
+});
+window.addEventListener('unhandledrejection', function(e){
+  try{
+    var reason = (e && e.reason) ? (e.reason.stack || e.reason.message || String(e.reason)) : 'unhandledrejection';
+    window.__czErrors.push({ type: 'rejection', message: reason });
+  }catch(_){}
+});
+</script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>ConnectZap — Agentes</title>
+<link href="https://joubertcastro.github.io/ConnectZap/favicon.ico" rel="icon"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
     :root {
       --primary: #3b82f6;
       --accent: #22c55e;
@@ -648,561 +668,510 @@
     }
   </style>
 </head>
+<body class="h-screen flex with-mini"><pre id="czFatalOverlay" style="display:none;position:fixed;z-index:999999;top:0;left:0;right:0;max-height:55vh;overflow:auto;background:#111;color:#fff;padding:12px;font-size:12px;white-space:pre-wrap;border-bottom:1px solid rgba(255,255,255,.12);"></pre><script>
+(function(){
+  function isDisplayed(el){
+    if(!el) return false;
+    try { return window.getComputedStyle(el).display !== 'none'; } catch(_) { return !!el.style && el.style.display !== 'none'; }
+  }
+  function showErrorsIfAny(){
+    try{
+      var list = window.__czErrors || [];
+      if(!list.length) return;
+      var box = document.getElementById('czFatalOverlay');
+      if(!box) return;
+      var out = list.map(function(it){
+        var loc = (it.filename ? ('\n  ' + it.filename + ':' + (it.lineno||'') + ':' + (it.colno||'')) : '');
+        return (it.type || 'err') + ': ' + (it.message || '') + loc;
+      }).join('\n\n');
+      box.textContent = out;
+      box.style.display = 'block';
+    }catch(_){}
+  }
 
-<body class="h-screen flex with-mini">
+  // failsafe: se tudo ficar hidden e o modal não aparecer, mostra o app + modal
+  function rescueBlankScreen(){
+    try{
+      var sb = document.getElementById('appSidebar');
+      var tw = document.getElementById('tabsWrapper');
+      var modal = document.getElementById('modalLogin');
+      var sbHidden = sb && sb.classList && sb.classList.contains('hidden');
+      var twHidden = tw && tw.classList && tw.classList.contains('hidden');
+      var modalVisible = isDisplayed(modal);
 
-  <!-- Mini Sidebar -->
-  <nav id="appSidebar" class="mini-sidebar select-none hidden">
-    <!-- Home -->
-    <button id="tabBtnHome" class="btn-mini active transition-transform active:scale-95" title="Home" aria-label="Home"
-      aria-current="page">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M3 10.5L12 3l9 7.5" />
-        <path d="M5 10.5V21h6v-5h2v5h6V10.5" />
-      </svg>
-      <span class="sr-only">Home</span>
-    </button>
+      if(sbHidden && twHidden && !modalVisible){
+        sb.classList.remove('hidden');
+        tw.classList.remove('hidden');
+        if(modal) modal.style.display = 'flex';
+      }
+    }catch(_){}
+  }
 
-    <!-- Conversas -->
-    <button id="tabBtnConversas" class="btn-mini transition-transform active:scale-95" title="Conversas"
-      aria-label="Conversas" data-requires-login>
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="3" y="5" width="18" height="12" rx="4" ry="4" />
-        <path d="M7 17v4l4-4" />
-        <circle cx="9" cy="11" r="1.2" fill="currentColor" stroke="none" />
-        <circle cx="12" cy="11" r="1.2" fill="currentColor" stroke="none" />
-        <circle cx="15" cy="11" r="1.2" fill="currentColor" stroke="none" />
-      </svg>
-      <span class="sr-only">Conversas</span>
-    </button>
-
-    <!-- Envio individual -->
-    <button id="tabBtnEnvioIndividual" class="btn-mini transition-transform active:scale-95 hidden" title="Envio individual"
-      aria-label="Envio individual" data-requires-login>
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M22 2L11 13" />
-        <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-      </svg>
-      <span class="sr-only">Envio individual</span>
-    </button>
-
-    <!-- Relatório -->
-    <button id="tabBtnRelatorio" class="btn-mini transition-transform active:scale-95" title="Relatório"
-      aria-label="Relatório" data-requires-login>
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M4 19.5h16" />
-        <path d="M7 19.5V10" />
-        <path d="M12 19.5V5" />
-        <path d="M17 19.5v-8" />
-      </svg>
-      <span class="sr-only">Relatório</span>
-    </button>
-
-  </nav>
-
-  <!-- Tabs Wrapper -->
-  <div id="tabsWrapper" class="flex-1 flex flex-col hidden">
-
-    <!-- HOME -->
-    <section id="tabHome" class="flex-1 p-6">
-      <div class="max-w-4xl mx-auto">
-        <div class="card p-6">
-          <h1 class="text-2xl font-bold">Bem-vindo(a) 👋</h1>
-          <p class="muted mt-2">Olá <span id="homeAgenteNome" class="font-semibold">—</span>!</p>
-          <p class="muted">Carteira: <span id="homeAgenteCarteira" class="font-semibold">—</span></p>
-
-          <div id="homeAvisoHero" class="mt-4 hidden">
-            <div class="hero flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <div class="title" id="heroTitle">—</div>
-                <div class="meta mt-1" id="heroMeta">—</div>
-                <div class="mt-2 text-sm" id="heroBody">—</div>
-              </div>
-              <div class="flex items-start gap-2 shrink-0">
-                <button id="heroMarkRead" class="close">Marcar como lido</button>
-                <button id="heroDismiss" class="close">Dispensar</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-            <!-- STATUS / ONLINE -->
-            <div class="p-4 border rounded-lg" style="border-color:var(--border)">
-              <div class="text-sm muted mb-1">Status</div>
-              <div id="homeStatus" class="font-medium"><span class="dot offline"></span>Offline</div>
-              <div class="mt-3 flex flex-wrap gap-2">
-                <button id="btnToggleOnline"
-                  class="btn px-3 py-2 text-white disabled:opacity-50 flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                  disabled aria-live="polite" aria-pressed="false">
-                  <svg id="toggleSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                      fill="none"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                  </svg>
-                  <span id="toggleLabel">Ficar online</span>
-                </button>
-                <button id="btnLogout" class="btn btn-primary px-3 py-2">Login</button>
-              </div>
-
-              <!-- PENDENTES NA FILA (Home / Status) -->
-              <div class="mt-3">
-                <div class="text-sm muted mb-1">Pendentes na sua fila</div>
-                <div class="flex items-center gap-2">
-                  <span id="homePendentesBadge" class="badge" style="background:#64748b">—</span>
-                  <span class="text-xs muted">atualiza a cada 60s</span>
-                </div>
-              </div>
-
-              <div id="homeAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
-            </div>
-
-            <!-- ATALHOS -->
-            <div class="p-4 border rounded-lg" style="border-color:var(--border)">
-              <div class="flex items-center justify-between">
-                <div class="text-sm muted mb-1">Atalhos</div>
-              </div>
-              <div class="flex flex-wrap gap-2 mt-1">
-                <button id="goToConversas1" class="btn btn-primary px-4 py-2">Ir para Conversas</button>
-                <button id="goToRelatorio1" class="btn btn-neutral px-4 py-2">Ver Relatório</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- PAINEL DE AVISOS -->
-          <div class="mt-6">
-            <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2">
-                <h2 class="text-lg font-semibold">📢 Painel de Avisos</h2>
-                <span id="avisosCountPill" class="pill">—</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <button class="btn btn-neutral px-2 py-1 text-xs filter-btn active"
-                  data-avisos-filter="all">Todos</button>
-                <button class="btn btn-neutral px-2 py-1 text-xs filter-btn" data-avisos-filter="unread"
-                  style="display:none">Não lidos</button>
-                <button id="btnAvisoRefresh" class="btn btn-primary px-3 py-2 text-sm">Atualizar</button>
-              </div>
-            </div>
-            <div id="avisosResumo" class="text-sm muted mt-1">—</div>
-            <div id="avisosWrap" class="mt-3 space-y-2"></div>
-          </div>
-          <!-- /SUPER PAINEL DE AVISOS -->
-
-        </div>
-      </div>
-    </section>
-
-    <!-- CONVERSAS -->
-    <section id="tabConversas" class="hidden h-full flex">
-      <!-- Sidebar -->
-      <aside class="sidebar w-1/3 lg:w-1/4 border-r flex flex-col">
-        <div class="p-3 border-b topbar">
-          <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0">
-              <div class="text-xs muted">Agente</div>
-              <div id="agenteNome" class="font-semibold truncate">—</div>
-              <div class="text-xs muted">Carteira: <span id="agenteCarteira">—</span></div>
-              <div class="text-xs muted">Status: <span id="agenteStatus"><span class="dot offline"></span>Offline</span>
-              </div>
-              <div class="mt-1 text-xs">
-                <span class="muted">Tickets:</span>
-                <span id="badgeAtivos" class="badge">0</span>
-                <span class="muted mx-1">/</span>
-                <span id="badgeLimite" class="badge" style="background:#64748b">∞</span>
-              </div>
-            </div>
-            <div class="flex flex-col items-end gap-2">
-              <button id="btnPegarProxima"
-                class="btn btn-primary px-3 py-2 text-sm text-white disabled:opacity-50 flex items-center gap-2"
-                disabled>
-                <svg id="pegarSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
-                  </circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v 4a 4 4 0 00-4 4H4z"></path>
-                </svg>
-                <span id="pegarLabel">Pegar próxima</span>
-              </button>
-              <button id="btnPrioridade" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50"
-                disabled style="background: rebeccapurple">Pedir prioridade</button>
-              <button id="btnTheme" class="mt-2 btn btn-ghost px-3 py-1 text-xs" aria-haspopup="true"
-                aria-controls="themeDrawer">🎨 Tema</button>
-            </div>
-          </div>
-          <div id="msgAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
-          <div id="msgLimite" class="mt-1 text-xs text-red-600 hidden" role="alert" aria-live="polite"></div>
-        </div>
-
-        <ul id="listaTickets" class="flex-1 overflow-y-auto" aria-label="Minhas conversas"></ul>
-
-        <div class="p-2 text-xs muted border-t topbar">
+  window.addEventListener('DOMContentLoaded', function(){
+    // espera um pouco porque o script principal remove 'hidden' no load()
+    setTimeout(function(){
+      rescueBlankScreen();
+      showErrorsIfAny();
+    }, 1200);
+  });
+})();
+</script>
+<!-- Mini Sidebar -->
+<nav class="mini-sidebar select-none hidden" id="appSidebar">
+<!-- Home -->
+<button aria-current="page" aria-label="Home" class="btn-mini active transition-transform active:scale-95" id="tabBtnHome" title="Home">
+<svg aria-hidden="true" class="h-5 w-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 10.5L12 3l9 7.5"></path>
+<path d="M5 10.5V21h6v-5h2v5h6V10.5"></path>
+</svg>
+<span class="sr-only">Home</span>
+</button>
+<!-- Conversas -->
+<button aria-label="Conversas" class="btn-mini transition-transform active:scale-95" data-requires-login="" id="tabBtnConversas" title="Conversas">
+<svg aria-hidden="true" class="h-5 w-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<rect height="12" rx="4" ry="4" width="18" x="3" y="5"></rect>
+<path d="M7 17v4l4-4"></path>
+<circle cx="9" cy="11" fill="currentColor" r="1.2" stroke="none"></circle>
+<circle cx="12" cy="11" fill="currentColor" r="1.2" stroke="none"></circle>
+<circle cx="15" cy="11" fill="currentColor" r="1.2" stroke="none"></circle>
+</svg>
+<span class="sr-only">Conversas</span>
+</button>
+<!-- Relatório -->
+<button aria-label="Relatório" class="btn-mini transition-transform active:scale-95" data-requires-login="" id="tabBtnRelatorio" title="Relatório">
+<svg aria-hidden="true" class="h-5 w-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 19.5h16"></path>
+<path d="M7 19.5V10"></path>
+<path d="M12 19.5V5"></path>
+<path d="M17 19.5v-8"></path>
+</svg>
+<span class="sr-only">Relatório</span>
+</button>
+<!-- Envio individual -->
+<button aria-label="Envio individual" class="btn-mini transition-transform active:scale-95 hidden" data-requires-login="" id="tabBtnEnvioIndividual" title="Envio individual">
+<svg aria-hidden="true" class="h-5 w-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M22 2L11 13"></path>
+<path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
+</svg>
+<span class="sr-only">Envio individual</span>
+</button>
+</nav>
+<!-- Tabs Wrapper -->
+<div class="flex-1 flex flex-col hidden" id="tabsWrapper">
+<!-- HOME -->
+<section class="flex-1 p-6" id="tabHome">
+<div class="max-w-4xl mx-auto">
+<div class="card p-6">
+<h1 class="text-2xl font-bold">Bem-vindo(a) 👋</h1>
+<p class="muted mt-2">Olá <span class="font-semibold" id="homeAgenteNome">—</span>!</p>
+<p class="muted">Carteira: <span class="font-semibold" id="homeAgenteCarteira">—</span></p>
+<div class="mt-4 hidden" id="homeAvisoHero">
+<div class="hero flex items-start justify-between gap-3">
+<div class="min-w-0">
+<div class="title" id="heroTitle">—</div>
+<div class="meta mt-1" id="heroMeta">—</div>
+<div class="mt-2 text-sm" id="heroBody">—</div>
+</div>
+<div class="flex items-start gap-2 shrink-0">
+<button class="close" id="heroMarkRead">Marcar como lido</button>
+<button class="close" id="heroDismiss">Dispensar</button>
+</div>
+</div>
+</div>
+<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+<!-- STATUS / ONLINE -->
+<div class="p-4 border rounded-lg" style="border-color:var(--border)">
+<div class="text-sm muted mb-1">Status</div>
+<div class="font-medium" id="homeStatus"><span class="dot offline"></span>Offline</div>
+<div class="mt-3 flex flex-wrap gap-2">
+<button aria-live="polite" aria-pressed="false" class="btn px-3 py-2 text-white disabled:opacity-50 flex items-center gap-2 bg-green-600 hover:bg-green-700" disabled="" id="btnToggleOnline">
+<svg aria-hidden="true" class="hidden animate-spin h-4 w-4" id="toggleSpinner" viewbox="0 0 24 24">
+<circle class="opacity-25" cx="12" cy="12" fill="none" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="currentColor"></path>
+</svg>
+<span id="toggleLabel">Ficar online</span>
+</button>
+<button class="btn btn-primary px-3 py-2" id="btnLogout">Login</button>
+</div>
+<!-- PENDENTES NA FILA (Home / Status) -->
+<div class="mt-3">
+<div class="text-sm muted mb-1">Pendentes na sua fila</div>
+<div class="flex items-center gap-2">
+<span class="badge" id="homePendentesBadge" style="background:#64748b">—</span>
+<span class="text-xs muted">atualiza a cada 60s</span>
+</div>
+</div>
+<div aria-live="polite" class="mt-2 text-xs text-amber-600 hidden" id="homeAviso" role="alert"></div>
+</div>
+<!-- ATALHOS -->
+<div class="p-4 border rounded-lg" style="border-color:var(--border)">
+<div class="flex items-center justify-between">
+<div class="text-sm muted mb-1">Atalhos</div>
+</div>
+<div class="flex flex-wrap gap-2 mt-1">
+<button class="btn btn-primary px-4 py-2" id="goToConversas1">Ir para Conversas</button>
+<button class="btn btn-neutral px-4 py-2" id="goToRelatorio1">Ver Relatório</button>
+</div>
+</div>
+</div>
+<!-- PAINEL DE AVISOS -->
+<div class="mt-6">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<h2 class="text-lg font-semibold">📢 Painel de Avisos</h2>
+<span class="pill" id="avisosCountPill">—</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="btn btn-neutral px-2 py-1 text-xs filter-btn active" data-avisos-filter="all">Todos</button>
+<button class="btn btn-neutral px-2 py-1 text-xs filter-btn" data-avisos-filter="unread" style="display:none">Não lidos</button>
+<button class="btn btn-primary px-3 py-2 text-sm" id="btnAvisoRefresh">Atualizar</button>
+</div>
+</div>
+<div class="text-sm muted mt-1" id="avisosResumo">—</div>
+<div class="mt-3 space-y-2" id="avisosWrap"></div>
+</div>
+<!-- /SUPER PAINEL DE AVISOS -->
+</div>
+</div>
+</section>
+<!-- CONVERSAS -->
+<section class="hidden h-full flex" id="tabConversas">
+<!-- Sidebar -->
+<aside class="sidebar w-1/3 lg:w-1/4 border-r flex flex-col">
+<div class="p-3 border-b topbar">
+<div class="flex items-start justify-between gap-2">
+<div class="min-w-0">
+<div class="text-xs muted">Agente</div>
+<div class="font-semibold truncate" id="agenteNome">—</div>
+<div class="text-xs muted">Carteira: <span id="agenteCarteira">—</span></div>
+<div class="text-xs muted">Status: <span id="agenteStatus"><span class="dot offline"></span>Offline</span>
+</div>
+<div class="mt-1 text-xs">
+<span class="muted">Tickets:</span>
+<span class="badge" id="badgeAtivos">0</span>
+<span class="muted mx-1">/</span>
+<span class="badge" id="badgeLimite" style="background:#64748b">∞</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2">
+<button class="btn btn-primary px-3 py-2 text-sm text-white disabled:opacity-50 flex items-center gap-2" disabled="" id="btnPegarProxima">
+<svg aria-hidden="true" class="hidden animate-spin h-4 w-4" id="pegarSpinner" viewbox="0 0 24 24">
+<circle class="opacity-25" cx="12" cy="12" fill="none" r="10" stroke="currentColor" stroke-width="4">
+</circle>
+<path class="opacity-75" d="M4 12a 8 8 0 018-8v 4a 4 4 0 00-4 4H4z" fill="currentColor"></path>
+</svg>
+<span id="pegarLabel">Pegar próxima</span>
+</button>
+<button class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50" disabled="" id="btnPrioridade" style="background: rebeccapurple">Pedir prioridade</button>
+<button aria-controls="themeDrawer" aria-haspopup="true" class="mt-2 btn btn-ghost px-3 py-1 text-xs" id="btnTheme">🎨 Tema</button>
+</div>
+</div>
+<div aria-live="polite" class="mt-2 text-xs text-amber-600 hidden" id="msgAviso" role="alert"></div>
+<div aria-live="polite" class="mt-1 text-xs text-red-600 hidden" id="msgLimite" role="alert"></div>
+</div>
+<ul aria-label="Minhas conversas" class="flex-1 overflow-y-auto" id="listaTickets"></ul>
+<div class="p-2 text-xs muted border-t topbar">
           Apenas conversas da sua carteira. “Pegar próxima” usa ordem por última mensagem <em>recebida</em>.
         </div>
-      </aside>
-
-      <!-- Chat -->
-      <main class="flex-1 flex flex-col">
-        <div class="flex items-center justify-between p-3 border-b topbar">
-          <div class="min-w-0">
-            <div id="tituloConversa" class="font-bold text-lg truncate">Selecione um ticket</div>
-            <div id="subInfo" class="text-sm muted truncate"></div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button id="btnLiberar" class="btn btn-neutral px-3 py-2 text-sm disabled:opacity-50"
-              disabled>Liberar</button>
-            <div class="relative">
-              <button id="btnConcluir" class="btn px-3 py-2 text-sm text-white disabled:opacity-50"
-                style="background:var(--accent)" disabled aria-haspopup="true" aria-expanded="false">Concluir</button>
-              <div id="menuConcluir" class="hidden absolute right-0 mt-2 w-64 border rounded-lg shadow-lg z-20"
-                style="background: var(--content-bg); border-color: var(--border)"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="relative flex-1 overflow-hidden">
-          <div id="chat" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" role="log"
-            aria-live="polite">
-            <p id="loading" class="text-center muted">Pegue uma conversa para iniciar…</p>
-          </div>
-        </div>
-
-        <div id="digitando" class="px-4 text-left hidden text-sm muted" aria-live="polite">Digitando…</div>
-
-        <div id="respostaPreview" class="hidden px-3 py-2 border-t bar-soft text-sm flex justify-between items-center"
-          style="border-color:var(--border)">
-          <div class="truncate max-w-[80%]">
-            <span class="font-semibold">Respondendo:</span> <span id="respostaTexto" class="muted"></span>
-          </div>
-          <button onclick="cancelarResposta()" class="text-red-500 text-xs" aria-label="Cancelar resposta">✖</button>
-        </div>
-
-        <div class="p-3 border-t topbar flex space-x-2 items-center">
-          <input type="file" id="fileInput" accept="application/pdf" class="hidden" onchange="enviarPDF(event)">
-          <button onclick="document.getElementById('fileInput').click()" class="btn btn-primary px-3 py-2">📝
+</aside>
+<!-- Chat -->
+<main class="flex-1 flex flex-col">
+<div class="flex items-center justify-between p-3 border-b topbar">
+<div class="min-w-0">
+<div class="font-bold text-lg truncate" id="tituloConversa">Selecione um ticket</div>
+<div class="text-sm muted truncate" id="subInfo"></div>
+</div>
+<div class="flex items-center gap-2">
+<button class="btn btn-neutral px-3 py-2 text-sm disabled:opacity-50" disabled="" id="btnLiberar">Liberar</button>
+<div class="relative">
+<button aria-expanded="false" aria-haspopup="true" class="btn px-3 py-2 text-sm text-white disabled:opacity-50" disabled="" id="btnConcluir" style="background:var(--accent)">Concluir</button>
+<div class="hidden absolute right-0 mt-2 w-64 border rounded-lg shadow-lg z-20" id="menuConcluir" style="background: var(--content-bg); border-color: var(--border)"></div>
+</div>
+</div>
+</div>
+<div class="relative flex-1 overflow-hidden">
+<div aria-live="polite" class="relative h-full p-4 overflow-y-auto flex flex-col space-y-1" id="chat" role="log">
+<p class="text-center muted" id="loading">Pegue uma conversa para iniciar…</p>
+</div>
+</div>
+<div aria-live="polite" class="px-4 text-left hidden text-sm muted" id="digitando">Digitando…</div>
+<div class="hidden px-3 py-2 border-t bar-soft text-sm flex justify-between items-center" id="respostaPreview" style="border-color:var(--border)">
+<div class="truncate max-w-[80%]">
+<span class="font-semibold">Respondendo:</span> <span class="muted" id="respostaTexto"></span>
+</div>
+<button aria-label="Cancelar resposta" class="text-red-500 text-xs" onclick="cancelarResposta()">✖</button>
+</div>
+<div class="p-3 border-t topbar flex space-x-2 items-center">
+<input accept="application/pdf" class="hidden" id="fileInput" onchange="enviarPDF(event)" type="file"/>
+<button class="btn btn-primary px-3 py-2" onclick="document.getElementById('fileInput').click()">📝
             PDF</button>
-          <textarea id="textoMensagem" rows="1" class="flex-1 border rounded-md p-2 resize-none"
-            style="border-color:var(--border)" placeholder="Digite uma mensagem…" disabled></textarea>
-          <button id="btnEnviar" class="btn px-4 py-2 text-white disabled:opacity-50" style="background:var(--accent)"
-            disabled>Enviar</button>
-        </div>
-      </main>
-
-      <!-- Modal imagem -->
-      <div id="imageModal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50"
-        aria-modal="true" role="dialog">
-        <span id="closeModal" class="absolute top-4 right-6 text-white text-3xl cursor-pointer"
-          aria-label="Fechar imagem">&times;</span>
-        <img id="modalImg" src="" alt="Imagem" class="max-h-[90%] max-w-[90%] rounded-lg shadow-lg">
-      </div>
-
-      <!-- Modal prioridade -->
-      <div id="priorityModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
-        <div class="absolute inset-0 bg-black/60" onclick="fecharPriorityModal()" aria-hidden="true"></div>
-        <div class="relative mx-auto mt-24 w-[95%] max-w-md rounded-xl shadow-xl border"
-          style="background: var(--content-bg); border-color: var(--border)">
-          <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
-            <h3 class="font-semibold">Pedir prioridade</h3>
-            <button class="muted" onclick="fecharPriorityModal()" aria-label="Fechar">✖</button>
-          </div>
-          <div class="p-4 space-y-3">
-            <label class="block text-sm muted">Telefone do cliente</label>
-            <input id="priorityTelefone" class="w-full p-2 border rounded-md"
-              placeholder="Ex: 61999999999 ou 5561999999999" autocomplete="off" inputmode="numeric" pattern="[0-9]*" />
-            <p class="text-xs muted">Atenção: informe um telefone válido DDD + 8/9 dígitos.</p>
-            <div id="priorityInfo" class="text-sm" style="color:var(--text)"></div>
-            <div id="priorityErro" class="text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
-          </div>
-          <div class="p-4 border-t flex items-center justify-end gap-2" style="border-color:var(--border)">
-            <button class="btn btn-neutral px-3 py-2 text-sm" onclick="fecharPriorityModal()">Cancelar</button>
-            <button id="btnPriorityBuscar"
-              class="px-3 py-2 text-sm text-white rounded-md hover:bg-purple-700 flex items-center gap-2"
-              style="background: rebeccapurple">
-              <svg id="prioritySpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
-                </circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v4a 4 4 0 00-4 4H4z"></path>
-              </svg>
-              <span id="priorityBtnLabel">Buscar e solicitar</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Theme Drawer -->
-      <div id="themeDrawer" class="drawer" aria-hidden="true">
-        <div class="h-full flex flex-col">
-          <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
-            <h3 class="font-semibold">🎨 Seu tema</h3>
-            <div class="flex items-center gap-2">
-              <button id="btnThemeExport" class="btn btn-ghost px-2 py-1 text-xs">Salvar no meu computador</button>
-              <label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">Importar um tema salvo <input
-                  id="importTheme" type="file" accept="application/json" class="hidden"></label>
-              <button id="btnThemeClose" class="btn btn-ghost px-2 py-1 text-xs" aria-label="Fechar">✖</button>
-            </div>
-          </div>
-
-          <div class="p-4 overflow-y-auto space-y-6">
-            <!-- Temas rápidos -->
-            <section>
-              <div class="text-xs muted mb-2">Temas rápidos</div>
-              <div class="grid grid-cols-2 gap-2">
-                <div class="preset" data-preset="corporate">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#0ea5e9,#2563eb)"></div>
-                  <div class="mt-1 text-xs">Corporate</div>
-                </div>
-                <div class="preset" data-preset="ocean">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#06b6d4,#10b981)"></div>
-                  <div class="mt-1 text-xs">Ocean</div>
-                </div>
-                <div class="preset" data-ppreset="sunset">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#fb923c,#ef4444)"></div>
-                  <div class="mt-1 text-xs">Sunset</div>
-                </div>
-                <div class="preset" data-preset="dark">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#0b1220,#374151)"></div>
-                  <div class="mt-1 text-xs">Dark</div>
-                </div>
-                <div class="preset" data-preset="minimal">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#f8fafc,#e2e8f0)"></div>
-                  <div class="mt-1 text-xs">Minimal</div>
-                </div>
-                <div class="preset" data-preset="funky">
-                  <div class="h-8 rounded" style="background:linear-gradient(90deg,#a78bfa,#ec4899)"></div>
-                  <div class="mt-1 text-xs">Funky</div>
-                </div>
-              </div>
-            </section>
-
-            <hr style="border-color:var(--border)">
-
-            <!-- Personalizar -->
-            <section>
-              <div class="text-xs muted mb-2">Personalizar</div>
-
-              <div class="grid grid-cols-2 gap-3">
-                <label class="block"><span class="text-xs muted">Botão PDF</span><input id="tPrimary" type="color"
-                    class="w-full h-10 border rounded" value="#3b82f6"></label>
-                <label class="block"><span class="text-xs muted">Botão Concluir</span><input id="tAccent" type="color"
-                    class="w-full h-10 border rounded" value="#22c55e"></label>
-                <label class="block"><span class="text-xs muted">Barra lateral</span><input id="tSidebar" type="color"
-                    class="w-full h-10 border rounded" value="#ffffff"></label>
-                <label class="block"><span class="text-xs muted">Cabeçalho</span><input id="tContentBg" type="color"
-                    class="w-full h-10 border rounded" value="#ffffff"></label>
-                <label class="block"><span class="text-xs muted">Cor de fundo</span><input id="tBg" type="color"
-                    class="w-full h-10 border rounded" value="#f3f4f6"></label>
-                <label class="block"><span class="text-xs muted">Texto</span><input id="tText" type="color"
-                    class="w-full h-10 border rounded" value="#0f172a"></label>
-              </div>
-
-              <div class="grid grid-cols-2 gap-3 mt-3">
-                <label class="block"><span class="text-xs muted">Minha mensagem cor 1</span><input id="tOutG1"
-                    type="color" class="w-full h-10 border rounded" value="#dcf8c6"></label>
-                <label class="block"><span class="text-xs muted">Minha mensagem cor 2</span><input id="tOutG2"
-                    type="color" class="w-full h-10 border rounded" value="#b8f0a4"></label>
-                <label class="block"><span class="text-xs muted">Cliente mensagem cor</span><input id="tInBg"
-                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
-                <label class="block"><span class="text-xs muted">Cliente mensagem bordas</span><input id="tInBorder"
-                    type="color" class="w-full h-10 border rounded" value="#e2e8f0"></label>
-                <label class="block"><span class="text-xs muted">Canto arredondado dos balões</span><input id="tRadius"
-                    type="range" min="8" max="28" value="18" class="w-full"></label>
-              </div>
-
-              <div class="grid grid-cols-1 gap-3 mt-3">
-                <label class="block"><span class="text-xs muted">Opacidade do fundo</span><input id="tBgOp" type="range"
-                    min="0" max="1" step="0.05" value="0"></label>
-              </div>
-
-              <div class="grid grid-cols-2 gap-3 mt-3">
-                <label class="block"><span class="text-xs muted">Tamanho base</span>
-                  <select id="tFontSize" class="w-full p-2 border rounded">
-                    <option value="13px">13px</option>
-                    <option value="14px" selected>14px</option>
-                    <option value="15px">15px</option>
-                    <option value="16px">16px</option>
-                  </select>
-                </label>
-                <label class="block"><span class="text-xs muted">Canto arredondado dos botões</span><input
-                    id="tBtnRadius" type="range" min="6" max="16" value="10" class="w-full"></label>
-                <label class="block"><span class="text-xs muted">Canto arredondado dos cards de aviso</span><input
-                    id="tCardRadius" type="range" min="10" max="24" value="16" class="w-full"></label>
-              </div>
-
-              <div class="flex items-center justify-between mt-4">
-                <div class="flex items-center gap-2">
-                  <button id="btnRandom" class="btn btn-ghost px-3 py-2">🎲 Surpreenda-me</button>
-                  <button id="btnReset" class="btn btn-ghost px-3 py-2">↺ Voltar ao padrão</button>
-                </div>
-                <button id="btnSaveTheme" class="btn btn-primary px-4 py-2">Salvar</button>
-              </div>
-            </section>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- RELATÓRIO -->
-    <section id="tabRelatorio" class="hidden p-4">
-      <div class="max-w-6xl mx-auto space-y-4">
-        <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h2 class="text-xl font-semibold section-title">Relatório Individual</h2>
-            <div class="text-sm muted" id="relatorioPeriodo">Hoje</div>
-          </div>
-
-          <!-- Filtros -->
-          <div class="flex flex-wrap gap-2 items-end">
-            <div class="flex flex-col">
-              <label class="text-xs muted">Início</label>
-              <input id="relStart" type="date" class="border rounded px-2 py-1" />
-            </div>
-            <div class="flex flex-col">
-              <label class="text-xs muted">Fim</label>
-              <input id="relEnd" type="date" class="border rounded px-2 py-1" />
-            </div>
-
-            <div class="flex gap-1">
-              <button class="btn btn-neutral px-2 py-1 text-xs" data-qk="hoje">Hoje</button>
-              <button class="btn btn-neutral px-2 py-1 text-xs" data-qk="ontem">Ontem</button>
-              <button class="btn btn-neutral px-2 py-1 text-xs" data-qk="7d">7d</button>
-              <button class="btn btn-neutral px-2 py-1 text-xs" data-qk="30d">30d</button>
-            </div>
-
-            <div id="relAgenteLock" class="pill select-none" title="Agente aplicado ao filtro">
+<textarea class="flex-1 border rounded-md p-2 resize-none" disabled="" id="textoMensagem" placeholder="Digite uma mensagem…" rows="1" style="border-color:var(--border)"></textarea>
+<button class="btn px-4 py-2 text-white disabled:opacity-50" disabled="" id="btnEnviar" style="background:var(--accent)">Enviar</button>
+</div>
+</main>
+<!-- Modal imagem -->
+<div aria-modal="true" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50" id="imageModal" role="dialog">
+<span aria-label="Fechar imagem" class="absolute top-4 right-6 text-white text-3xl cursor-pointer" id="closeModal">×</span>
+<img alt="Imagem" class="max-h-[90%] max-w-[90%] rounded-lg shadow-lg" id="modalImg" src=""/>
+</div>
+<!-- Modal prioridade -->
+<div aria-modal="true" class="hidden fixed inset-0 z-50" id="priorityModal" role="dialog">
+<div aria-hidden="true" class="absolute inset-0 bg-black/60" onclick="fecharPriorityModal()"></div>
+<div class="relative mx-auto mt-24 w-[95%] max-w-md rounded-xl shadow-xl border" style="background: var(--content-bg); border-color: var(--border)">
+<div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
+<h3 class="font-semibold">Pedir prioridade</h3>
+<button aria-label="Fechar" class="muted" onclick="fecharPriorityModal()">✖</button>
+</div>
+<div class="p-4 space-y-3">
+<label class="block text-sm muted">Telefone do cliente</label>
+<input autocomplete="off" class="w-full p-2 border rounded-md" id="priorityTelefone" inputmode="numeric" pattern="[0-9]*" placeholder="Ex: 61999999999 ou 5561999999999">
+<p class="text-xs muted">Atenção: informe um telefone válido DDD + 8/9 dígitos.</p>
+<div class="text-sm" id="priorityInfo" style="color:var(--text)"></div>
+<div aria-live="polite" class="text-sm text-red-600 hidden" id="priorityErro" role="alert"></div>
+</input></div>
+<div class="p-4 border-t flex items-center justify-end gap-2" style="border-color:var(--border)">
+<button class="btn btn-neutral px-3 py-2 text-sm" onclick="fecharPriorityModal()">Cancelar</button>
+<button class="px-3 py-2 text-sm text-white rounded-md hover:bg-purple-700 flex items-center gap-2" id="btnPriorityBuscar" style="background: rebeccapurple">
+<svg aria-hidden="true" class="hidden animate-spin h-4 w-4" id="prioritySpinner" viewbox="0 0 24 24">
+<circle class="opacity-25" cx="12" cy="12" fill="none" r="10" stroke="currentColor" stroke-width="4">
+</circle>
+<path class="opacity-75" d="M4 12a 8 8 0 018-8v4a 4 4 0 00-4 4H4z" fill="currentColor"></path>
+</svg>
+<span id="priorityBtnLabel">Buscar e solicitar</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Theme Drawer -->
+<div aria-hidden="true" class="drawer" id="themeDrawer">
+<div class="h-full flex flex-col">
+<div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
+<h3 class="font-semibold">🎨 Seu tema</h3>
+<div class="flex items-center gap-2">
+<button class="btn btn-ghost px-2 py-1 text-xs" id="btnThemeExport">Salvar no meu computador</button>
+<label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">Importar um tema salvo <input accept="application/json" class="hidden" id="importTheme" type="file"/></label>
+<button aria-label="Fechar" class="btn btn-ghost px-2 py-1 text-xs" id="btnThemeClose">✖</button>
+</div>
+</div>
+<div class="p-4 overflow-y-auto space-y-6">
+<!-- Temas rápidos -->
+<section>
+<div class="text-xs muted mb-2">Temas rápidos</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="preset" data-preset="corporate">
+<div class="h-8 rounded" style="background:linear-gradient(90deg,#0ea5e9,#2563eb)"></div>
+<div class="mt-1 text-xs">Corporate</div>
+</div>
+<div class="preset" data-preset="ocean">
+<div class="h-8 rounded" style="background:linear-gradient(90deg,#06b6d4,#10b981)"></div>
+<div class="mt-1 text-xs">Ocean</div>
+</div>
+<div class="preset" data-ppreset="sunset">
+<div class="h-8 rounded" style="background:linear-gradient(90deg,#fb923c,#ef4444)"></div>
+<div class="mt-1 text-xs">Sunset</div>
+</div>
+<div class="preset" data-preset="dark">
+<div class="h-8 rounded" style="background:linear-gradient(90deg,#0b1220,#374151)"></div>
+<div class="mt-1 text-xs">Dark</div>
+</div>
+<div class="preset" data-preset="minimal">
+<div class="h-8 rounded" style="background:linear-gradient(90deg,#f8fafc,#e2e8f0)"></div>
+<div class="mt-1 text-xs">Minimal</div>
+</div>
+<div class="preset" data-preset="funky">
+<div class="h-8 rounded" style="background:linear-gradient(90deg,#a78bfa,#ec4899)"></div>
+<div class="mt-1 text-xs">Funky</div>
+</div>
+</div>
+</section>
+<hr style="border-color:var(--border)"/>
+<!-- Personalizar -->
+<section>
+<div class="text-xs muted mb-2">Personalizar</div>
+<div class="grid grid-cols-2 gap-3">
+<label class="block"><span class="text-xs muted">Botão PDF</span><input class="w-full h-10 border rounded" id="tPrimary" type="color" value="#3b82f6"/></label>
+<label class="block"><span class="text-xs muted">Botão Concluir</span><input class="w-full h-10 border rounded" id="tAccent" type="color" value="#22c55e"/></label>
+<label class="block"><span class="text-xs muted">Barra lateral</span><input class="w-full h-10 border rounded" id="tSidebar" type="color" value="#ffffff"/></label>
+<label class="block"><span class="text-xs muted">Cabeçalho</span><input class="w-full h-10 border rounded" id="tContentBg" type="color" value="#ffffff"/></label>
+<label class="block"><span class="text-xs muted">Cor de fundo</span><input class="w-full h-10 border rounded" id="tBg" type="color" value="#f3f4f6"/></label>
+<label class="block"><span class="text-xs muted">Texto</span><input class="w-full h-10 border rounded" id="tText" type="color" value="#0f172a"/></label>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-3">
+<label class="block"><span class="text-xs muted">Minha mensagem cor 1</span><input class="w-full h-10 border rounded" id="tOutG1" type="color" value="#dcf8c6"/></label>
+<label class="block"><span class="text-xs muted">Minha mensagem cor 2</span><input class="w-full h-10 border rounded" id="tOutG2" type="color" value="#b8f0a4"/></label>
+<label class="block"><span class="text-xs muted">Cliente mensagem cor</span><input class="w-full h-10 border rounded" id="tInBg" type="color" value="#ffffff"/></label>
+<label class="block"><span class="text-xs muted">Cliente mensagem bordas</span><input class="w-full h-10 border rounded" id="tInBorder" type="color" value="#e2e8f0"/></label>
+<label class="block"><span class="text-xs muted">Canto arredondado dos balões</span><input class="w-full" id="tRadius" max="28" min="8" type="range" value="18"/></label>
+</div>
+<div class="grid grid-cols-1 gap-3 mt-3">
+<label class="block"><span class="text-xs muted">Opacidade do fundo</span><input id="tBgOp" max="1" min="0" step="0.05" type="range" value="0"/></label>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-3">
+<label class="block"><span class="text-xs muted">Tamanho base</span>
+<select class="w-full p-2 border rounded" id="tFontSize">
+<option value="13px">13px</option>
+<option selected="" value="14px">14px</option>
+<option value="15px">15px</option>
+<option value="16px">16px</option>
+</select>
+</label>
+<label class="block"><span class="text-xs muted">Canto arredondado dos botões</span><input class="w-full" id="tBtnRadius" max="16" min="6" type="range" value="10"/></label>
+<label class="block"><span class="text-xs muted">Canto arredondado dos cards de aviso</span><input class="w-full" id="tCardRadius" max="24" min="10" type="range" value="16"/></label>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex items-center gap-2">
+<button class="btn btn-ghost px-3 py-2" id="btnRandom">🎲 Surpreenda-me</button>
+<button class="btn btn-ghost px-3 py-2" id="btnReset">↺ Voltar ao padrão</button>
+</div>
+<button class="btn btn-primary px-4 py-2" id="btnSaveTheme">Salvar</button>
+</div>
+</section>
+</div>
+</div>
+</div>
+</section>
+<!-- RELATÓRIO -->
+<section class="hidden p-4" id="tabRelatorio">
+<div class="max-w-6xl mx-auto space-y-4">
+<div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+<div>
+<h2 class="text-xl font-semibold section-title">Relatório Individual</h2>
+<div class="text-sm muted" id="relatorioPeriodo">Hoje</div>
+</div>
+<!-- Filtros -->
+<div class="flex flex-wrap gap-2 items-end">
+<div class="flex flex-col">
+<label class="text-xs muted">Início</label>
+<input class="border rounded px-2 py-1" id="relStart" type="date">
+</input></div>
+<div class="flex flex-col">
+<label class="text-xs muted">Fim</label>
+<input class="border rounded px-2 py-1" id="relEnd" type="date">
+</input></div>
+<div class="flex gap-1">
+<button class="btn btn-neutral px-2 py-1 text-xs" data-qk="hoje">Hoje</button>
+<button class="btn btn-neutral px-2 py-1 text-xs" data-qk="ontem">Ontem</button>
+<button class="btn btn-neutral px-2 py-1 text-xs" data-qk="7d">7d</button>
+<button class="btn btn-neutral px-2 py-1 text-xs" data-qk="30d">30d</button>
+</div>
+<div class="pill select-none" id="relAgenteLock" title="Agente aplicado ao filtro">
               Agente: <span id="relAgentePill">—</span>
-            </div>
-
-            <button id="btnRefreshRel" class="btn btn-primary px-3 py-2 text-sm">Atualizar</button>
-          </div>
-        </div>
-
-        <!-- KPIs -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div class="card p-4">
-            <div class="text-xs muted">Em atendimento</div>
-            <div id="kpiEm" class="text-2xl font-bold">0</div>
-          </div>
-          <div class="card p-4">
-            <div class="text-xs muted">Concluídos</div>
-            <div id="kpiConc" class="text-2xl font-bold">0</div>
-          </div>
-          <div class="card p-4">
-            <div class="text-xs muted">TMA</div>
-            <div class="text-2xl font-bold"><span id="kpiTma">—</span><span class="text-sm muted"> min</span></div>
-          </div>
-          <div class="card p-4">
-            <div class="text-xs muted">1ª resposta</div>
-            <div class="text-2xl font-bold"><span id="kpiFRT">—</span><span class="text-sm muted"> seg</span></div>
-          </div>
-        </div>
-
-        <!-- NOVO LAYOUT -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 items-start">
-          <!-- Extrato -->
-          <div class="card p-4 lg:col-span-2">
-            <div class="flex items-center justify-between">
-              <div class="font-semibold">Extrato de motivos (por dia)</div>
-              <button id="btnExtratoRefresh" class="btn btn-neutral px-3 py-1 text-xs">Atualizar extrato</button>
-            </div>
-            <div id="extratoWrap" class="mt-3 extrato"></div>
-          </div>
-
-          <!-- Coluna de gráficos -->
-          <div class="space-y-3">
-            <div class="card p-4">
-              <div class="font-semibold">Distribuição por status</div>
-              <div class="mt-3"><canvas id="pieStatus" class="chart-sm"></canvas></div>
-            </div>
-
-            <div class="card p-4">
-              <div class="font-semibold">Motivos de conclusão</div>
-              <div class="mt-3"><canvas id="pieMotivos" class="chart-sm"></canvas></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="tabEnvioIndividual" class="flex-1 p-6 hidden">
-      <div class="max-w-4xl mx-auto">
-        <div class="card p-6">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <h2 class="text-xl font-bold">Envio individual — Ligação caiu</h2>
-              <p class="muted mt-1">Envia o template fixo e, se o cliente não estiver em atendimento, puxa a conversa para a sua fila.</p>
-            </div>
-            <button id="btnEnvIndIrParaConversa" class="btn btn-ghost px-3 py-2 text-sm">Ir para Conversas</button>
-          </div>
-
-          <div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="md:col-span-2">
-              <label class="text-xs muted">Telefone (55DDDXXXXXXXX)</label>
-              <input id="envIndTelefone" class="input mt-1 w-full" placeholder="Ex: 5561999999999" autocomplete="off" />
-              <div id="envIndHint" class="text-xs muted mt-1">Se você estiver com uma conversa aberta, o telefone é preenchido automaticamente.</div>
-            </div>
-            <div>
-              <label class="text-xs muted">Phone ID</label>
-              <select id="envIndPhoneId" class="input mt-1 w-full"></select>
-              <div class="text-xs muted mt-1">Por padrão usamos o Phone ID da conversa (quando existir).</div>
-            </div>
-          </div>
-
-          <div class="mt-4 flex items-center gap-2">
-            <button id="btnEnvIndEnviar" class="btn btn-primary px-4 py-2 text-white disabled:opacity-50">Enviar template</button>
-            <span id="envIndStatus" class="text-sm muted"></span>
-          </div>
-
-          <details class="mt-4">
-            <summary class="text-sm link cursor-pointer">Ver detalhes do resultado</summary>
-            <pre id="envIndResult" class="mt-2 p-3 text-xs overflow-auto" style="max-height: 260px; border:1px solid var(--border); border-radius: 12px; background: var(--ghost-bg);"></pre>
-          </details>
-        </div>
-      </div>
-    </section>
-
-  </div>
-
-  <!-- MODAL DE LOGIN -->
-  <div id="modalLogin" class="modal">
-    <div class="modal-inner">
-      <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
-        <h3 class="font-semibold">Identifique-se</h3>
-        <button class="btn btn-ghost px-2 py-1 text-xs" onclick="fecharModalLogin()" aria-label="Fechar">✖</button>
-      </div>
-      <div class="p-4 space-y-3">
-        <label class="block text-sm muted">Informe seu código de agente</label>
-        <input id="loginCodigoAgente" inputmode="numeric" pattern="[0-9]*" class="w-full p-2 border rounded-md"
-          placeholder="Ex: 101" />
-        <p class="text-xs muted">Seja bem-vindo(a) ao ConnectZap.</p>
-        <div id="loginErro" class="text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
-      </div>
-      <div class="p-4 border-t flex items-center justify-end gap-2" style="border-color:var(--border)">
-        <button class="btn btn-neutral px-3 py-2 text-sm" onclick="fecharModalLogin()">Cancelar</button>
-        <button id="btnDoLogin" class="px-3 py-2 text-sm text-white rounded-md"
-          style="background:var(--primary)">Confirmar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL DE FEEDBACK CURTO (logout / login required) -->
-  <div id="modalFeedback" class="modal" aria-live="polite" aria-modal="true" role="dialog">
-    <div class="modal-inner">
-      <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
-        <h3 id="feedbackTitle" class="font-semibold">Aviso</h3>
-        <button class="btn btn-ghost px-2 py-1 text-xs" onclick="fecharModalFeedback()" aria-label="Fechar">✖</button>
-      </div>
-      <div class="p-5">
-        <p id="feedbackMsg" class="text-sm"></p>
-      </div>
-      <div class="p-3 border-t flex items-center justify-end" style="border-color:var(--border)">
-        <button class="btn btn-primary px-3 py-2 text-sm" onclick="fecharModalFeedback()">Ok</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
+</div>
+<button class="btn btn-primary px-3 py-2 text-sm" id="btnRefreshRel">Atualizar</button>
+</div>
+</div>
+<!-- KPIs -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+<div class="card p-4">
+<div class="text-xs muted">Em atendimento</div>
+<div class="text-2xl font-bold" id="kpiEm">0</div>
+</div>
+<div class="card p-4">
+<div class="text-xs muted">Concluídos</div>
+<div class="text-2xl font-bold" id="kpiConc">0</div>
+</div>
+<div class="card p-4">
+<div class="text-xs muted">TMA</div>
+<div class="text-2xl font-bold"><span id="kpiTma">—</span><span class="text-sm muted"> min</span></div>
+</div>
+<div class="card p-4">
+<div class="text-xs muted">1ª resposta</div>
+<div class="text-2xl font-bold"><span id="kpiFRT">—</span><span class="text-sm muted"> seg</span></div>
+</div>
+</div>
+<!-- NOVO LAYOUT -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-3 items-start">
+<!-- Extrato -->
+<div class="card p-4 lg:col-span-2">
+<div class="flex items-center justify-between">
+<div class="font-semibold">Extrato de motivos (por dia)</div>
+<button class="btn btn-neutral px-3 py-1 text-xs" id="btnExtratoRefresh">Atualizar extrato</button>
+</div>
+<div class="mt-3 extrato" id="extratoWrap"></div>
+</div>
+<!-- Coluna de gráficos -->
+<div class="space-y-3">
+<div class="card p-4">
+<div class="font-semibold">Distribuição por status</div>
+<div class="mt-3"><canvas class="chart-sm" id="pieStatus"></canvas></div>
+</div>
+<div class="card p-4">
+<div class="font-semibold">Motivos de conclusão</div>
+<div class="mt-3"><canvas class="chart-sm" id="pieMotivos"></canvas></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="flex-1 p-6 hidden" id="tabEnvioIndividual">
+<div class="max-w-4xl mx-auto">
+<div class="card p-6">
+<div class="flex items-start justify-between gap-3">
+<div class="min-w-0">
+<h2 class="text-xl font-bold">Envio individual — Ligação caiu</h2>
+<p class="muted mt-1">Envia o template fixo e, se o cliente não estiver em atendimento, puxa a conversa para a sua fila.</p>
+</div>
+<button class="btn btn-ghost px-3 py-2 text-sm" id="btnEnvIndIrParaConversa">Ir para Conversas</button>
+</div>
+<div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="md:col-span-2">
+<label class="text-xs muted">Telefone (55DDDXXXXXXXX)</label>
+<input autocomplete="off" class="input mt-1 w-full" id="envIndTelefone" placeholder="Ex: 5561999999999">
+<div class="text-xs muted mt-1" id="envIndHint">Se você estiver com uma conversa aberta, o telefone é preenchido automaticamente.</div>
+</input></div>
+<div>
+<label class="text-xs muted">Phone ID</label>
+<select class="input mt-1 w-full" id="envIndPhoneId"></select>
+<div class="text-xs muted mt-1">Por padrão usamos o Phone ID da conversa (quando existir).</div>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-2">
+<button class="btn btn-primary px-4 py-2 text-white disabled:opacity-50" id="btnEnvIndEnviar">Enviar template</button>
+<span class="text-sm muted" id="envIndStatus"></span>
+</div>
+<details class="mt-4">
+<summary class="text-sm link cursor-pointer">Ver detalhes do resultado</summary>
+<pre class="mt-2 p-3 text-xs overflow-auto" id="envIndResult" style="max-height: 260px; border:1px solid var(--border); border-radius: 12px; background: var(--ghost-bg);"></pre>
+</details>
+</div>
+</div>
+</section>
+</div>
+<!-- MODAL DE LOGIN -->
+<div class="modal" id="modalLogin">
+<div class="modal-inner">
+<div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
+<h3 class="font-semibold">Identifique-se</h3>
+<button aria-label="Fechar" class="btn btn-ghost px-2 py-1 text-xs" onclick="fecharModalLogin()">✖</button>
+</div>
+<div class="p-4 space-y-3">
+<label class="block text-sm muted">Informe seu código de agente</label>
+<input class="w-full p-2 border rounded-md" id="loginCodigoAgente" inputmode="numeric" pattern="[0-9]*" placeholder="Ex: 101">
+<p class="text-xs muted">Seja bem-vindo(a) ao ConnectZap.</p>
+<div aria-live="polite" class="text-sm text-red-600 hidden" id="loginErro" role="alert"></div>
+</input></div>
+<div class="p-4 border-t flex items-center justify-end gap-2" style="border-color:var(--border)">
+<button class="btn btn-neutral px-3 py-2 text-sm" onclick="fecharModalLogin()">Cancelar</button>
+<button class="px-3 py-2 text-sm text-white rounded-md" id="btnDoLogin" style="background:var(--primary)">Confirmar</button>
+</div>
+</div>
+</div>
+<!-- MODAL DE FEEDBACK CURTO (logout / login required) -->
+<div aria-live="polite" aria-modal="true" class="modal" id="modalFeedback" role="dialog">
+<div class="modal-inner">
+<div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
+<h3 class="font-semibold" id="feedbackTitle">Aviso</h3>
+<button aria-label="Fechar" class="btn btn-ghost px-2 py-1 text-xs" onclick="fecharModalFeedback()">✖</button>
+</div>
+<div class="p-5">
+<p class="text-sm" id="feedbackMsg"></p>
+</div>
+<div class="p-3 border-t flex items-center justify-end" style="border-color:var(--border)">
+<button class="btn btn-primary px-3 py-2 text-sm" onclick="fecharModalFeedback()">Ok</button>
+</div>
+</div>
+</div>
+<script>
     /** ============== CONFIG / APIs ============== */
     const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/, '');
     const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
@@ -1611,6 +1580,9 @@
         agente.carteira = j.agente?.carteira || localStorage.getItem("agente_carteira") || 'ConnectZap';
         localStorage.setItem("agente_nome", agente.nome);
         localStorage.setItem("agente_carteira", agente.carteira);
+        // Permissão para Envio Individual (atualiza mesmo quando já estava logado)
+        localStorage.setItem("agente_perm_envio_individual", j.agente?.permite_envio_individual ? "1" : "0");
+        try { renderPermissaoEnvioIndividual(); } catch (_) { }
 
         elAgenteNome.textContent = `${agente.nome} (#${agente.codigo})`;
         elAgenteCarteira.textContent = agente.carteira;
@@ -1716,8 +1688,8 @@
     const btnEnvIndIrParaConversa = document.getElementById('btnEnvIndIrParaConversa');
 
     function hasPermEnvioIndividual() {
-      return localStorage.setItem("agente_perm_envio_individual", j.agente?.permite_envio_individual ? "1" : "0");
-            //localStorage.getItem('agente_perm_envio_individual') === '1';
+      //return localStorage.setItem("agente_perm_envio_individual", j.agente?.permite_envio_individual ? "1" : "0");
+      return localStorage.getItem('agente_perm_envio_individual') === '1';
     }
 
     function renderPermissaoEnvioIndividual() {
@@ -2739,7 +2711,7 @@
       }
     });
   </script>
-  <script>
+<script>
     const presets = {
       corporate: { primary: "#2563eb", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", outG1: "#e0f2fe", outG2: "#bfdbfe", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6" },
       ocean: { primary: "#06b6d4", accent: "#10b981", sidebar: "#f0fdff", contentBg: "#ecfeff", bg: "#f0fdfa", text: "#0b1320", outG1: "#cffafe", outG2: "#a7f3d0", inBg: "#ffffff", inBorder: "#cbd5e1", bubbleRadius: 18, btnRadius: 12, cardRadius: 18, wallOp: .05, fontSize: "14px", muted: "#475569", border: "#cbd5e1", link: "#0891b2", ghostBg: "#e2f2f3" },
@@ -2793,5 +2765,4 @@
     })();
   </script>
 </body>
-
 </html>
