@@ -816,10 +816,10 @@
     <button id="tabBtnEnvioIndividual" class="btn-mini hidden transition-transform active:scale-95"
       title="Envio individual" aria-label="Envio individual">
       <!-- phone icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-        stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-        <path
-          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.31 1.7.57 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.09a2 2 0 0 1 2.11-.45c.8.26 1.64.45 2.5.57A2 2 0 0 1 22 16.92Z" />
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true">
+        <path d="M22 2 11 13" />
+        <path d="m22 2-7 20-4-9-9-4Z" />
       </svg>
       <span class="sr-only">Envio individual</span>
     </button>
@@ -950,7 +950,7 @@
               </div>
             </div>
             <div class="flex flex-col items-end gap-2">
-              <button id="btnPegarProxima"
+              <button id="btnPegarProxima" type="button"
                 class="btn btn-primary px-3 py-2 text-sm text-white disabled:opacity-50 flex items-center gap-2"
                 disabled>
                 <svg id="pegarSpinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -960,7 +960,7 @@
                 </svg>
                 <span id="pegarLabel">Pegar próxima</span>
               </button>
-              <button id="btnPrioridade" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50"
+              <button id="btnPrioridade" type="button" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50"
                 disabled style="background: rebeccapurple">Pedir prioridade</button>
               <button id="btnTheme" class="mt-2 btn btn-ghost px-3 py-1 text-xs" aria-haspopup="true"
                 aria-controls="themeDrawer">🎨 Tema</button>
@@ -985,10 +985,10 @@
             <div id="subInfo" class="text-sm muted truncate"></div>
           </div>
           <div class="flex items-center gap-2">
-            <button id="btnLiberar" class="btn btn-neutral px-3 py-2 text-sm disabled:opacity-50"
+            <button id="btnLiberar" type="button" class="btn btn-neutral px-3 py-2 text-sm disabled:opacity-50"
               disabled>Liberar</button>
             <div class="relative">
-              <button id="btnConcluir" class="btn px-3 py-2 text-sm text-white disabled:opacity-50"
+              <button id="btnConcluir" type="button" class="btn px-3 py-2 text-sm text-white disabled:opacity-50"
                 style="background:var(--accent)" disabled aria-haspopup="true" aria-expanded="false">Concluir</button>
               <div id="menuConcluir" class="hidden absolute right-0 mt-2 w-64 border rounded-lg shadow-lg z-20"
                 style="background: var(--content-bg); border-color: var(--border)"></div>
@@ -1019,7 +1019,7 @@
             PDF</button>
           <textarea id="textoMensagem" rows="1" class="flex-1 border rounded-md p-2 resize-none"
             style="border-color:var(--border)" placeholder="Digite uma mensagem…" disabled></textarea>
-          <button id="btnEnviar" class="btn px-4 py-2 text-white disabled:opacity-50" style="background:var(--accent)"
+          <button id="btnEnviar" type="button" class="btn px-4 py-2 text-white disabled:opacity-50" style="background:var(--accent)"
             disabled>Enviar</button>
         </div>
       </main>
@@ -1577,6 +1577,85 @@
     function clickForaMenuConcluir(e) { const within = menuConcluir.contains(e.target) || btnConcluir.contains(e.target); if (!within) fecharMenuConcluir() }
     btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir() };
     renderMenuConcluir();
+
+    /** ============== LIBERAR / CONCLUIR ============== */
+    function resetAtendimentoUI() {
+      selecionado = null;
+      elTitulo.textContent = "Selecione um ticket";
+      elSubInfo.textContent = "";
+      limparChat();
+
+      textarea.value = "";
+      textarea.disabled = true;
+      btnEnviar.disabled = true;
+      btnLiberar.disabled = true;
+      btnConcluir.disabled = true;
+
+      // Envio Individual: volta para o estado padrão (sem ticket selecionado)
+      try {
+        envIndPhoneId = null;
+        envIndUpdatePhoneIdLabel();
+        envIndSetPreview(null);
+      } catch (_) {}
+
+      try { updateEnviarState(); } catch (_) {}
+    }
+
+    btnLiberar.onclick = async () => {
+      if (!selecionado) return;
+      if (!confirm('Liberar este atendimento?\n\nO cliente voltará para a fila e poderá ser atendido por outro operador.')) return;
+
+      btnLiberar.disabled = true;
+      btnConcluir.disabled = true;
+      try {
+        await postJson(`${CONV_API}/api/tickets/liberar`, {
+          codigo_do_agente: AGENTE.codigo_do_agente,
+          remetente: selecionado.remetente,
+          phone_id: selecionado.phone_id,
+        });
+
+        showModalFeedback('O cliente voltou para a fila.', 'Atendimento liberado');
+        resetAtendimentoUI();
+        await refreshTicketsMinhas();
+      } catch (err) {
+        console.error(err);
+        showModalFeedback((err && err.message) ? err.message : 'Erro ao liberar atendimento.', 'Falha ao liberar');
+        if (selecionado) {
+          btnLiberar.disabled = false;
+          btnConcluir.disabled = false;
+        }
+      }
+    };
+
+    async function concluirAtendimento(motivo) {
+      if (!selecionado) return;
+      if (!motivo) return;
+
+      if (!confirm(`Concluir este atendimento?\n\nMotivo: ${motivo}`)) return;
+
+      btnLiberar.disabled = true;
+      btnConcluir.disabled = true;
+      try {
+        await postJson(`${CONV_API}/api/tickets/concluir`, {
+          codigo_do_agente: AGENTE.codigo_do_agente,
+          remetente: selecionado.remetente,
+          phone_id: selecionado.phone_id,
+          motivo,
+        });
+
+        showModalFeedback(`Motivo: ${motivo}`, 'Atendimento concluído');
+        resetAtendimentoUI();
+        await refreshTicketsMinhas();
+      } catch (err) {
+        console.error(err);
+        showModalFeedback((err && err.message) ? err.message : 'Erro ao concluir atendimento.', 'Falha ao concluir');
+        if (selecionado) {
+          btnLiberar.disabled = false;
+          btnConcluir.disabled = false;
+        }
+      }
+    }
+
 
     /** ============== THEME ============== */
     function themeKey() { return 'cz:theme:v2' }
