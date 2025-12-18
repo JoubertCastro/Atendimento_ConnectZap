@@ -2403,13 +2403,13 @@
         return;
       }
 
-            const phoneIdEl = document.getElementById('envIndPhoneId');
+      const phoneIdEl = document.getElementById('envIndPhoneId');
       const btn = document.getElementById('btnEnvIndEnviar');
 
       const rawTel = (envIndContatoSelecionado?.to_msisdn || '').trim() || (selecionado?.remetente || '');
       const to_msisdn = normalizeMsisdnBR(rawTel);
       const primeiro_nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome || '') || firstNameOf(selecionado?.nome_exibicao || '') || 'cliente';
-
+      
 // Phone ID é obrigatório (mas UI fica escondida)
       const phone_id = (phoneIdEl?.value || '').trim()
         || (selecionado?.phone_id ? String(selecionado.phone_id) : '')
@@ -2466,6 +2466,21 @@
               return;
             }
 
+            // ✅ NOVO: tenta reservar/criar a conversa após o envio
+            const reserva = await reservarConversaPosLigacaoCaiu(telefone);
+
+            if (reserva.ok && reserva.warn) {
+              (window.toast ? toast(reserva.message || "Mensagem enviada ✅ (outro operador já atende este cliente).", "warning")
+                            : alert(reserva.message || "Mensagem enviada ✅ (outro operador já atende este cliente)."));
+            } else if (reserva.ok) {
+              (window.toast ? toast("Mensagem enviada ✅ e conversa criada/reservada.", "success")
+                            : alert("Mensagem enviada ✅ e conversa criada/reservada."));
+            } else {
+              // não bloqueia o envio
+              (window.toast ? toast("Mensagem enviada ✅, mas não consegui reservar/criar a conversa.", "warning")
+                            : alert("Mensagem enviada ✅, mas não consegui reservar/criar a conversa."));
+            }
+
             // JSON de erro explícito
             if (j && (j.erro || j.error || j.message)) {
               envIndSetResultCompact({
@@ -2513,6 +2528,67 @@
         if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); }
       }
     }
+
+      async function reservarConversaPosLigacaoCaiu(telefone) {
+        const tel = String(telefone || "").replace(/\D/g, "");
+        if (!tel) return { ok: false, warn: true, message: "Telefone inválido para reservar conversa." };
+
+        const codigo = parseInt((agente && agente.codigo) ? agente.codigo : "0", 10);
+        const carteira = (agente && agente.carteira) ? agente.carteira : "";
+
+        // payload “compatível” (manda remetente e telefone)
+        const payload = {
+          codigo_do_agente: codigo,
+          carteira,
+          remetente: tel,
+          telefone: tel
+        };
+
+        const headers = { "Content-Type": "application/json" };
+        const token = (localStorage.getItem("token") || "").trim();
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        // tenta primeiro o endpoint “novo” (se existir), e depois faz fallback pro claim
+        const endpoints = [
+          `${CONV_API}/api/envio_individual/ligacao_caiu/reserva`,
+          `${CONV_API}/api/tickets/claim`
+        ];
+
+        for (const url of endpoints) {
+          try {
+            const r = await fetch(url, { method: "POST", headers, body: JSON.stringify(payload) });
+
+            // se não existir esse endpoint, tenta o próximo
+            if (r.status === 404) continue;
+
+            let j = null;
+            try { j = await r.json(); } catch {}
+
+            if (r.ok) return { ok: true, warn: false, data: j };
+
+            // se outro agente já estiver com a conversa, tratamos como “sucesso com aviso”
+            if (r.status === 409) {
+              return {
+                ok: true,
+                warn: true,
+                data: j,
+                message: (j && (j.message || j.error)) || "Outro operador já está atendendo este cliente."
+              };
+            }
+
+            return {
+              ok: false,
+              warn: true,
+              data: j,
+              message: (j && (j.message || j.error)) || `Falha ao reservar conversa (HTTP ${r.status}).`
+            };
+          } catch (e) {
+            // tenta o próximo endpoint
+          }
+        }
+
+        return { ok: false, warn: true, message: "Não foi possível reservar/criar a conversa (rede/endpoint)." };
+      }
 
     function envIndUsarConversaAtual() {
       if (!selecionado) {
