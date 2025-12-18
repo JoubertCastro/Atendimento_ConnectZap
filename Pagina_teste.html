@@ -8,6 +8,7 @@
   <link rel="icon" href="https://joubertcastro.github.io/ConnectZap/favicon.ico" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     :root {
       --primary: #3b82f6;
@@ -415,7 +416,6 @@
       font-size: 12px
     }
 
-    /* Relatório */
     .section-title {
       color: var(--text)
     }
@@ -490,7 +490,6 @@
       max-height: 160px;
     }
 
-    /* ======= PAINEL DE AVISOS ======= */
     .notice {
       border: 1px solid var(--border);
       background: var(--content-bg);
@@ -725,7 +724,6 @@
       }
     }
 
-    /* ======= ENVIO INDIVIDUAL (RESULTADO LIMPO) ======= */
     .pill-state {
       border: 1px solid var(--border);
       border-radius: 9999px;
@@ -757,12 +755,6 @@
       color: color-mix(in srgb, #1e3a8a 90%, var(--text));
     }
 
-    .result-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-
     .result-meta {
       font-size: 12px;
       color: var(--muted);
@@ -780,27 +772,28 @@
       background: color-mix(in srgb, var(--ghost-bg) 70%, var(--content-bg));
       color: var(--text);
     }
-  
-    /* Theme presets (Temas rápidos) */
-    .preset{
-      cursor:pointer;
-      border:1px solid var(--border);
+
+    /* Theme presets */
+    .preset {
+      cursor: pointer;
+      border: 1px solid var(--border);
       background: color-mix(in srgb, var(--ghost-bg) 85%, var(--content-bg));
       border-radius: 14px;
       padding: 10px;
       transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-      user-select:none;
+      user-select: none;
     }
-    .preset:hover{
+
+    .preset:hover {
       transform: translateY(-1px);
-      box-shadow: 0 10px 20px rgba(0,0,0,.08);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, .08);
       border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
     }
-    .preset.active{
+
+    .preset.active {
       outline: 2px solid var(--primary);
       outline-offset: 2px;
     }
-
   </style>
 </head>
 
@@ -808,7 +801,6 @@
 
   <!-- Mini Sidebar -->
   <nav id="appSidebar" class="mini-sidebar select-none hidden">
-    <!-- Home -->
     <button id="tabBtnHome" class="btn-mini active transition-transform active:scale-95" title="Home" aria-label="Home"
       aria-current="page">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -819,7 +811,6 @@
       <span class="sr-only">Home</span>
     </button>
 
-    <!-- Conversas -->
     <button id="tabBtnConversas" class="btn-mini transition-transform active:scale-95" title="Conversas"
       aria-label="Conversas" data-requires-login>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -833,19 +824,16 @@
       <span class="sr-only">Conversas</span>
     </button>
 
-    <!-- Envio individual -->
     <button id="tabBtnEnvioIndividual" class="btn-mini hidden transition-transform active:scale-95"
       title="Envio individual" aria-label="Envio individual">
-      <!-- phone icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true">
         <path d="M22 2 11 13" />
         <path d="m22 2-7 20-4-9-9-4Z" />
       </svg>
       <span class="sr-only">Envio individual</span>
     </button>
 
-    <!-- Relatório -->
     <button id="tabBtnRelatorio" class="btn-mini transition-transform active:scale-95" title="Relatório"
       aria-label="Relatório" data-requires-login>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -885,7 +873,6 @@
           </div>
 
           <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-            <!-- STATUS / ONLINE -->
             <div class="p-4 border rounded-lg" style="border-color:var(--border)">
               <div class="text-sm muted mb-1">Status</div>
               <div id="homeStatus" class="font-medium"><span class="dot offline"></span>Offline</div>
@@ -903,7 +890,6 @@
                 <button id="btnLogout" class="btn btn-primary px-3 py-2">Login</button>
               </div>
 
-              <!-- PENDENTES NA FILA (Home / Status) -->
               <div class="mt-3">
                 <div class="text-sm muted mb-1">Pendentes na sua fila</div>
                 <div class="flex items-center gap-2">
@@ -915,7 +901,6 @@
               <div id="homeAviso" class="mt-2 text-xs text-amber-600 hidden" role="alert" aria-live="polite"></div>
             </div>
 
-            <!-- ATALHOS -->
             <div class="p-4 border rounded-lg" style="border-color:var(--border)">
               <div class="flex items-center justify-between">
                 <div class="text-sm muted mb-1">Atalhos</div>
@@ -927,7 +912,6 @@
             </div>
           </div>
 
-          <!-- PAINEL DE AVISOS -->
           <div class="mt-6">
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2">
@@ -945,7 +929,6 @@
             <div id="avisosResumo" class="text-sm muted mt-1">—</div>
             <div id="avisosWrap" class="mt-3 space-y-2"></div>
           </div>
-          <!-- /SUPER PAINEL DE AVISOS -->
 
         </div>
       </div>
@@ -953,7 +936,6 @@
 
     <!-- CONVERSAS -->
     <section id="tabConversas" class="hidden h-full flex">
-      <!-- Sidebar -->
       <aside class="sidebar w-1/3 lg:w-1/4 border-r flex flex-col">
         <div class="p-3 border-b topbar">
           <div class="flex items-start justify-between gap-2">
@@ -998,7 +980,6 @@
         </div>
       </aside>
 
-      <!-- Chat -->
       <main class="flex-1 flex flex-col">
         <div class="flex items-center justify-between p-3 border-b topbar">
           <div class="min-w-0">
@@ -1036,8 +1017,7 @@
 
         <div class="p-3 border-t topbar flex space-x-2 items-center">
           <input type="file" id="fileInput" accept="application/pdf" class="hidden" onchange="enviarPDF(event)">
-          <button onclick="document.getElementById('fileInput').click()" class="btn btn-primary px-3 py-2">📝
-            PDF</button>
+          <button onclick="document.getElementById('fileInput').click()" class="btn btn-primary px-3 py-2">📝 PDF</button>
           <textarea id="textoMensagem" rows="1" class="flex-1 border rounded-md p-2 resize-none"
             style="border-color:var(--border)" placeholder="Digite uma mensagem…" disabled></textarea>
           <button id="btnEnviar" class="btn px-4 py-2 text-white disabled:opacity-50" style="background:var(--accent)"
@@ -1093,14 +1073,13 @@
             <h3 class="font-semibold">🎨 Seu tema</h3>
             <div class="flex items-center gap-2">
               <button id="btnThemeExport" class="btn btn-ghost px-2 py-1 text-xs">Salvar no meu computador</button>
-              <label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">Importar um tema salvo <input
-                  id="importTheme" type="file" accept="application/json" class="hidden"></label>
+              <label class="btn btn-ghost px-2 py-1 text-xs cursor-pointer">Importar um tema salvo <input id="importTheme"
+                  type="file" accept="application/json" class="hidden"></label>
               <button id="btnThemeClose" class="btn btn-ghost px-2 py-1 text-xs" aria-label="Fechar">✖</button>
             </div>
           </div>
 
           <div class="p-4 overflow-y-auto space-y-6">
-            <!-- Temas rápidos -->
             <section>
               <div class="text-xs muted mb-2">Temas rápidos</div>
               <div class="grid grid-cols-2 gap-2">
@@ -1133,7 +1112,6 @@
 
             <hr style="border-color:var(--border)">
 
-            <!-- Personalizar -->
             <section>
               <div class="text-xs muted mb-2">Personalizar</div>
 
@@ -1157,8 +1135,8 @@
                     type="color" class="w-full h-10 border rounded" value="#dcf8c6"></label>
                 <label class="block"><span class="text-xs muted">Minha mensagem cor 2</span><input id="tOutG2"
                     type="color" class="w-full h-10 border rounded" value="#b8f0a4"></label>
-                <label class="block"><span class="text-xs muted">Cliente mensagem cor</span><input id="tInBg"
-                    type="color" class="w-full h-10 border rounded" value="#ffffff"></label>
+                <label class="block"><span class="text-xs muted">Cliente mensagem cor</span><input id="tInBg" type="color"
+                    class="w-full h-10 border rounded" value="#ffffff"></label>
                 <label class="block"><span class="text-xs muted">Cliente mensagem bordas</span><input id="tInBorder"
                     type="color" class="w-full h-10 border rounded" value="#e2e8f0"></label>
                 <label class="block"><span class="text-xs muted">Canto arredondado dos balões</span><input id="tRadius"
@@ -1179,8 +1157,8 @@
                     <option value="16px">16px</option>
                   </select>
                 </label>
-                <label class="block"><span class="text-xs muted">Canto arredondado dos botões</span><input
-                    id="tBtnRadius" type="range" min="6" max="16" value="10" class="w-full"></label>
+                <label class="block"><span class="text-xs muted">Canto arredondado dos botões</span><input id="tBtnRadius"
+                    type="range" min="6" max="16" value="10" class="w-full"></label>
                 <label class="block"><span class="text-xs muted">Canto arredondado dos cards de aviso</span><input
                     id="tCardRadius" type="range" min="10" max="24" value="16" class="w-full"></label>
               </div>
@@ -1209,19 +1187,21 @@
             </div>
           </div>
 
-          <!-- AJUSTE DE LAYOUT: UX mais simples (status abaixo do botão) -->
           <div class="mt-4">
             <div class="card p-4">
               <div class="flex items-center justify-between gap-2">
                 <h3 class="font-semibold">Dados do cliente</h3>
-</div>
+              </div>
 
-              <!-- Phone ID: obrigatório, mas escondido (sem edição) -->
+              <!-- Phone ID (obrigatório) - escondido -->
               <input id="envIndPhoneId" type="hidden" />
 
+              <!-- (opcional) debug interno -->
+              <div class="hidden">
+                Phone ID: <span id="envIndPhoneIdLabel">—</span> <span id="envIndPhoneIdHint"></span>
+              </div>
+
               <div class="mt-3 grid md:grid-cols-2 gap-3">
-                
-                <!-- Busca de cadastro (substitui digitação manual) -->
                 <div class="md:col-span-2">
                   <label class="label">Buscar cadastro</label>
 
@@ -1234,7 +1214,7 @@
                         <option value="bd7">BD7</option>
                         <option value="bd8">BD8</option>
                       </select>
-              <p id="envIndBaseHint" class="mt-1 text-xs text-slate-500 hidden">Definida pelo seu perfil.</p>
+                      <p id="envIndBaseHint" class="mt-1 text-xs text-slate-500 hidden">Definida pelo seu perfil.</p>
                     </div>
 
                     <div class="md:col-span-2">
@@ -1243,7 +1223,8 @@
                         <input id="envIndCodigo" class="input flex-1" placeholder="Ex: 123456" />
                         <button id="btnEnvIndBuscar" class="btn btn-ghost px-4 py-2" type="button">Buscar</button>
                       </div>
-                      <p class="hint mt-1">Pesquise o cadastro usando o codigo interno e selecione o telefone que deseja usar.</p>
+                      <p class="hint mt-1">Pesquise o cadastro usando o codigo interno e selecione o telefone que deseja
+                        usar.</p>
                     </div>
                   </div>
 
@@ -1289,7 +1270,6 @@
                   <button id="btnEnvIndLimpar" class="btn btn-ghost px-4 py-2" type="button">Limpar</button>
                 </div>
 
-                <!-- Status do envio (somente Sucesso/Falha/Enviando) -->
                 <div class="md:col-span-2">
                   <div id="envIndStatusWrap" class="hidden mt-2">
                     <div class="flex items-center gap-2">
@@ -1302,7 +1282,6 @@
               </div>
             </div>
           </div>
-
 
           <div id="envIndSemPermissao" class="hidden mt-4 alert alert-warn">
             <div class="font-semibold">Sem permissão</div>
@@ -1321,7 +1300,6 @@
             <div class="text-sm muted" id="relatorioPeriodo">Hoje</div>
           </div>
 
-          <!-- Filtros -->
           <div class="flex flex-wrap gap-2 items-end">
             <div class="flex flex-col">
               <label class="text-xs muted">Início</label>
@@ -1347,7 +1325,6 @@
           </div>
         </div>
 
-        <!-- KPIs -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div class="card p-4">
             <div class="text-xs muted">Em atendimento</div>
@@ -1367,9 +1344,7 @@
           </div>
         </div>
 
-        <!-- NOVO LAYOUT -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 items-start">
-          <!-- Extrato -->
           <div class="card p-4 lg:col-span-2">
             <div class="flex items-center justify-between">
               <div class="font-semibold">Extrato de motivos (por dia)</div>
@@ -1378,7 +1353,6 @@
             <div id="extratoWrap" class="mt-3 extrato"></div>
           </div>
 
-          <!-- Coluna de gráficos -->
           <div class="space-y-3">
             <div class="card p-4">
               <div class="font-semibold">Distribuição por status</div>
@@ -1418,7 +1392,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE FEEDBACK CURTO (logout / login required) -->
+  <!-- MODAL DE FEEDBACK CURTO -->
   <div id="modalFeedback" class="modal" aria-live="polite" aria-modal="true" role="dialog">
     <div class="modal-inner">
       <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
@@ -1444,17 +1418,45 @@
     const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
 
     /** ============== CARTEIRAS / Phone IDs ============== */
-    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "802977069563598": "Recovery PF", "938298879357445": "Recovery Preventivo", "897647883433681": "Recovery Manutenção", "821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
-        const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
+    const phoneIdMap = {
+      "789025174304270": "ConnectZap",
+      "805610009301153": "Banco PAN",
+      "727586317113885": "Recovery PJ",
+      "802977069563598": "Recovery PF",
+      "938298879357445": "Recovery Preventivo",
+      "897647883433681": "Recovery Manutenção",
+      "821562937700669": "Mercado Pago Cobrança",
+      "779797401888141": "DivZero",
+      "829210283602406": "Arc4U",
+      "905309685992125": "Arc4U Veiculos",
+      "713021321904495": "Serasa",
+      "803535039503723": "Mercado Pago Vendas"
+    };
+    const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => {
+      const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean);
+      acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts]));
+      return acc;
+    }, {});
 
     /** ============== ESTADO ============== */
-    let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
-    let tickets = []; let selecionado = null; let renderedKeys = new Set(); let lastTimestampMs = null; let lastDayRendered = null;
-    let pollingContatos = null; let pollingMensagens = null; let isModalOpen = false; let userTyping = false; let respostaMsgId = null;
-    let limitPerAgent = 0; let ativosCount = 0;
-    let unreadCountByKey = {}; let lastContatoTsByKey = {};
-    let ordemCache = []; let pieChart = null; // status
-    let chartMotivos = null; // motivos
+    let agente = { codigo: null, nome: null, carteira: null, origem: null, origem_bd: null, online: false };
+    let tickets = [];
+    let selecionado = null;
+    let renderedKeys = new Set();
+    let lastTimestampMs = null;
+    let lastDayRendered = null;
+    let pollingContatos = null;
+    let pollingMensagens = null;
+    let isModalOpen = false;
+    let userTyping = false;
+    let respostaMsgId = null;
+    let limitPerAgent = 0;
+    let ativosCount = 0;
+    let unreadCountByKey = {};
+    let lastContatoTsByKey = {};
+    let ordemCache = [];
+    let pieChart = null;
+    let chartMotivos = null;
     let typingTimer = null;
 
     // Avisos
@@ -1470,42 +1472,54 @@
     function fmtYMD(d) { const z = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}` }
     function qsParam(name) { return new URLSearchParams(location.search).get(name) }
     function escapeHtml(s) { if (!s) return ""; return s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])) }
-    const __colorCache = new Map(); function gerarCor(nome) { const key = String(nome || "U"); if (__colorCache.has(key)) return __colorCache.get(key); let h = 0; for (const c of key) h = c.charCodeAt(0) + ((h << 5) - h); const v = `hsl(${h % 360},70%,60%)`; __colorCache.set(key, v); return v }
+    const __colorCache = new Map();
+    function gerarCor(nome) { const key = String(nome || "U"); if (__colorCache.has(key)) return __colorCache.get(key); let h = 0; for (const c of key) h = c.charCodeAt(0) + ((h << 5) - h); const v = `hsl(${h % 360},70%,60%)`; __colorCache.set(key, v); return v }
     function keyLocal() { return `cz:tickets:${agente.codigo}:${agente.carteira}` }
-    let __lastSavedTicketsStr = ""; function saveTickets() { try { const s = JSON.stringify(tickets); if (s !== __lastSavedTicketsStr) { localStorage.setItem(keyLocal(), s); __lastSavedTicketsStr = s } } catch { } }
+    let __lastSavedTicketsStr = "";
+    function saveTickets() { try { const s = JSON.stringify(tickets); if (s !== __lastSavedTicketsStr) { localStorage.setItem(keyLocal(), s); __lastSavedTicketsStr = s } } catch { } }
     function loadTickets() { try { tickets = JSON.parse(localStorage.getItem(keyLocal()) || "[]") || [] } catch { tickets = [] } }
-    function bytesToHuman(n) { if (n === undefined || n === null) return ''; const u = ['B', 'KB', 'MB', 'GB', 'TB']; let i = 0, s = n; while (s >= 1024 && i < u.length - 1) { s /= 1024; i++ } return `${s.toFixed(s >= 10 || i === 0 ? 0 : 1)} ${u[i]}` }
-    function isIncoming(m) { const s = (m.status || "").toLowerCase(); if (typeof m.from_me === "boolean") return !m.from_me; if (m.direction) return String(m.direction).toLowerCase().startsWith("in"); if (["in", "received", "incoming"].includes(s)) return true; if (["out", "sent", "delivered", "read", "outgoing"].includes(s)) return false; return s === "in" }
+    function isIncoming(m) {
+      const s = (m.status || "").toLowerCase();
+      if (typeof m.from_me === "boolean") return !m.from_me;
+      if (m.direction) return String(m.direction).toLowerCase().startsWith("in");
+      if (["in", "received", "incoming"].includes(s)) return true;
+      if (["out", "sent", "delivered", "read", "outgoing"].includes(s)) return false;
+      return s === "in"
+    }
     function storageKeys() {
-      return { unread: `cz:unreadCount:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}`, lastTs: `cz:lastContatoTs:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}` }
+      return {
+        unread: `cz:unreadCount:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}`,
+        lastTs: `cz:lastContatoTs:${agente.codigo || 'anon'}:${agente.carteira || 'cart'}`
+      }
     }
     function loadUnread() { try { const { unread, lastTs } = storageKeys(); unreadCountByKey = JSON.parse(localStorage.getItem(unread) || "{}"); lastContatoTsByKey = JSON.parse(localStorage.getItem(lastTs) || "{}") } catch { unreadCountByKey = {}; lastContatoTsByKey = {} } }
     function persistUnread() { try { const { unread, lastTs } = storageKeys(); localStorage.setItem(unread, JSON.stringify(unreadCountByKey)); localStorage.setItem(lastTs, JSON.stringify(lastContatoTsByKey)) } catch { } }
     function keyFrom(remetente, phone_id) { return `${remetente}|${phone_id || ''}` }
-    function schedulePolls() { if (pollingContatos) clearInterval(pollingContatos); if (pollingMensagens) clearInterval(pollingMensagens); const gap = document.hidden ? POLL_HIDDEN_MS : POLL_ACTIVE_MS; pollingContatos = setInterval(refreshOrdemCarteira, gap); if (selecionado) { pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true) }, gap) } }
+    function schedulePolls() {
+      if (pollingContatos) clearInterval(pollingContatos);
+      if (pollingMensagens) clearInterval(pollingMensagens);
+      const gap = document.hidden ? POLL_HIDDEN_MS : POLL_ACTIVE_MS;
+      pollingContatos = setInterval(refreshOrdemCarteira, gap);
+      if (selecionado) {
+        pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true) }, gap);
+      }
+    }
     document.addEventListener('visibilitychange', schedulePolls);
 
-    function timeAgo(iso) {
-      if (!iso) return '';
-      const now = new Date(), d = new Date(iso);
-      const sec = Math.max(1, Math.floor((now - d) / 1000));
-      if (sec < 60) return `${sec}s atrás`;
-      const min = Math.floor(sec / 60); if (min < 60) return `${min}m atrás`;
-      const h = Math.floor(min / 60); if (h < 24) return `${h}h atrás`;
-      const days = Math.floor(h / 24); return `${days}d atrás`;
-    }
+    function hashId(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h) + s.charCodeAt(i); return String(h >>> 0); }
 
-    function hashId(s) {
-      let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h) + s.charCodeAt(i);
-      return String(h >>> 0);
+    // toast “leve” (se você não tiver um toast global)
+    function toast(msg, type = "info") {
+      const title = type === "success" ? "Sucesso" : type === "warning" ? "Atenção" : "Aviso";
+      showModalFeedback(msg, title, 1400);
     }
 
     /** ============== DOM ============== */
-    // Home
     const elHomeNome = document.getElementById('homeAgenteNome');
     const elHomeCart = document.getElementById('homeAgenteCarteira');
     const elHomeStatus = document.getElementById('homeStatus');
     const elHomeAviso = document.getElementById('homeAviso');
+
     const heroWrap = document.getElementById('homeAvisoHero');
     const heroTitle = document.getElementById('heroTitle');
     const heroMeta = document.getElementById('heroMeta');
@@ -1513,7 +1527,6 @@
     const heroDismiss = document.getElementById('heroDismiss');
     const heroMarkRead = document.getElementById('heroMarkRead');
 
-    // Relatório
     const kpiEm = document.getElementById('kpiEm');
     const kpiConc = document.getElementById('kpiConc');
     const kpiTma = document.getElementById('kpiTma');
@@ -1526,7 +1539,6 @@
     const btnExtratoRefresh = document.getElementById('btnExtratoRefresh');
     const extratoWrap = document.getElementById('extratoWrap');
 
-    // Conversas
     const elAgenteNome = document.getElementById("agenteNome");
     const elAgenteCarteira = document.getElementById("agenteCarteira");
     const elAgenteStatus = document.getElementById("agenteStatus");
@@ -1547,49 +1559,23 @@
     const badgeAtivos = document.getElementById("badgeAtivos");
     const badgeLimite = document.getElementById("badgeLimite");
 
-    // Botões Home
     const btnToggleOnline = document.getElementById("btnToggleOnline");
     const btnLogout = document.getElementById("btnLogout");
 
-    // Tabs
     const tabBtnHome = document.getElementById('tabBtnHome');
     const tabBtnConversas = document.getElementById('tabBtnConversas');
     const tabBtnRelatorio = document.getElementById('tabBtnRelatorio');
-
     const tabBtnEnvioIndividual = document.getElementById('tabBtnEnvioIndividual');
-    const tabEnvioIndividual = document.getElementById('tabEnvioIndividual');
-
-    function _bool(v) {
-      if (typeof v === 'boolean') return v;
-      if (v === null || v === undefined) return false;
-      const s = String(v).trim().toLowerCase();
-      return s === '1' || s === 'true' || s === 'sim' || s === 'yes';
-    }
-
-    function hasPermEnvioIndividual() {
-      return _bool(localStorage.getItem('agente_permite_envio_individual'));
-    }
-
-    function renderPermissaoEnvioIndividual() {
-      const ok = hasPermEnvioIndividual();
-      if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.classList.toggle('hidden', !ok);
-      const warn = document.getElementById('envIndSemPermissao');
-      if (warn) warn.classList.toggle('hidden', ok);
-      if (!ok && tabEnvioIndividual && !tabEnvioIndividual.classList.contains('hidden')) {
-        switchTab('home');
-      }
-      const btnSend = document.getElementById('btnEnvIndEnviar');
-      if (btnSend) btnSend.disabled = !ok;
-    }
 
     const tabHome = document.getElementById('tabHome');
     const tabConversas = document.getElementById('tabConversas');
     const tabRelatorio = document.getElementById('tabRelatorio');
+    const tabEnvioIndividual = document.getElementById('tabEnvioIndividual');
 
     document.getElementById('goToConversas1').onclick = () => switchTab('conversas');
     document.getElementById('goToRelatorio1').onclick = () => switchTab('relatorio');
 
-    // Avisos (DOM)
+    // Avisos DOM
     const avisosWrap = document.getElementById('avisosWrap');
     const avisosResumo = document.getElementById('avisosResumo');
     const btnAvisoRefresh = document.getElementById('btnAvisoRefresh');
@@ -1611,85 +1597,169 @@
     btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir() };
     renderMenuConcluir();
 
-/** ============== LIBERAR / CONCLUIR ============== */
+    /** ============== LIBERAR / CONCLUIR ============== */
+    let msgsCtrl = null;
+
     btnLiberar.onclick = async () => {
       if (!selecionado) return;
       try {
-        const r = await fetch(`${CONV_API}/api/tickets/liberar`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id }) });
+        const r = await fetch(`${CONV_API}/api/tickets/liberar`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            codigo_do_agente: parseInt(agente.codigo || '0', 10),
+            remetente: selecionado.remetente,
+            phone_id: selecionado.phone_id
+          })
+        });
         const j = await r.json();
         if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível liberar."); return; }
-        const k = keyFrom(selecionado.remetente, selecionado.phone_id); delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
-        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id))); saveTickets(); renderTickets(); limparChat();
-        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
 
-        // Segurança extra: ao liberar, removemos a seleção e interrompemos o polling de mensagens
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id);
+        delete unreadCountByKey[k];
+        delete lastContatoTsByKey[k];
+        persistUnread();
+
+        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id)));
+        saveTickets();
+        renderTickets();
+        limparChat();
+
+        elTitulo.textContent = "Selecione um ticket";
+        elSubInfo.textContent = "";
+        btnLiberar.disabled = true;
+        btnConcluir.disabled = true;
+        fecharMenuConcluir();
+
+        // remove seleção + interrompe polling
         selecionado = null;
-        if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
-        if (typeof schedulePolls === 'function') schedulePolls();
+        if (msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+        schedulePolls();
 
-        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
-      } catch (e) { alert("Erro ao liberar.") }
+        if (ativosCount > 0) ativosCount--;
+        renderAtivosLimiteUI();
+      } catch (e) {
+        alert("Erro ao liberar.");
+      }
     };
 
     async function concluirAtendimento(motivo) {
       if (!selecionado) return;
       try {
         btnConcluir.disabled = true;
-        const r = await fetch(`${CONV_API}/api/tickets/concluir`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id, motivo }) });
+        const r = await fetch(`${CONV_API}/api/tickets/concluir`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            codigo_do_agente: parseInt(agente.codigo || '0', 10),
+            remetente: selecionado.remetente,
+            phone_id: selecionado.phone_id,
+            motivo
+          })
+        });
         const j = await r.json();
         if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível concluir."); btnConcluir.disabled = false; return; }
-        const k = keyFrom(selecionado.remetente, selecionado.phone_id); delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
-        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id))); saveTickets(); renderTickets(); limparChat();
-        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
-        selecionado = null;
-        if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
-        if (typeof schedulePolls === 'function') schedulePolls();
 
-        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
-      } catch (e) { alert("Erro ao concluir."); btnConcluir.disabled = false; }
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id);
+        delete unreadCountByKey[k];
+        delete lastContatoTsByKey[k];
+        persistUnread();
+
+        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id)));
+        saveTickets();
+        renderTickets();
+        limparChat();
+
+        elTitulo.textContent = "Selecione um ticket";
+        elSubInfo.textContent = "";
+        btnLiberar.disabled = true;
+        btnConcluir.disabled = true;
+
+        selecionado = null;
+        if (msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+        schedulePolls();
+
+        if (ativosCount > 0) ativosCount--;
+        renderAtivosLimiteUI();
+      } catch (e) {
+        alert("Erro ao concluir.");
+        btnConcluir.disabled = false;
+      }
     }
 
-
-
-    /** ============== THEME ============== */
+    /** ============== THEME (mantido) ============== */
     function themeKey() { return 'cz:theme:v2' }
     function defaultTheme() {
-      return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff", hover: "#f1f5f9", hoverStrong: "#e2e8f0", inputBg: "#ffffff", inputFg: "#0f172a", scrollbar: "#cbd5e1", replyBg: "rgba(0,0,0,.06)", replyBorder: "rgba(0,0,0,.08)", replyFg: "#334155" }
+      return {
+        primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a",
+        muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6",
+        outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827",
+        inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a",
+        bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px",
+        ticketSelectedBg: "#f0f9ff", hover: "#f1f5f9", hoverStrong: "#e2e8f0",
+        inputBg: "#ffffff", inputFg: "#0f172a", scrollbar: "#cbd5e1",
+        replyBg: "rgba(0,0,0,.06)", replyBorder: "rgba(0,0,0,.08)", replyFg: "#334155"
+      }
     }
     let currentTheme = defaultTheme();
     function applyTheme(t) {
-      const r = document.documentElement.style; const base = defaultTheme(); const x = { ...base, ...t };
+      const r = document.documentElement.style;
+      const base = defaultTheme();
+      const x = { ...base, ...t };
       currentTheme = x;
+
       r.setProperty('--ticket-selected-bg', x.ticketSelectedBg);
-      r.setProperty('--sidebar-bg', x.sidebar); r.setProperty('--content-bg', x.contentBg);
-      r.setProperty('--bg', x.bg); r.setProperty('--text', x.text);
-      r.setProperty('--muted', x.muted); r.setProperty('--border', x.border);
-      r.setProperty('--link', x.link); r.setProperty('--ghost-bg', x.ghostBg);
-      r.setProperty('--bubble-out-g1', x.outG1); r.setProperty('--bubble-out-g2', x.outG2); r.setProperty('--bubble-out-fg', x.outFg || '#111827');
-      r.setProperty('--bubble-in-bg', x.inBg); r.setProperty('--bubble-in-border', x.inBorder); r.setProperty('--bubble-in-fg', x.inFg || '#0f172a');
-      r.setProperty('--bubble-radius', x.bubbleRadius + 'px'); r.setProperty('--btn-radius', x.btnRadius + 'px'); r.setProperty('--card-radius', x.cardRadius + 'px');
-      r.setProperty('--font-size', x.fontSize); r.setProperty('--chat-wallpaper-opacity', x.wallOp);
-      r.setProperty('--scrollbar', x.scrollbar || '#cbd5e1'); r.setProperty('--primary', x.primary); r.setProperty('--accent', x.accent);
-      r.setProperty('--hover', x.hover || '#f1f5f9'); r.setProperty('--hover-strong', x.hoverStrong || '#e2e8f0');
-      r.setProperty('--input-bg', x.inputBg || x.contentBg); r.setProperty('--input-fg', x.inputFg || x.text);
-      r.setProperty('--reply-bg', x.replyBg || 'rgba(0,0,0,.06)'); r.setProperty('--reply-border', x.replyBorder || 'rgba(0,0,0,.08)'); r.setProperty('--reply-fg', x.replyFg || '#334155');
+      r.setProperty('--sidebar-bg', x.sidebar);
+      r.setProperty('--content-bg', x.contentBg);
+      r.setProperty('--bg', x.bg);
+      r.setProperty('--text', x.text);
+      r.setProperty('--muted', x.muted);
+      r.setProperty('--border', x.border);
+      r.setProperty('--link', x.link);
+      r.setProperty('--ghost-bg', x.ghostBg);
+      r.setProperty('--bubble-out-g1', x.outG1);
+      r.setProperty('--bubble-out-g2', x.outG2);
+      r.setProperty('--bubble-out-fg', x.outFg || '#111827');
+      r.setProperty('--bubble-in-bg', x.inBg);
+      r.setProperty('--bubble-in-border', x.inBorder);
+      r.setProperty('--bubble-in-fg', x.inFg || '#0f172a');
+      r.setProperty('--bubble-radius', x.bubbleRadius + 'px');
+      r.setProperty('--btn-radius', x.btnRadius + 'px');
+      r.setProperty('--card-radius', x.cardRadius + 'px');
+      r.setProperty('--font-size', x.fontSize);
+      r.setProperty('--chat-wallpaper-opacity', x.wallOp);
+      r.setProperty('--scrollbar', x.scrollbar || '#cbd5e1');
+      r.setProperty('--primary', x.primary);
+      r.setProperty('--accent', x.accent);
+      r.setProperty('--hover', x.hover || '#f1f5f9');
+      r.setProperty('--hover-strong', x.hoverStrong || '#e2e8f0');
+      r.setProperty('--input-bg', x.inputBg || x.contentBg);
+      r.setProperty('--input-fg', x.inputFg || x.text);
+      r.setProperty('--reply-bg', x.replyBg || 'rgba(0,0,0,.06)');
+      r.setProperty('--reply-border', x.replyBorder || 'rgba(0,0,0,.08)');
+      r.setProperty('--reply-fg', x.replyFg || '#334155');
 
       setTimeout(() => refreshKPIs(), 0);
     }
     function readThemeFromInputs() {
       return {
         primary: inputs.tPrimary.value, accent: inputs.tAccent.value, sidebar: inputs.tSidebar.value, contentBg: inputs.tContentBg.value,
-        bg: inputs.tBg.value, text: inputs.tText.value, outG1: inputs.tOutG1.value, outG2: inputs.tOutG2.value, inBg: inputs.tInBg.value,
-        inBorder: inputs.tInBorder.value, bubbleRadius: Number(inputs.tRadius.value || 18), wallOp: Number(inputs.tBgOp.value || 0),
-        fontSize: String(inputs.tFontSize.value || '14px'), btnRadius: Number(inputs.tBtnRadius.value || 10), cardRadius: Number(inputs.tCardRadius.value || 16)
+        bg: inputs.tBg.value, text: inputs.tText.value, outG1: inputs.tOutG1.value, outG2: inputs.tOutG2.value,
+        inBg: inputs.tInBg.value, inBorder: inputs.tInBorder.value,
+        bubbleRadius: Number(inputs.tRadius.value || 18), wallOp: Number(inputs.tBgOp.value || 0),
+        fontSize: String(inputs.tFontSize.value || '14px'),
+        btnRadius: Number(inputs.tBtnRadius.value || 10), cardRadius: Number(inputs.tCardRadius.value || 16)
       }
     }
     function saveTheme(t) { try { localStorage.setItem(themeKey(), JSON.stringify(t)); } catch { } }
     function loadTheme() {
       try {
-        const now = localStorage.getItem(themeKey()); if (now) return JSON.parse(now);
-        const old1 = localStorage.getItem(`cz:theme:${agente.codigo || 'anon'}`); if (old1) { localStorage.setItem(themeKey(), old1); return JSON.parse(old1) }
-        const old2 = localStorage.getItem('cz:theme:anon'); if (old2) { localStorage.setItem(themeKey(), old2); return JSON.parse(old2) }
+        const now = localStorage.getItem(themeKey());
+        if (now) return JSON.parse(now);
+        const old1 = localStorage.getItem(`cz:theme:${agente.codigo || 'anon'}`);
+        if (old1) { localStorage.setItem(themeKey(), old1); return JSON.parse(old1) }
+        const old2 = localStorage.getItem('cz:theme:anon');
+        if (old2) { localStorage.setItem(themeKey(), old2); return JSON.parse(old2) }
       } catch { }
       return null;
     }
@@ -1719,7 +1789,7 @@
       tBtnRadius: document.getElementById('tBtnRadius'),
       tCardRadius: document.getElementById('tCardRadius')
     };
-        function syncThemeInputs(t) {
+    function syncThemeInputs(t) {
       if (!t) return;
       try {
         if (inputs.tPrimary && t.primary) inputs.tPrimary.value = t.primary;
@@ -1732,7 +1802,6 @@
         if (inputs.tOutG2 && t.outG2) inputs.tOutG2.value = t.outG2;
         if (inputs.tInBg && t.inBg) inputs.tInBg.value = t.inBg;
         if (inputs.tInBorder && t.inBorder) inputs.tInBorder.value = t.inBorder;
-
         if (inputs.tRadius && (t.bubbleRadius != null)) inputs.tRadius.value = String(t.bubbleRadius);
         if (inputs.tBgOp && (t.wallOp != null)) inputs.tBgOp.value = String(t.wallOp);
         if (inputs.tFontSize && (t.fontSize != null)) inputs.tFontSize.value = String(t.fontSize);
@@ -1742,46 +1811,20 @@
     }
 
     const THEME_PRESETS = {
-      corporate: {
-        primary: "#2563eb", accent: "#0ea5e9",
-        outG1: "#0ea5e9", outG2: "#2563eb",
-        bg: "#f3f4f6", sidebar: "#ffffff", contentBg: "#ffffff",
-        text: "#0f172a"
-      },
-      ocean: {
-        primary: "#06b6d4", accent: "#10b981",
-        outG1: "#06b6d4", outG2: "#10b981",
-        bg: "#f1f5f9", sidebar: "#ffffff", contentBg: "#ffffff",
-        text: "#0f172a"
-      },
-      sunset: {
-        primary: "#ef4444", accent: "#fb923c",
-        outG1: "#fb923c", outG2: "#ef4444",
-        bg: "#fff7ed", sidebar: "#ffffff", contentBg: "#ffffff",
-        text: "#0f172a"
-      },
+      corporate: { primary: "#2563eb", accent: "#0ea5e9", outG1: "#0ea5e9", outG2: "#2563eb", bg: "#f3f4f6", sidebar: "#ffffff", contentBg: "#ffffff", text: "#0f172a" },
+      ocean: { primary: "#06b6d4", accent: "#10b981", outG1: "#06b6d4", outG2: "#10b981", bg: "#f1f5f9", sidebar: "#ffffff", contentBg: "#ffffff", text: "#0f172a" },
+      sunset: { primary: "#ef4444", accent: "#fb923c", outG1: "#fb923c", outG2: "#ef4444", bg: "#fff7ed", sidebar: "#ffffff", contentBg: "#ffffff", text: "#0f172a" },
       dark: {
         primary: "#60a5fa", accent: "#22c55e",
         sidebar: "#0b1220", contentBg: "#0f172a", bg: "#070b14",
         text: "#e5e7eb", muted: "#94a3b8", border: "rgba(255,255,255,.10)",
         link: "#60a5fa", ghostBg: "rgba(255,255,255,.06)",
-        outG1: "#111827", outG2: "#374151",
-        outFg: "#e5e7eb",
+        outG1: "#111827", outG2: "#374151", outFg: "#e5e7eb",
         inBg: "#0f172a", inBorder: "rgba(255,255,255,.12)", inFg: "#e5e7eb",
         ticketSelectedBg: "rgba(96,165,250,.18)"
       },
-      minimal: {
-        primary: "#0f172a", accent: "#334155",
-        outG1: "#e2e8f0", outG2: "#f8fafc",
-        bg: "#f8fafc", sidebar: "#ffffff", contentBg: "#ffffff",
-        text: "#0f172a"
-      },
-      funky: {
-        primary: "#a78bfa", accent: "#ec4899",
-        outG1: "#a78bfa", outG2: "#ec4899",
-        bg: "#faf5ff", sidebar: "#ffffff", contentBg: "#ffffff",
-        text: "#0f172a"
-      }
+      minimal: { primary: "#0f172a", accent: "#334155", outG1: "#e2e8f0", outG2: "#f8fafc", bg: "#f8fafc", sidebar: "#ffffff", contentBg: "#ffffff", text: "#0f172a" },
+      funky: { primary: "#a78bfa", accent: "#ec4899", outG1: "#a78bfa", outG2: "#ec4899", bg: "#faf5ff", sidebar: "#ffffff", contentBg: "#ffffff", text: "#0f172a" }
     };
 
     function setActivePreset(name) {
@@ -1789,7 +1832,6 @@
         el.classList.toggle('active', (el.dataset.preset || '') === String(name || ''));
       });
     }
-
     function applyPreset(name) {
       const p = THEME_PRESETS[name];
       if (!p) return;
@@ -1804,16 +1846,16 @@
       el.setAttribute('role', 'button');
       el.setAttribute('tabindex', '0');
       el.addEventListener('click', () => applyPreset(el.dataset.preset));
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyPreset(el.dataset.preset); }
-      });
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyPreset(el.dataset.preset); } });
     });
 
     if (btnTheme) btnTheme.addEventListener('click', () => { syncThemeInputs(currentTheme); themeDrawer.classList.add('open'); });
     if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open') });
-    [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
+
+    [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
       .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
+
     if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open') });
     if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); syncThemeInputs(currentTheme); setActivePreset(''); });
     if (btnRandom) btnRandom.addEventListener('click', () => {
@@ -1837,7 +1879,35 @@
       setActivePreset('');
     });
 
-    /** ============== VISIBILIDADE DO APP (novo) ============== */
+    // Export/Import tema
+    if (btnThemeExport) btnThemeExport.addEventListener('click', () => {
+      try {
+        const blob = new Blob([JSON.stringify(currentTheme, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'connectzap-tema.json';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 500);
+      } catch { }
+    });
+    if (importTheme) importTheme.addEventListener('change', async (e) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      try {
+        const t = JSON.parse(await f.text());
+        applyTheme(t);
+        saveTheme(t);
+        syncThemeInputs(currentTheme);
+        setActivePreset('');
+        showModalFeedback('Tema importado.', 'Tema', 1200);
+      } catch {
+        showModalFeedback('Arquivo inválido.', 'Tema', 1400);
+      } finally {
+        importTheme.value = "";
+      }
+    });
+
+    /** ============== VISIBILIDADE DO APP ============== */
     function hideApp() {
       document.getElementById('appSidebar')?.classList.add('hidden');
       document.getElementById('tabsWrapper')?.classList.add('hidden');
@@ -1849,35 +1919,57 @@
 
     /** ============== LOGIN MODAL ============== */
     function isLogged() { try { return !!localStorage.getItem('agente_codigo') } catch { return false } }
-    function abrirModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'flex'; setTimeout(() => document.getElementById('loginCodigoAgente').focus(), 50); isModalOpen = true }
-    function fecharModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'none'; const e = document.getElementById('loginErro'); e.textContent = ''; e.classList.add('hidden'); isModalOpen = false }
+    function abrirModalLogin() {
+      const m = document.getElementById('modalLogin');
+      m.style.display = 'flex';
+      setTimeout(() => document.getElementById('loginCodigoAgente').focus(), 50);
+      isModalOpen = true;
+    }
+    function fecharModalLogin() {
+      const m = document.getElementById('modalLogin');
+      m.style.display = 'none';
+      const e = document.getElementById('loginErro');
+      e.textContent = '';
+      e.classList.add('hidden');
+      isModalOpen = false;
+    }
+
     async function login() {
-      const codigo = (document.getElementById('loginCodigoAgente').value || '').trim(); const erro = document.getElementById('loginErro');
+      const codigo = (document.getElementById('loginCodigoAgente').value || '').trim();
+      const erro = document.getElementById('loginErro');
       if (!codigo || !/^\d+$/.test(codigo)) { erro.textContent = 'Informe um código numérico válido.'; erro.classList.remove('hidden'); return }
       try {
-        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(codigo)}`); const j = await r.json();
+        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(codigo)}`);
+        const j = await r.json();
         if (!j.ok) { throw new Error(j.erro || 'Agente não encontrado') }
+
         localStorage.setItem("agente_codigo", String(codigo));
         localStorage.setItem("agente_nome", j.agente?.nome || `Agente ${codigo}`);
         localStorage.setItem("agente_carteira", j.agente?.carteira || 'ConnectZap');
         localStorage.setItem("agente_origem_bd", j.agente?.origem_bd || "");
         localStorage.setItem("agente_permite_envio_individual", String(!!j.agente?.permite_envio_individual));
+
         renderPermissaoEnvioIndividual();
         fecharModalLogin();
         showApp();
+
         await boot();
         switchTab('home');
         updateAuthButton();
-      } catch (e) { erro.textContent = e?.message || 'Falha ao validar código.'; erro.classList.remove('hidden') }
+      } catch (e) {
+        erro.textContent = e?.message || 'Falha ao validar código.';
+        erro.classList.remove('hidden')
+      }
     }
     document.getElementById('btnDoLogin').onclick = login;
     document.getElementById('loginCodigoAgente').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); login(); } });
 
-    /** ============== MODAL FEEDBACK (Logout / login required) ============== */
+    /** ============== MODAL FEEDBACK ============== */
     const modalFeedback = document.getElementById('modalFeedback');
     const feedbackTitle = document.getElementById('feedbackTitle');
     const feedbackMsg = document.getElementById('feedbackMsg');
     let feedbackTimer = null;
+
     function showModalFeedback(msg, title = 'Aviso', autocloseMs = 1200) {
       feedbackTitle.textContent = title;
       feedbackMsg.textContent = msg;
@@ -1892,159 +1984,26 @@
       if (feedbackTimer) { clearTimeout(feedbackTimer); feedbackTimer = null; }
     }
 
-    /** ============== PENDENTES NA FILA (Home) — 60s ============== */
-    const PENDENTES_REFRESH_MS = 60000;
-    let pendentesInterval = null;
-
-    function PENDENTES_API_CANDIDATES() {
-      const cart = agente?.carteira || '';
-      const params = cart ? `?carteira=${encodeURIComponent(cart)}` : '';
-      return [
-        `${FILA_API}/fila/pendentes${params}`,
-        `${FILA_API}/fila/pendentes_por_carteira${params}`
-      ];
+    /** ============== PERMISSÃO ENVIO INDIVIDUAL ============== */
+    function _bool(v) {
+      if (typeof v === 'boolean') return v;
+      if (v === null || v === undefined) return false;
+      const s = String(v).trim().toLowerCase();
+      return s === '1' || s === 'true' || s === 'sim' || s === 'yes';
     }
-    function extractPendentesCount(payload) {
-      if (payload == null) return null;
-      if (typeof payload === 'number') return payload;
-      if (Array.isArray(payload)) {
-        const cart = agente?.carteira;
-        let row = null;
-        if (cart) {
-          row = payload.find(r =>
-            (r && (
-              (r.carteira && String(r.carteira) === String(cart)) ||
-              (r.fila && String(r.fila) === String(cart)) ||
-              (r.nome && String(r.nome) === String(cart))
-            )));
-        }
-        if (!row && payload.length === 1) row = payload[0];
-        if (row) {
-          for (const k of ['pendentes', 'qtd', 'qtde', 'total', 'count', 'qtd_pendentes']) {
-            const v = Number(row[k]); if (!Number.isNaN(v)) return v;
-          }
-        }
-        const nums = payload.map(x => Number(x)).filter(v => !Number.isNaN(v));
-        if (nums.length) return nums.reduce((a, b) => a + b, 0);
-        return null;
-      }
-      if (typeof payload === 'object') {
-        for (const k of ['pendentes', 'qtd', 'qtde', 'total', 'count', 'qtd_pendentes']) {
-          const v = Number(payload[k]); if (!Number.isNaN(v) && v >= 0) return v;
-        }
-        const cart = agente?.carteira;
-        if (cart && payload[cart] != null) {
-          const v = Number(payload[cart]); if (!Number.isNaN(v)) return v;
-        }
-      }
-      return null;
+    function hasPermEnvioIndividual() {
+      return _bool(localStorage.getItem('agente_permite_envio_individual'));
     }
-    async function fetchPendentesFilaOnce() {
-      if (!agente?.carteira) return null;
-      const els = [document.getElementById('homePendentesBadge'), document.getElementById('homePendentesBadge2')].filter(Boolean);
-      const setLoading = () => els.forEach(e => e && (e.textContent = '…'));
-      const setVal = (n) => els.forEach(e => e && (e.textContent = String(n)));
-      try {
-        setLoading();
-        const urls = PENDENTES_API_CANDIDATES();
-        for (const url of urls) {
-          try {
-            const r = await fetch(url);
-            if (!r.ok) continue;
-            const j = await r.json();
-            const n = extractPendentesCount(j);
-            if (n != null) { setVal(n); return n; }
-          } catch (_) { }
-        }
-        setVal('—');
-        return null;
-      } catch {
-        setVal('—');
-        return null;
+    function renderPermissaoEnvioIndividual() {
+      const ok = hasPermEnvioIndividual();
+      if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.classList.toggle('hidden', !ok);
+      const warn = document.getElementById('envIndSemPermissao');
+      if (warn) warn.classList.toggle('hidden', ok);
+      if (!ok && tabEnvioIndividual && !tabEnvioIndividual.classList.contains('hidden')) {
+        switchTab('home');
       }
-    }
-    function initPendentesFila() {
-      if (pendentesInterval) clearInterval(pendentesInterval);
-      fetchPendentesFilaOnce();
-      pendentesInterval = setInterval(fetchPendentesFilaOnce, PENDENTES_REFRESH_MS);
-    }
-
-    /** ============== BOOT ============== */
-    function getCss(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() }
-    async function boot() {
-      const savedT = loadTheme(); applyTheme(savedT || defaultTheme());
-      try { syncThemeInputs(currentTheme); } catch (_) { }
-
-      // agente
-      agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
-      agente.origem = localStorage.getItem("agente_origem") || qsParam("origem") || 'web';
-
-      updateAuthButton();
-      toggleLoginLocks();
-
-      // datas padrão (hoje)
-      const today = new Date(); const ymd = fmtYMD(today);
-      relStart.value = ymd; relEnd.value = ymd;
-
-      noticesReadSet = loadNoticesReadSet();
-
-      if (!agente.codigo) {
-        elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false);
-        relAgentePill.textContent = '—';
-        await loadNoticesAndRender();
-        abrirModalLogin();
-        return;
-      }
-
-      try {
-        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(agente.codigo)}`); const j = await r.json();
-        if (!j.ok) throw new Error(j.erro || "Agente não encontrado");
-        agente.nome = j.agente?.nome || localStorage.getItem("agente_nome") || `Agente ${agente.codigo}`;
-        agente.carteira = j.agente?.carteira || localStorage.getItem("agente_carteira") || 'ConnectZap';
-        localStorage.setItem("agente_nome", agente.nome);
-        localStorage.setItem("agente_carteira", agente.carteira);
-        localStorage.setItem("agente_origem_bd", j.agente?.origem_bd || "");
-        localStorage.setItem("agente_permite_envio_individual", String(!!j.agente?.permite_envio_individual));
-        renderPermissaoEnvioIndividual();
-
-        elAgenteNome.textContent = `${agente.nome} (#${agente.codigo})`;
-        elAgenteCarteira.textContent = agente.carteira;
-        elHomeNome.textContent = agente.nome;
-        elHomeCart.textContent = agente.carteira;
-        relAgentePill.textContent = `${agente.nome} (#${agente.codigo})`;
-
-        loadUnread();
-        await verificarOnline();
-
-        try {
-          const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
-          const r2 = await fetch(url); if (r2.ok) { tickets = await r2.json(); saveTickets(); }
-        } catch { }
-
-        renderTickets();
-        schedulePolls();
-        await refreshOrdemCarteira();
-        await refreshAtivosELimite();
-        if (!tickets.length) btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
-
-        // RELATÓRIO
-        await refreshKPIs();
-
-        // AVISOS
-        await loadNoticesAndRender();
-
-        // PENDENTES NA FILA (Home) — inicia e mantém em 60s
-        initPendentesFila();
-
-        wireComposer();
-
-        // ENVIO INDIVIDUAL: bind
-        initEnvioIndividual();
-      } catch (e) {
-        elHomeAviso.classList.remove("hidden");
-        elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
-        await loadNoticesAndRender();
-      }
+      const btnSend = document.getElementById('btnEnvIndEnviar');
+      if (btnSend) btnSend.disabled = !ok;
     }
 
     /** ============== Botão Login/Logout dinâmico ============== */
@@ -2063,7 +2022,6 @@
       }
     }
 
-    // Trava visual nas abas que exigem login
     function toggleLoginLocks() {
       const locked = !isLogged();
       [tabBtnConversas, tabBtnRelatorio, tabBtnEnvioIndividual].forEach(btn => {
@@ -2079,21 +2037,9 @@
     /** ============== TABS ============== */
     function bindTabsOnce() {
       if (tabBtnHome) tabBtnHome.onclick = () => switchTab('home');
-
-      if (tabBtnConversas) tabBtnConversas.onclick = () => {
-        if (!isLogged()) { abrirModalLogin(); return; }
-        switchTab('conversas');
-      };
-
-      if (tabBtnRelatorio) tabBtnRelatorio.onclick = () => {
-        if (!isLogged()) { abrirModalLogin(); return; }
-        switchTab('relatorio');
-      };
-
-      if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.onclick = () => {
-        if (!isLogged()) { abrirModalLogin(); return; }
-        switchTab('envio_individual');
-      };
+      if (tabBtnConversas) tabBtnConversas.onclick = () => { if (!isLogged()) { abrirModalLogin(); return; } switchTab('conversas'); };
+      if (tabBtnRelatorio) tabBtnRelatorio.onclick = () => { if (!isLogged()) { abrirModalLogin(); return; } switchTab('relatorio'); };
+      if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.onclick = () => { if (!isLogged()) { abrirModalLogin(); return; } switchTab('envio_individual'); };
     }
     bindTabsOnce();
 
@@ -2106,44 +2052,24 @@
       if (tab === 'envio_individual' && !hasPermEnvioIndividual()) {
         const warn = document.getElementById('envIndSemPermissao');
         if (warn) warn.classList.remove('hidden');
-        if (typeof showModalFeedback === 'function') {
-          showModalFeedback('Seu usuário não possui permissão para Envio individual.', 'Sem permissão', 1400);
-        }
+        showModalFeedback('Seu usuário não possui permissão para Envio individual.', 'Sem permissão', 1400);
         tab = 'home';
       }
 
-      [tabHome, tabConversas, tabRelatorio, tabEnvioIndividual]
-        .filter(Boolean)
-        .forEach(el => el.classList.add('hidden'));
+      [tabHome, tabConversas, tabRelatorio, tabEnvioIndividual].filter(Boolean).forEach(el => el.classList.add('hidden'));
+      [tabBtnHome, tabBtnConversas, tabBtnRelatorio, tabBtnEnvioIndividual].filter(Boolean).forEach(btn => btn.classList.remove('active'));
 
-      [tabBtnHome, tabBtnConversas, tabBtnRelatorio, tabBtnEnvioIndividual]
-        .filter(Boolean)
-        .forEach(btn => btn.classList.remove('active'));
-
-      if (tab === 'home') {
-        tabHome.classList.remove('hidden');
-        tabBtnHome.classList.add('active');
-      } else if (tab === 'conversas') {
-        tabConversas.classList.remove('hidden');
-        tabBtnConversas.classList.add('active');
-      } else if (tab === 'relatorio') {
-        tabRelatorio.classList.remove('hidden');
-        tabBtnRelatorio.classList.add('active');
-      } else if (tab === 'envio_individual') {
-        tabEnvioIndividual.classList.remove('hidden');
-        tabBtnEnvioIndividual.classList.add('active');
-        envIndSyncFromConversa();
-      } else {
-        tabHome.classList.remove('hidden');
-        tabBtnHome.classList.add('active');
-      }
+      if (tab === 'home') { tabHome.classList.remove('hidden'); tabBtnHome.classList.add('active'); }
+      else if (tab === 'conversas') { tabConversas.classList.remove('hidden'); tabBtnConversas.classList.add('active'); }
+      else if (tab === 'relatorio') { tabRelatorio.classList.remove('hidden'); tabBtnRelatorio.classList.add('active'); }
+      else if (tab === 'envio_individual') { tabEnvioIndividual.classList.remove('hidden'); tabBtnEnvioIndividual.classList.add('active'); envIndSyncFromConversa(); }
+      else { tabHome.classList.remove('hidden'); tabBtnHome.classList.add('active'); }
     }
 
-    /** ============== ENVIO INDIVIDUAL (ligacao_caiu) — AJUSTE 1 ============== */
+    /** ============== ENVIO INDIVIDUAL (ligacao_caiu) — AJUSTADO ============== */
     let __envIndBound = false;
     let envIndContatoSelecionado = null;
     let envIndBuscaRows = [];
-
 
     function normalizeMsisdnBR(v) {
       if (!v) return "";
@@ -2152,28 +2078,23 @@
       if (!digits.startsWith("55")) digits = "55" + digits;
       return digits;
     }
-
     function firstNameOf(n) {
       const s = String(n || '').trim();
       if (!s) return '';
       return s.split(/\s+/)[0] || s;
     }
-
     function pickDefaultPhoneId() {
       const ids = (carteiraToPhoneIds[agente?.carteira] || []).map(String);
       return ids.length ? ids[0] : '';
     }
-
     function envIndSetPreview() {
       const nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome)
         || firstNameOf(selecionado?.nome_exibicao)
         || 'cliente';
-
       const el = document.getElementById('envIndPreview');
       if (!el) return;
       el.innerHTML = `Olá, <span class="font-semibold">${escapeHtml(nome)}</span>! Perdemos a sua ligação. Se estiver disponível, responda aqui para continuar.`;
     }
-
     function envIndUpdatePhoneIdLabel(phone_id) {
       const el = document.getElementById('envIndPhoneIdLabel');
       const hint = document.getElementById('envIndPhoneIdHint');
@@ -2189,21 +2110,17 @@
       if (hint) hint.textContent = 'preenchido automaticamente';
     }
 
-    // Resultado “mínimo”: somente Sucesso/Falha/Enviando (sem detalhes na tela)
     function envIndSetResultCompact(payload) {
       const wrap = document.getElementById('envIndStatusWrap');
       const pill = document.getElementById('envIndStatusPill');
 
       const obj = payload || {};
-      const statusKind = obj.__kind || 'neutral'; // 'success' | 'fail' | 'neutral'
+      const statusKind = obj.__kind || 'neutral'; // success | fail | neutral
       const statusText = obj.__statusText || '—';
 
       if (pill) {
         pill.classList.remove('pill-success', 'pill-fail', 'pill-neutral');
-        pill.classList.add(
-          statusKind === 'success' ? 'pill-success' :
-          statusKind === 'fail' ? 'pill-fail' : 'pill-neutral'
-        );
+        pill.classList.add(statusKind === 'success' ? 'pill-success' : statusKind === 'fail' ? 'pill-fail' : 'pill-neutral');
         pill.textContent = statusText;
       }
 
@@ -2212,14 +2129,8 @@
         wrap.classList.toggle('hidden', !shouldShow);
       }
     }
+    function envIndResetResultUI() { envIndSetResultCompact({ __kind: 'neutral', __statusText: '—' }); }
 
-    function envIndResetResultUI() {
-      // esconde o status (mostra apenas após Sucesso/Falha)
-      envIndSetResultCompact({ __kind: 'neutral', __statusText: '—' });
-    }
-
-
-    // ===== Busca de cadastro (SIC) — Envio Individual =====
     function formatTelefoneBR(msisdn) {
       const d = String(msisdn || '').replace(/\D+/g, '');
       let x = d;
@@ -2231,7 +2142,6 @@
       if (num.length === 8) return `(${dd}) ${num.slice(0, 4)}-${num.slice(4)}`;
       return `(${dd}) ${num}`;
     }
-
     function envIndUpdateChosenUI() {
       const pill = document.getElementById('envIndTelefoneEscolhido');
       const nomeEl = document.getElementById('envIndNomeEscolhido');
@@ -2244,11 +2154,8 @@
         pill.classList.add(tel ? 'pill-success' : 'pill-neutral');
         pill.textContent = tel || 'Nenhum';
       }
-      if (nomeEl) {
-        nomeEl.textContent = nome ? `• ${nome}` : '';
-      }
+      if (nomeEl) nomeEl.textContent = nome ? `• ${nome}` : '';
     }
-
     function envIndResetBuscaUI() {
       envIndBuscaRows = [];
       envIndContatoSelecionado = null;
@@ -2265,7 +2172,6 @@
       envIndUpdateChosenUI();
       envIndSetPreview();
     }
-
     function envIndRenderResultados(rows) {
       const tbody = document.getElementById('envIndResultados');
       const wrap = document.getElementById('envIndResultadosWrap');
@@ -2289,24 +2195,17 @@
 
       wrap.classList.remove('hidden');
     }
-
     function envIndSelectFromBusca(i) {
       const r = envIndBuscaRows?.[i];
       if (!r) return;
+
       const tel = normalizeMsisdnBR(r.TELEFONE || r.telefone || '');
       const nome = firstNameOf(r.PrimeiroNome || r.primeiro_nome || r.nome || '');
 
-      envIndContatoSelecionado = {
-        to_msisdn: tel,
-        primeiro_nome: nome,
-        __raw: r,
-        __from: 'busca'
-      };
-
+      envIndContatoSelecionado = { to_msisdn: tel, primeiro_nome: nome, __raw: r, __from: 'busca' };
       envIndUpdateChosenUI();
       envIndSetPreview();
     }
-
     async function pesquisarCadastroEnvInd() {
       const base = (document.getElementById('envIndBase')?.value || '').trim();
       const codigo = (document.getElementById('envIndCodigo')?.value || '').trim();
@@ -2324,24 +2223,12 @@
       envIndUpdateChosenUI();
       envIndSetPreview();
 
-      if (!base || !codigo) {
-        if (msg) msg.textContent = 'Informe a base e o código do cliente.';
-        return;
-      }
+      if (!base || !codigo) { if (msg) msg.textContent = 'Informe a base e o código do cliente.'; return; }
 
       try {
         const url = `${ESTRAT_API}/api/estrategias/pesquisa/${encodeURIComponent(base)}/${encodeURIComponent(codigo)}`;
-        const res = await fetch(url, {
-          method: 'GET',
-          mode: 'cors',
-          credentials: 'omit',
-          cache: 'no-store'
-        });
-
-        if (!res.ok) {
-          const t = await res.text();
-          throw new Error(`Falha ao buscar cadastro (${res.status}): ${t}`);
-        }
+        const res = await fetch(url, { method: 'GET', mode: 'cors', credentials: 'omit', cache: 'no-store' });
+        if (!res.ok) { const t = await res.text(); throw new Error(`Falha ao buscar cadastro (${res.status}): ${t}`); }
 
         const data = await res.json();
         const rows = Array.isArray(data) ? data : (Array.isArray(data?.dados) ? data.dados : []);
@@ -2353,11 +2240,7 @@
           }))
           .filter(r => r.TELEFONE && r.TELEFONE.length >= 12);
 
-        if (!norm.length) {
-          if (msg) msg.textContent = 'Nenhum telefone encontrado para esse código.';
-          envIndBuscaRows = [];
-          return;
-        }
+        if (!norm.length) { if (msg) msg.textContent = 'Nenhum telefone encontrado para esse código.'; envIndBuscaRows = []; return; }
 
         envIndBuscaRows = norm;
         if (msg) msg.textContent = `✅ ${norm.length} telefone(s) encontrado(s). Selecione um para enviar.`;
@@ -2371,13 +2254,10 @@
       const phoneIdEl = document.getElementById('envIndPhoneId');
       if (phoneIdEl && !phoneIdEl.value && selecionado?.phone_id) phoneIdEl.value = String(selecionado.phone_id || '');
 
-      // Se já há um telefone selecionado pela busca, não sobrescreve
       if (!envIndContatoSelecionado && selecionado?.remetente) {
         const tel = normalizeMsisdnBR(selecionado.remetente || '');
         const nome = firstNameOf(selecionado.nome_exibicao || '');
-        if (tel) {
-          envIndContatoSelecionado = { to_msisdn: tel, primeiro_nome: nome, __from: 'conversa' };
-        }
+        if (tel) envIndContatoSelecionado = { to_msisdn: tel, primeiro_nome: nome, __from: 'conversa' };
       }
 
       envIndUpdateChosenUI();
@@ -2385,23 +2265,18 @@
       envIndSetPreview();
     }
 
-
     async function postJson(url, payload) {
-      const r = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       let j = null;
       try { j = await r.json(); } catch { }
       return { r, j };
     }
 
+    // ✅ AJUSTE PRINCIPAL AQUI:
+    // - "reservarConversaPosLigacaoCaiu" agora roda DEPOIS de envio bem sucedido
+    // - variável "telefone" indefinida foi corrigida (usa to_msisdn)
     async function enviarLigacaoCaiu() {
-      if (!hasPermEnvioIndividual()) {
-        showModalFeedback('Sem permissão para Envio individual.', 'Sem permissão', 1400);
-        return;
-      }
+      if (!hasPermEnvioIndividual()) { showModalFeedback('Sem permissão para Envio individual.', 'Sem permissão', 1400); return; }
 
       const phoneIdEl = document.getElementById('envIndPhoneId');
       const btn = document.getElementById('btnEnvIndEnviar');
@@ -2409,31 +2284,17 @@
       const rawTel = (envIndContatoSelecionado?.to_msisdn || '').trim() || (selecionado?.remetente || '');
       const to_msisdn = normalizeMsisdnBR(rawTel);
       const primeiro_nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome || '') || firstNameOf(selecionado?.nome_exibicao || '') || 'cliente';
-      
-// Phone ID é obrigatório (mas UI fica escondida)
+
       const phone_id = (phoneIdEl?.value || '').trim()
         || (selecionado?.phone_id ? String(selecionado.phone_id) : '')
         || pickDefaultPhoneId();
 
-      if (!to_msisdn || to_msisdn.length < 12) {
+      if (!to_msisdn || to_msisdn.length < 12 || !phone_id) {
         envIndSetResultCompact({ __kind: 'fail', __statusText: 'Falha' });
         return;
       }
 
-      if (!phone_id) {
-        envIndSetResultCompact({ __kind: 'fail', __statusText: 'Falha' });
-        return;
-      }
-
-      // payload compatível
-      const payload = {
-        to_msisdn,
-        phone_id,
-        primeiro_nome,
-        to: to_msisdn,
-        telefone: to_msisdn,
-        nome: primeiro_nome
-      };
+      const payload = { to_msisdn, phone_id, primeiro_nome, to: to_msisdn, telefone: to_msisdn, nome: primeiro_nome };
 
       envIndUpdatePhoneIdLabel(phone_id);
 
@@ -2450,9 +2311,7 @@
 
       try {
         if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); }
-
-        // estado “neutro” enquanto envia (sem JSON sujo)
-        envIndSetResultCompact({ __kind: 'neutral', __statusText: '—' });
+        envIndSetResultCompact({ __kind: 'neutral', __statusText: 'Enviando…' });
 
         for (const url of candidates) {
           try {
@@ -2460,155 +2319,94 @@
 
             const okByJson = !!(j && (j.ok === true || j.messages || j.msg_id || j.meta_response));
             const okByHttp = !!(r && r.ok);
+
             if (okByHttp || okByJson) {
               envIndSetResultCompact({ __kind: 'success', __statusText: 'Sucesso' });
               showModalFeedback('Template enviado com sucesso.', 'Envio individual', 1200);
+
+              // ✅ Agora sim: tenta reservar/criar conversa após envio OK
+              try {
+                const reserva = await reservarConversaPosLigacaoCaiu(to_msisdn, phone_id);
+                if (reserva.ok && reserva.warn) {
+                  (window.toast ? toast(reserva.message || "Mensagem enviada ✅ (outro operador já atende).", "warning")
+                    : alert(reserva.message || "Mensagem enviada ✅ (outro operador já atende)."));
+                } else if (reserva.ok) {
+                  (window.toast ? toast("Mensagem enviada ✅ e conversa criada/reservada.", "success")
+                    : alert("Mensagem enviada ✅ e conversa criada/reservada."));
+                }
+              } catch (_) { /* não bloqueia */ }
+
               return;
             }
 
-            // ✅ NOVO: tenta reservar/criar a conversa após o envio
-            const reserva = await reservarConversaPosLigacaoCaiu(telefone);
+            // se veio erro explícito, tenta próximo endpoint
+            if (j && (j.erro || j.error || j.message)) continue;
 
-            if (reserva.ok && reserva.warn) {
-              (window.toast ? toast(reserva.message || "Mensagem enviada ✅ (outro operador já atende este cliente).", "warning")
-                            : alert(reserva.message || "Mensagem enviada ✅ (outro operador já atende este cliente)."));
-            } else if (reserva.ok) {
-              (window.toast ? toast("Mensagem enviada ✅ e conversa criada/reservada.", "success")
-                            : alert("Mensagem enviada ✅ e conversa criada/reservada."));
-            } else {
-              // não bloqueia o envio
-              (window.toast ? toast("Mensagem enviada ✅, mas não consegui reservar/criar a conversa.", "warning")
-                            : alert("Mensagem enviada ✅, mas não consegui reservar/criar a conversa."));
-            }
-
-            // JSON de erro explícito
-            if (j && (j.erro || j.error || j.message)) {
-              envIndSetResultCompact({
-                __kind: 'fail',
-                __statusText: 'Falha',
-                __statusMsg: 'Não enviado',
-                ok: false,
-                endpoint_testado: url,
-                http_status: r?.status,
-                erro: j.erro || j.error || j.message,
-                response: j,
-                request: payload,
-                __raw: {
-                  ok: false,
-                  endpoint_testado: url,
-                  http_status: r?.status,
-                  erro: j.erro || j.error || j.message,
-                  response: j,
-                  request: payload
-                }
-              });
-              continue;
-            }
           } catch (err) {
             // tenta próximo
           }
         }
 
-        envIndSetResultCompact({
-          __kind: 'fail',
-          __statusText: 'Falha',
-          __statusMsg: 'Não enviado',
-          erro: 'Não consegui enviar usando os endpoints candidatos. (Provável: caminho do endpoint diferente / CORS / backend offline).',
-          request: payload,
-          endpoints_testados: candidates,
-          __raw: {
-            ok: false,
-            erro: 'Não consegui enviar usando os endpoints candidatos.',
-            request: payload,
-            endpoints_testados: candidates
-          }
-        });
-
+        envIndSetResultCompact({ __kind: 'fail', __statusText: 'Falha' });
       } finally {
         if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); }
       }
     }
 
-      async function reservarConversaPosLigacaoCaiu(telefone) {
-        const tel = String(telefone || "").replace(/\D/g, "");
-        if (!tel) return { ok: false, warn: true, message: "Telefone inválido para reservar conversa." };
+    async function reservarConversaPosLigacaoCaiu(telefone, phone_id) {
+      const tel = normalizeMsisdnBR(telefone);
+      if (!tel) return { ok: false, warn: true, message: "Telefone inválido para reservar conversa." };
 
-        const codigo = parseInt((agente && agente.codigo) ? agente.codigo : "0", 10);
-        const carteira = (agente && agente.carteira) ? agente.carteira : "";
+      const codigo = parseInt((agente && agente.codigo) ? agente.codigo : "0", 10);
+      const carteira = (agente && agente.carteira) ? agente.carteira : "";
 
-        // payload “compatível” (manda remetente e telefone)
-        const payload = {
-          codigo_do_agente: codigo,
-          carteira,
-          remetente: tel,
-          telefone: tel
-        };
+      const payload = {
+        codigo_do_agente: codigo,
+        carteira,
+        remetente: tel,
+        telefone: tel,
+        phone_id: phone_id ? String(phone_id) : undefined
+      };
 
-        const headers = { "Content-Type": "application/json" };
-        const token = (localStorage.getItem("token") || "").trim();
-        if (token) headers["Authorization"] = `Bearer ${token}`;
+      const headers = { "Content-Type": "application/json" };
+      const token = (localStorage.getItem("token") || "").trim();
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        // tenta primeiro o endpoint “novo” (se existir), e depois faz fallback pro claim
-        const endpoints = [
-          `${CONV_API}/api/envio_individual/ligacao_caiu/reserva`,
-          `${CONV_API}/api/tickets/claim`
-        ];
+      const endpoints = [
+        `${CONV_API}/api/envio_individual/ligacao_caiu/reserva`,
+        `${CONV_API}/api/tickets/claim`
+      ];
 
-        for (const url of endpoints) {
-          try {
-            const r = await fetch(url, { method: "POST", headers, body: JSON.stringify(payload) });
+      for (const url of endpoints) {
+        try {
+          const r = await fetch(url, { method: "POST", headers, body: JSON.stringify(payload) });
+          if (r.status === 404) continue;
 
-            // se não existir esse endpoint, tenta o próximo
-            if (r.status === 404) continue;
+          let j = null;
+          try { j = await r.json(); } catch { }
 
-            let j = null;
-            try { j = await r.json(); } catch {}
+          if (r.ok) return { ok: true, warn: false, data: j };
 
-            if (r.ok) return { ok: true, warn: false, data: j };
-
-            // se outro agente já estiver com a conversa, tratamos como “sucesso com aviso”
-            if (r.status === 409) {
-              return {
-                ok: true,
-                warn: true,
-                data: j,
-                message: (j && (j.message || j.error)) || "Outro operador já está atendendo este cliente."
-              };
-            }
-
+          if (r.status === 409) {
             return {
-              ok: false,
+              ok: true,
               warn: true,
               data: j,
-              message: (j && (j.message || j.error)) || `Falha ao reservar conversa (HTTP ${r.status}).`
+              message: (j && (j.message || j.error)) || "Outro operador já está atendendo este cliente."
             };
-          } catch (e) {
-            // tenta o próximo endpoint
           }
-        }
 
-        return { ok: false, warn: true, message: "Não foi possível reservar/criar a conversa (rede/endpoint)." };
+          return {
+            ok: false,
+            warn: true,
+            data: j,
+            message: (j && (j.message || j.error)) || `Falha ao reservar conversa (HTTP ${r.status}).`
+          };
+        } catch (e) { }
       }
 
-    function envIndUsarConversaAtual() {
-      if (!selecionado) {
-        showModalFeedback('Selecione uma conversa em "Conversas" antes.', 'Envio individual', 1600);
-        return;
-      }
-      const phoneIdEl = document.getElementById('envIndPhoneId');
-      if (phoneIdEl) phoneIdEl.value = String(selecionado.phone_id || '');
-
-      const tel = normalizeMsisdnBR(selecionado.remetente || '');
-      const nome = firstNameOf(selecionado.nome_exibicao || '') || '';
-
-      envIndContatoSelecionado = tel ? { to_msisdn: tel, primeiro_nome: nome, __from: 'conversa' } : null;
-
-      envIndUpdateChosenUI();
-      envIndUpdatePhoneIdLabel(phoneIdEl?.value || '');
-      envIndSetPreview();
-      switchTab('envio_individual');
+      return { ok: false, warn: true, message: "Não foi possível reservar/criar a conversa (rede/endpoint)." };
     }
-
 
     function initEnvioIndividual() {
       if (__envIndBound) return;
@@ -2621,11 +2419,10 @@
       const baseEl = document.getElementById('envIndBase');
       const phoneIdEl = document.getElementById('envIndPhoneId');
 
-      // Origem BD vem no payload do agente (origem_bd). Se existir, travamos a seleção.
       let lockedOrigem = '';
       try {
-        lockedOrigem = String((agente && agente.origem_bd) ? agente.origem_bd : (localStorage.getItem('agente_origem_bd') || '')).trim().toLowerCase();
-      } catch (e) { lockedOrigem = ''; }
+        lockedOrigem = String(agente?.origem_bd || (localStorage.getItem('agente_origem_bd') || '')).trim().toLowerCase();
+      } catch { lockedOrigem = ''; }
 
       if (baseEl) {
         const hintEl = document.getElementById('envIndBaseHint');
@@ -2641,29 +2438,16 @@
           baseEl.disabled = true;
           baseEl.classList.add('opacity-70', 'cursor-not-allowed');
           baseEl.title = 'Origem definida pelo seu perfil';
-          if (hintEl) {
-            hintEl.textContent = `Definida pelo seu perfil (${lockedOrigem.toUpperCase()}).`;
-            hintEl.classList.remove('hidden');
-          }
+          if (hintEl) { hintEl.textContent = `Definida pelo seu perfil (${lockedOrigem.toUpperCase()}).`; hintEl.classList.remove('hidden'); }
         } else {
           baseEl.disabled = false;
           if (hintEl) hintEl.classList.add('hidden');
         }
       }
 
-
       if (btnSend) btnSend.addEventListener('click', enviarLigacaoCaiu);
-
       if (btnBuscar) btnBuscar.addEventListener('click', pesquisarCadastroEnvInd);
-
-      if (codigoEl) {
-        codigoEl.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            pesquisarCadastroEnvInd();
-          }
-        });
-      }
+      if (codigoEl) codigoEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pesquisarCadastroEnvInd(); } });
 
       if (btnClear) btnClear.addEventListener('click', () => {
         if (codigoEl) codigoEl.value = '';
@@ -2678,13 +2462,9 @@
 
       envIndResetResultUI();
       envIndUpdateChosenUI();
-
-      // Se já tiver conversa selecionada, usa como contexto (sem precisar de botão)
       envIndSyncFromConversa();
-
       renderPermissaoEnvioIndividual();
     }
-
 
     /** ============== ONLINE/OFFLINE, LIMITES ============== */
     async function verificarOnline() {
@@ -2697,15 +2477,19 @@
         else { elHomeAviso.classList.add("hidden"); elHomeAviso.textContent = ""; }
       } catch (e) { setStatus(false) }
     }
+
     function setStatus(online) {
       agente.online = !!online;
       if (elAgenteStatus) elAgenteStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
       if (elHomeStatus) elHomeStatus.innerHTML = online ? '<span class="dot online"></span>Online' : '<span class="dot offline"></span>Offline';
+
       btnPegarProxima.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
       btnPrioridade.disabled = !online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+
       const toggleLabel = document.getElementById("toggleLabel");
       if (btnToggleOnline) {
-        btnToggleOnline.disabled = false; btnToggleOnline.setAttribute('aria-pressed', online ? 'true' : 'false');
+        btnToggleOnline.disabled = false;
+        btnToggleOnline.setAttribute('aria-pressed', online ? 'true' : 'false');
         if (online) {
           if (toggleLabel) toggleLabel.textContent = "Ficar offline";
           btnToggleOnline.classList.remove("bg-green-600", "hover:bg-green-700", "text-white");
@@ -2726,7 +2510,13 @@
         const res = await fetch(`${CONV_API}/api/conversas/contatos`);
         const contatos = await res.json();
         const filtrados = (contatos || []).filter(c => phoneIds.includes(String(c.phone_id)));
-        filtrados.sort((a, b) => { const ai = a.status === 'in', bi = b.status === 'in'; if (ai !== bi) return bi - ai; return new Date(b.data_hora) - new Date(a.data_hora) });
+
+        filtrados.sort((a, b) => {
+          const ai = a.status === 'in', bi = b.status === 'in';
+          if (ai !== bi) return bi - ai;
+          return new Date(b.data_hora) - new Date(a.data_hora)
+        });
+
         ordemCache = filtrados;
         const ticketByKey = new Map((tickets || []).map(t => [keyFrom(t.remetente, t.phone_id), t]));
         filtrados.forEach(c => {
@@ -2738,23 +2528,31 @@
           const isOpen = !!(selecionado && selecionado.remetente === c.remetente && selecionado.phone_id === c.phone_id);
           if (c.status === 'in' && ts > prev && !isOpen) { unreadCountByKey[k] = (unreadCountByKey[k] || 0) + 1; }
           lastContatoTsByKey[k] = ts;
+
           if (c.mensagem_final) t.mensagem_final = c.mensagem_final;
           else if (c.ultima_mensagem) t.mensagem_final = c.ultima_mensagem;
           if (c.data_hora) t.data_hora = c.data_hora;
         });
-        persistUnread(); saveTickets(); renderTickets();
+
+        persistUnread();
+        saveTickets();
+        renderTickets();
       } catch (e) { console.error("Falha ao atualizar ordem", e) }
     }
 
     async function refreshAtivosELimite() {
       try {
         const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo || '')}&carteira=${encodeURIComponent(agente.carteira || '')}`;
-        const r = await fetch(url); const rows = r.ok ? await r.json() : []; ativosCount = Array.isArray(rows) ? rows.length : 0;
+        const r = await fetch(url);
+        const rows = r.ok ? await r.json() : [];
+        ativosCount = Array.isArray(rows) ? rows.length : 0;
       } catch { ativosCount = tickets.length }
+
       try {
         const j = await fetch(`${CONV_API}/api/supervisao/tickets-limit?carteira=${encodeURIComponent(agente.carteira || '')}`).then(r => r.json());
         limitPerAgent = Number(j.limit_per_agent || 0);
       } catch { limitPerAgent = 0 }
+
       renderAtivosLimiteUI();
     }
 
@@ -2762,57 +2560,109 @@
       badgeAtivos.textContent = String(ativosCount);
       badgeLimite.textContent = limitPerAgent > 0 ? String(limitPerAgent) : "∞";
       const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
-      if (atingiu) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua ou libere um atendimento para continuar.`; elMsgLimite.classList.remove("hidden") }
-      else { elMsgLimite.classList.add("hidden"); elMsgLimite.textContent = "" }
+      if (atingiu) {
+        elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua ou libere um atendimento para continuar.`;
+        elMsgLimite.classList.remove("hidden")
+      } else {
+        elMsgLimite.classList.add("hidden");
+        elMsgLimite.textContent = ""
+      }
       btnPegarProxima.disabled = !agente.online || atingiu;
       btnPrioridade.disabled = !agente.online || atingiu;
     }
 
-    // Toggle online
     btnToggleOnline.onclick = async () => {
       if (!agente.carteira || !agente.codigo) { abrirModalLogin(); return; }
-      const toggleSpinner = document.getElementById('toggleSpinner'); const toggleLabel = document.getElementById('toggleLabel');
-      elHomeAviso.classList.add("hidden"); elHomeAviso.textContent = ""; const indoOnline = !agente.online;
-      btnToggleOnline.disabled = true; toggleSpinner.classList.remove('hidden'); if (toggleLabel) toggleLabel.textContent = indoOnline ? 'Entrando…' : 'Saindo…';
+      const toggleSpinner = document.getElementById('toggleSpinner');
+      const toggleLabel = document.getElementById('toggleLabel');
+
+      elHomeAviso.classList.add("hidden");
+      elHomeAviso.textContent = "";
+
+      const indoOnline = !agente.online;
+      btnToggleOnline.disabled = true;
+      toggleSpinner.classList.remove('hidden');
+      if (toggleLabel) toggleLabel.textContent = indoOnline ? 'Entrando…' : 'Saindo…';
+
       try {
         if (indoOnline) {
-          const r = await fetch(`${FILA_API}/fila/online`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
-          const j = await r.json(); if (!j.ok) throw new Error(j.erro || "Erro ao entrar online");
-          setStatus(true); await refreshOrdemCarteira(); await refreshAtivosELimite();
+          const r = await fetch(`${FILA_API}/fila/online`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira })
+          });
+          const j = await r.json();
+          if (!j.ok) throw new Error(j.erro || "Erro ao entrar online");
+          setStatus(true);
+          await refreshOrdemCarteira();
+          await refreshAtivosELimite();
         } else {
-          const r = await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
-          const j = await r.json(); if (!j.ok) throw new Error(j.erro || "Erro ao ficar offline");
+          const r = await fetch(`${FILA_API}/fila/offline`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira })
+          });
+          const j = await r.json();
+          if (!j.ok) throw new Error(j.erro || "Erro ao ficar offline");
           setStatus(false);
         }
-      } catch (e) { elHomeAviso.classList.remove("hidden"); elHomeAviso.textContent = (e?.message || "Falha ao alterar status") }
-      finally { toggleSpinner.classList.add('hidden'); if (toggleLabel) toggleLabel.textContent = agente.online ? 'Ficar offline' : 'Ficar online'; btnToggleOnline.disabled = false; }
+      } catch (e) {
+        elHomeAviso.classList.remove("hidden");
+        elHomeAviso.textContent = (e?.message || "Falha ao alterar status");
+      } finally {
+        toggleSpinner.classList.add('hidden');
+        if (toggleLabel) toggleLabel.textContent = agente.online ? 'Ficar offline' : 'Ficar online';
+        btnToggleOnline.disabled = false;
+      }
     };
 
-    // Pegar próxima
     btnPegarProxima.onclick = async () => {
       if (!agente.online) { alert("Você está offline. Vá na Home e clique em “Ficar online”."); return; }
       if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); renderAtivosLimiteUI(); return; }
-      const spinner = document.getElementById('pegarSpinner'); const label = document.getElementById('pegarLabel');
-      btnPegarProxima.disabled = true; spinner.classList.remove('hidden'); label.textContent = 'Buscando…';
+      const spinner = document.getElementById('pegarSpinner');
+      const label = document.getElementById('pegarLabel');
+
+      btnPegarProxima.disabled = true;
+      spinner.classList.remove('hidden');
+      label.textContent = 'Buscando…';
+
       try {
-        const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira }) });
+        const r = await fetch(`${CONV_API}/api/tickets/claim`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira })
+        });
         const j = await r.json().catch(() => ({ ok: false, erro: 'Falha na resposta' }));
+
         if (r.status === 409 && j && (j.limit_per_agent !== undefined)) {
-          limitPerAgent = Number(j.limit_per_agent || 0); ativosCount = Number(j.ativos || ativosCount);
-          elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden');
-          renderAtivosLimiteUI(); return;
+          limitPerAgent = Number(j.limit_per_agent || 0);
+          ativosCount = Number(j.ativos || ativosCount);
+          elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`;
+          elMsgLimite.classList.remove('hidden');
+          renderAtivosLimiteUI();
+          return;
         }
+
         if (!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
-        if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) { tickets.unshift(j.ticket); saveTickets(); }
-        renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosLimiteUI();
-      } catch (e) { alert("Falha ao pegar próxima."); }
-      finally { spinner.classList.add('hidden'); label.textContent = 'Pegar próxima'; btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent); }
+
+        if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) {
+          tickets.unshift(j.ticket);
+          saveTickets();
+        }
+        renderTickets();
+        await abrirTicket(j.ticket);
+        ativosCount++;
+        renderAtivosLimiteUI();
+      } catch (e) {
+        alert("Falha ao pegar próxima.");
+      } finally {
+        spinner.classList.add('hidden');
+        label.textContent = 'Pegar próxima';
+        btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+      }
     };
 
-    /** ============== LISTA / CHAT ============== */
-    
-
-// Prioridade
+    /** ============== PRIORIDADE (mantido) ============== */
     const priorityModal = document.getElementById('priorityModal');
     const priorityTelefone = document.getElementById('priorityTelefone');
     const priorityInfo = document.getElementById('priorityInfo');
@@ -2820,6 +2670,7 @@
     const btnPriorityBuscar = document.getElementById('btnPriorityBuscar');
     const prioritySpinner = document.getElementById('prioritySpinner');
     const priorityBtnLabel = document.getElementById('priorityBtnLabel');
+
     btnPrioridade.onclick = () => {
       if (!agente.online) { alert('Você está offline. Vá na Home e clique em “Ficar online”.'); return }
       if (limitPerAgent > 0 && ativosCount >= limitPerAgent) { elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido.`; elMsgLimite.classList.remove('hidden'); return; }
@@ -2828,15 +2679,30 @@
     function abrirPriorityModal() { isModalOpen = true; priorityInfo.classList.add('hidden'); priorityErro.classList.add('hidden'); priorityTelefone.value = ''; priorityModal.classList.remove('hidden'); setTimeout(() => priorityTelefone.focus(), 50) }
     function fecharPriorityModal() { isModalOpen = false; priorityModal.classList.add('hidden') }
     priorityTelefone.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); btnPriorityBuscar.click() } })
-    function normalizarTelefone(raw) { let d = String(raw || '').replace(/\D/g, ''); if (!d) return ''; if (!d.startsWith('55')) d = '55' + d; const m = d.match(/^55(\d{2})(\d{8,9})(.*)$/); if (m) { const ddd = m[1]; let numero = m[2]; const tail = m[3] || ''; if (numero.length === 9 && numero.startsWith('9')) numero = numero.slice(1); d = '55' + ddd + numero + tail } return d }
+    function normalizarTelefone(raw) {
+      let d = String(raw || '').replace(/\D/g, '');
+      if (!d) return '';
+      if (!d.startsWith('55')) d = '55' + d;
+      const m = d.match(/^55(\d{2})(\d{8,9})(.*)$/);
+      if (m) {
+        const ddd = m[1];
+        let numero = m[2];
+        const tail = m[3] || '';
+        if (numero.length === 9 && numero.startsWith('9')) numero = numero.slice(1);
+        d = '55' + ddd + numero + tail
+      }
+      return d
+    }
     function phoneIdsForCarteira() { return (carteiraToPhoneIds[agente.carteira] || []).map(String) }
     function dedupe(arr) { return Array.from(new Set(arr.filter(Boolean))) }
     async function preferPhoneIdDoContato(remetente) {
       const hit = (ordemCache || []).find(x => String(x.remetente) === String(remetente));
       if (hit && hit.phone_id) return String(hit.phone_id);
       try {
-        const r = await fetch(`${CONV_API}/api/conversas/contatos`); const all = await r.json();
-        const ids = phoneIdsForCarteira(); const c = (all || []).find(x => ids.includes(String(x.phone_id)) && String(x.remetente) === String(remetente));
+        const r = await fetch(`${CONV_API}/api/conversas/contatos`);
+        const all = await r.json();
+        const ids = phoneIdsForCarteira();
+        const c = (all || []).find(x => ids.includes(String(x.phone_id)) && String(x.remetente) === String(remetente));
         return c ? String(c.phone_id) : null;
       } catch { return null }
     }
@@ -2880,67 +2746,102 @@
       finally { btnPriorityBuscar.disabled = false; prioritySpinner.classList.add('hidden'); priorityBtnLabel.textContent = 'Buscar e solicitar' }
     };
 
-    
+    /** ============== LISTA / CHAT ============== */
+    function getCss(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() }
 
-function renderTickets(filtro = "") {
-      const q = (filtro || "").toLowerCase().trim(); const frag = document.createDocumentFragment(); elListaTickets.innerHTML = "";
+    function renderTickets(filtro = "") {
+      const q = (filtro || "").toLowerCase().trim();
+      const frag = document.createDocumentFragment();
+      elListaTickets.innerHTML = "";
+
       tickets.forEach(t => {
-        const nome = t.nome_exibicao || t.remetente; const hay = `${nome} ${t.remetente}`.toLowerCase(); if (q && !hay.includes(q)) return;
-        const li = document.createElement("li"); li.className = "ticket-item relative flex items-center p-3 cursor-pointer border-b"; li.style.borderColor = getCss('--border'); li.onclick = () => abrirTicket(t);
-        const key = keyFrom(t.remetente, t.phone_id); const unread = unreadCountByKey[key] || 0; const badge = unread > 0 ? `<span class="badge absolute right-2 top-2">${unread}</span>` : "";
+        const nome = t.nome_exibicao || t.remetente;
+        const hay = `${nome} ${t.remetente}`.toLowerCase();
+        if (q && !hay.includes(q)) return;
+
+        const li = document.createElement("li");
+        li.className = "ticket-item relative flex items-center p-3 cursor-pointer border-b";
+        li.style.borderColor = getCss('--border');
+        li.onclick = () => abrirTicket(t);
+
+        const key = keyFrom(t.remetente, t.phone_id);
+        const unread = unreadCountByKey[key] || 0;
+        const badge = unread > 0 ? `<span class="badge absolute right-2 top-2">${unread}</span>` : "";
         const hora = t.data_hora ? fmtHoraBR.format(new Date(t.data_hora)) : "";
+
         li.innerHTML = `
-            <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">${(nome || "U").charAt(0).toUpperCase()}</div>
-            <div class="flex-1 min-w-0">
-              <div class="font-semibold truncate">${escapeHtml(nome)}</div>
-              <div class="text-sm muted truncate">${escapeHtml(t.mensagem_final ? t.mensagem_final.slice(0, 70) : "")}</div>
-            </div>
-            <div class="text-xs muted pl-2">${hora}</div>
-            ${badge}
-          `;
-        if (selecionado && selecionado.remetente === t.remetente && selecionado.phone_id === t.phone_id) { li.classList.add("ticket-selected") }
+          <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 font-medium" style="background:${gerarCor(nome)};color:#fff;">${(nome || "U").charAt(0).toUpperCase()}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold truncate">${escapeHtml(nome)}</div>
+            <div class="text-sm muted truncate">${escapeHtml(t.mensagem_final ? t.mensagem_final.slice(0, 70) : "")}</div>
+          </div>
+          <div class="text-xs muted pl-2">${hora}</div>
+          ${badge}
+        `;
+        if (selecionado && selecionado.remetente === t.remetente && selecionado.phone_id === t.phone_id) li.classList.add("ticket-selected");
         frag.appendChild(li);
       });
+
       elListaTickets.appendChild(frag);
     }
 
-    let msgsCtrl = null;
     async function abrirTicket(t) {
       selecionado = t;
 
-      // Atualiza phone_id oculto do envio individual (sem edição)
       const phoneIdEl = document.getElementById('envIndPhoneId');
       if (phoneIdEl && t?.phone_id) phoneIdEl.value = String(t.phone_id || '');
       envIndUpdatePhoneIdLabel(phoneIdEl?.value || '');
       envIndSetPreview();
 
-      try { const k = keyFrom(t.remetente, t.phone_id); unreadCountByKey[k] = 0; lastContatoTsByKey[k] = Date.now(); persistUnread(); } catch { }
+      try {
+        const k = keyFrom(t.remetente, t.phone_id);
+        unreadCountByKey[k] = 0;
+        lastContatoTsByKey[k] = Date.now();
+        persistUnread();
+      } catch { }
+
       renderTickets();
+
       elTitulo.textContent = t.nome_exibicao ? `${t.nome_exibicao} (${t.remetente})` : t.remetente;
       elSubInfo.textContent = `conta: ${phoneIdMap[t.phone_id] || t.phone_id}`;
-      textarea.disabled = false; textarea.focus(); btnEnviar.disabled = true; btnLiberar.disabled = false; btnConcluir.disabled = false;
+      textarea.disabled = false;
+      textarea.focus();
+      btnEnviar.disabled = true;
+      btnLiberar.disabled = false;
+      btnConcluir.disabled = false;
 
       if (msgsCtrl) { try { msgsCtrl.abort() } catch { } }
       msgsCtrl = new AbortController();
 
-      lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); chat.innerHTML = "";
+      lastTimestampMs = null;
+      lastDayRendered = null;
+      renderedKeys.clear();
+      chat.innerHTML = "";
+
       await carregarMensagens(false);
-      startMensagensPoll();
+      schedulePolls();
       wireComposer();
     }
-    function startMensagensPoll() { schedulePolls() }
 
     async function carregarMensagens(incremental = true) {
       if (!selecionado) return;
-      let url = `${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`; if (selecionado.phone_id) url += `?phone_id=${encodeURIComponent(selecionado.phone_id)}`;
+      let url = `${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`;
+      if (selecionado.phone_id) url += `?phone_id=${encodeURIComponent(selecionado.phone_id)}`;
+
       try {
-        const r = await fetch(url, { signal: msgsCtrl?.signal }); if (!r.ok) throw new Error("Erro histórico");
-        const msgs = await r.json(); msgs.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
+        const r = await fetch(url, { signal: msgsCtrl?.signal });
+        if (!r.ok) throw new Error("Erro histórico");
+        const msgs = await r.json();
+        msgs.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
+
         if (!incremental) { chat.innerHTML = ""; lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); }
+
         const isNearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 200;
         msgs.forEach(m => renderMsg(m, incremental));
         if (isNearBottom) requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" }));
-      } catch (e) { if (String(e?.name) !== "AbortError") console.error(e) }
+      } catch (e) {
+        if (String(e?.name) !== "AbortError") console.error(e)
+      }
     }
 
     function renderMsg(m, incremental) {
@@ -2951,535 +2852,780 @@ function renderTickets(filtro = "") {
 
       const dia = fmtDataBR.format(new Date(m.data_hora));
       const hora = fmtHoraBR.format(new Date(m.data_hora));
-      if (!lastDayRendered || lastDayRendered !== dia) { const sep = document.createElement("div"); sep.className = "dia"; sep.textContent = `— ${dia} —`; chat.appendChild(sep); lastDayRendered = dia; }
+      if (!lastDayRendered || lastDayRendered !== dia) {
+        const sep = document.createElement("div");
+        sep.className = "dia";
+        sep.textContent = `— ${dia} —`;
+        chat.appendChild(sep);
+        lastDayRendered = dia;
+      }
 
       const incoming = isIncoming(m);
-      const div = document.createElement("div"); div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
+      const div = document.createElement("div");
+      div.className = `msg ${incoming ? 'recebida' : 'enviada'}`;
 
       if (m.tipo === "imagem" || m.mensagem_final === "[image]") {
         div.innerHTML = `<div class="muted italic">[imagem recebida]</div><button class="btn-olhinho underline mt-1" style="color:var(--link)">👁 Ver imagem</button><span class="hora">${hora}</span>`;
-        const btn = div.querySelector(".btn-olhinho"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Imagem indisponível" } else btn.onclick = () => carregarImagem(div, btn, m.msg_id);
+        const btn = div.querySelector(".btn-olhinho");
+        if (!m.msg_id) { btn.disabled = true; btn.textContent = "Imagem indisponível" }
+        else btn.onclick = () => carregarImagem(div, btn, m.msg_id);
       } else if (m.tipo === "audio" || m.mensagem_final === "[audio]") {
         div.innerHTML = `<div class="muted italic">[áudio recebido]</div><button class="btn-audio underline mt-1" style="color:var(--link)">▶ Reproduzir áudio</button><span class="hora">${hora}</span>`;
-        const btn = div.querySelector(".btn-audio"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Áudio indisponível" } else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
+        const btn = div.querySelector(".btn-audio");
+        if (!m.msg_id) { btn.disabled = true; btn.textContent = "Áudio indisponível" }
+        else btn.onclick = () => carregarAudio(div, btn, m.msg_id);
       } else if (m.tipo === "document" || m.mensagem_final === "[document]") {
         div.innerHTML = `<div class="muted italic">[documento recebido]</div><button class="btn-doc underline mt-1" style="color:var(--link)">📎 Ver documento</button><span class="hora">${hora}</span>`;
-        const btn = div.querySelector(".btn-doc"); if (!m.msg_id) { btn.disabled = true; btn.textContent = "Documento indisponível" } else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
+        const btn = div.querySelector(".btn-doc");
+        if (!m.msg_id) { btn.disabled = true; btn.textContent = "Documento indisponível" }
+        else btn.onclick = () => carregarDocumento(div, btn, m.msg_id);
       } else if (typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")) {
-        const lines = m.mensagem_final.split("\n"); const filename = (lines[0] || "").replace("📎 PDF:", "").trim() || "Arquivo"; const link = (lines[1] || "").replace("🔗", "").trim();
+        const lines = m.mensagem_final.split("\n");
+        const filename = (lines[0] || "").replace("📎 PDF:", "").trim() || "Arquivo";
+        const link = (lines[1] || "").replace("🔗", "").trim();
         div.innerHTML = `<div class="flex items-start gap-2"><div class="text-xl leading-none">📄</div><div class="min-w-0"><div class="font-semibold">${escapeHtml(filename)}</div>${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="underline break-all" style="color:var(--link)">Abrir/baixar</a>` : `<span class="muted">sem link</span>`}</div></div><span class="hora">${hora}</span>`;
       } else {
         div.innerHTML = `<div>${escapeHtml(m.mensagem_final || "")}</div><span class="hora">${hora}</span>`;
       }
 
-      chat.appendChild(div); renderedKeys.add(key); if (lastTimestampMs === null || tMs > lastTimestampMs) lastTimestampMs = tMs;
+      chat.appendChild(div);
+      renderedKeys.add(key);
+      if (lastTimestampMs === null || tMs > lastTimestampMs) lastTimestampMs = tMs;
     }
 
     async function carregarImagem(div, btn, msg_id) {
       btn.disabled = true; btn.textContent = "⏳ Carregando…";
       try {
-        const r = await fetch(`${CONV_API}/api/conversas/image/${encodeURIComponent(msg_id)}`); const j = await r.json();
+        const r = await fetch(`${CONV_API}/api/conversas/image/${encodeURIComponent(msg_id)}`);
+        const j = await r.json();
         if (j.ok && j.data_uri) {
-          const img = document.createElement("img"); img.src = j.data_uri; img.alt = "Imagem"; img.className = "thumb mt-2"; img.loading = "lazy"; img.decoding = "async";
-          img.onclick = () => abrirModalImagem(j.data_uri); div.insertBefore(img, btn); btn.remove();
-        }
-        else throw new Error(j.erro || "Resposta inválida");
-      } catch { alert("Erro ao carregar imagem"); btn.disabled = false; btn.textContent = "👁 Ver imagem" }
+          const img = document.createElement("img");
+          img.src = j.data_uri;
+          img.alt = "Imagem";
+          img.className = "thumb mt-2";
+          img.loading = "lazy";
+          img.decoding = "async";
+          img.onclick = () => abrirModalImagem(j.data_uri);
+          div.insertBefore(img, btn);
+          btn.remove();
+        } else throw new Error(j.erro || "Resposta inválida");
+      } catch {
+        alert("Erro ao carregar imagem");
+        btn.disabled = false; btn.textContent = "👁 Ver imagem";
+      }
+    }
+    async function carregarAudio(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/audio/${encodeURIComponent(msg_id)}`);
+        const j = await r.json().catch(() => ({}));
+        if (j.ok && j.data_uri) {
+          const audio = document.createElement("audio");
+          audio.controls = true;
+          audio.src = j.data_uri;
+          audio.className = "mt-2";
+          div.insertBefore(audio, btn);
+          btn.remove();
+        } else if (j.ok && j.url) {
+          const a = document.createElement("a");
+          a.href = j.url;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.textContent = "Abrir áudio";
+          a.className = "underline mt-2 inline-block";
+          a.style.color = "var(--link)";
+          div.insertBefore(a, btn);
+          btn.remove();
+        } else throw new Error(j.erro || "Resposta inválida");
+      } catch {
+        alert("Erro ao carregar áudio");
+        btn.disabled = false; btn.textContent = "▶ Reproduzir áudio";
+      }
+    }
+    async function carregarDocumento(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}`);
+        const j = await r.json().catch(() => ({}));
+        if (j.ok && j.url) {
+          const a = document.createElement("a");
+          a.href = j.url;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.textContent = "Abrir documento";
+          a.className = "underline mt-2 inline-block";
+          a.style.color = "var(--link)";
+          div.insertBefore(a, btn);
+          btn.remove();
+        } else if (j.ok && j.data_uri) {
+          const a = document.createElement("a");
+          a.href = j.data_uri;
+          a.download = "documento";
+          a.textContent = "Baixar documento";
+          a.className = "underline mt-2 inline-block";
+          a.style.color = "var(--link)";
+          div.insertBefore(a, btn);
+          btn.remove();
+        } else throw new Error(j.erro || "Resposta inválida");
+      } catch {
+        alert("Erro ao carregar documento");
+        btn.disabled = false; btn.textContent = "📎 Ver documento";
+      }
     }
 
-    // ==== Modal de imagem ====
+    // Modal imagem
     const imageModal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImg');
     const closeImgBtn = document.getElementById('closeModal');
-    function abrirModalImagem(src) {
-      try { isModalOpen = true; modalImg.src = src || ""; imageModal.classList.remove('hidden'); } catch { }
-    }
-    function fecharModalImagem() {
-      try { imageModal.classList.add('hidden'); modalImg.src = ""; isModalOpen = false; } catch { }
-    }
+    function abrirModalImagem(src) { try { isModalOpen = true; modalImg.src = src || ""; imageModal.classList.remove('hidden'); } catch { } }
+    function fecharModalImagem() { try { imageModal.classList.add('hidden'); modalImg.src = ""; isModalOpen = false; } catch { } }
     if (closeImgBtn) closeImgBtn.addEventListener('click', fecharModalImagem);
     if (imageModal) imageModal.addEventListener('click', (e) => { if (e.target === imageModal) fecharModalImagem(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !imageModal.classList.contains('hidden')) fecharModalImagem(); });
 
-    function responderMensagem(msgId, conteudo) { respostaMsgId = msgId || null; document.getElementById("respostaPreview").classList.remove("hidden"); document.getElementById("respostaTexto").innerText = (conteudo || "").slice(0, 50); textarea.focus() }
+    function responderMensagem(msgId, conteudo) {
+      respostaMsgId = msgId || null;
+      document.getElementById("respostaPreview").classList.remove("hidden");
+      document.getElementById("respostaTexto").innerText = (conteudo || "").slice(0, 50);
+      textarea.focus()
+    }
     function cancelarResposta() { respostaMsgId = null; document.getElementById("respostaPreview").classList.add("hidden"); document.getElementById("respostaTexto").innerText = "" }
 
     // Composer
     function wireComposer() {
-      textarea.removeEventListener('input', __onTextInput); textarea.removeEventListener('keydown', __onTextKeydown); btnEnviar.removeEventListener('click', enviarMensagem);
-      textarea.addEventListener('input', __onTextInput); textarea.addEventListener('keydown', __onTextKeydown); btnEnviar.addEventListener('click', enviarMensagem); updateEnviarState();
+      textarea.removeEventListener('input', __onTextInput);
+      textarea.removeEventListener('keydown', __onTextKeydown);
+      btnEnviar.removeEventListener('click', enviarMensagem);
+
+      textarea.addEventListener('input', __onTextInput);
+      textarea.addEventListener('keydown', __onTextKeydown);
+      btnEnviar.addEventListener('click', enviarMensagem);
+
+      updateEnviarState();
     }
     function autoGrow() { textarea.style.height = 'auto'; textarea.style.height = Math.min(180, Math.max(38, textarea.scrollHeight)) + 'px' }
-    function updateEnviarState() { const hasText = !!textarea.value.trim(); btnEnviar.disabled = !hasText || !selecionado; if (hasText && selecionado) { showTyping() } else { hideTyping() } }
+    function updateEnviarState() {
+      const hasText = !!textarea.value.trim();
+      btnEnviar.disabled = !hasText || !selecionado;
+      if (hasText && selecionado) showTyping(); else hideTyping();
+    }
     function showTyping() { digitando.classList.remove('hidden'); if (typingTimer) clearTimeout(typingTimer); typingTimer = setTimeout(hideTyping, 1200) }
     function hideTyping() { digitando.classList.add('hidden'); if (typingTimer) { clearTimeout(typingTimer); typingTimer = null } }
     function __onTextInput() { autoGrow(); updateEnviarState() }
     function __onTextKeydown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!btnEnviar.disabled) enviarMensagem(); return false } showTyping() }
+
     async function enviarMensagem() {
-      if (!selecionado) return; const texto = textarea.value.trim(); if (!texto) return; userTyping = true; btnEnviar.disabled = true;
+      if (!selecionado) return;
+      const texto = textarea.value.trim();
+      if (!texto) return;
+
+      userTyping = true;
+      btnEnviar.disabled = true;
+
       try {
         const body = { texto, phone_id: selecionado.phone_id, msg_id: respostaMsgId || null };
-        const r = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-        const j = await r.json(); if (j.ok) { textarea.value = ""; autoGrow(); cancelarResposta(); hideTyping(); await carregarMensagens(true) }
-        else { alert("Erro ao enviar: " + (j.erro || JSON.stringify(j))); }
-      } catch (e) { alert("Erro ao enviar mensagem. Verifique rede/CORS."); }
-      finally { userTyping = false; updateEnviarState(); }
-    }
-
-    /** ============== LOGOUT ============== */
-    async function doLogout() {
-      try { btnLogout.textContent = 'Saindo…'; btnLogout.disabled = true; } catch (_) { }
-      try { await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), carteira: agente.carteira || '' }) }).catch(() => { }); } catch (_) { }
-      try {
-        localStorage.removeItem("agente_codigo"); localStorage.removeItem("agente_nome"); localStorage.removeItem("agente_carteira"); localStorage.removeItem("agente_origem");
-        localStorage.removeItem("agente_origem_bd"); localStorage.removeItem("agente_permite_envio_individual"); Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:") || k.startsWith("cz:unreadCount:") || k.startsWith("cz:lastContatoTs:")) localStorage.removeItem(k) });
-      } catch (_) { }
-      if (pollingContatos) clearInterval(pollingContatos);
-      if (pollingMensagens) clearInterval(pollingMensagens);
-      if (pendentesInterval) clearInterval(pendentesInterval);
-
-      showModalFeedback('Agente deslogado com sucesso.', 'Logout', 900);
-
-      setTimeout(() => {
-        if (LOGOUT_REDIRECT) window.location.href = LOGOUT_REDIRECT;
-        else location.reload();
-      }, 950);
-    }
-
-    function limparChat() { chat.innerHTML = '<p id="loading" class="text-center muted">Pegue uma conversa para iniciar…</p>' }
-
-    /** ============== KPIs & Relatório (mantido) ============== */
-    function fmtDurSec(s) { if (s == null) return "—"; const m = Math.floor(s / 60), sec = s % 60; if (m >= 60) { const h = Math.floor(m / 60), mm = m % 60; return `${h}h ${mm}m`; } return `${m}m ${sec}s`; }
-    function buildRelQS() {
-      const start = relStart.value || fmtYMD(new Date());
-      const end = relEnd.value || start;
-      const p = new URLSearchParams();
-      p.set('start', start);
-      p.set('end', end);
-      if (agente?.carteira) p.set('carteira', agente.carteira);
-      if (agente?.codigo) p.set('agentes', String(agente.codigo));
-      return `?${p.toString()}`;
-    }
-    function buildExtratoQS() {
-      const start = relStart.value || fmtYMD(new Date());
-      const end = relEnd.value || start;
-      const p = new URLSearchParams();
-      p.set('start', start);
-      p.set('end', end);
-      if (agente?.codigo) p.set('agentes', String(agente.codigo));
-      return `?${p.toString()}`;
-    }
-    function updatePeriodoLabel() {
-      try {
-        const s = relStart.value, e = relEnd.value;
-        if (!s || !e) { relPeriodo.textContent = '—'; return; }
-        const [sy, sm, sd] = s.split('-').map(Number);
-        const [ey, em, ed] = e.split('-').map(Number);
-        const ds = fmtDataBR.format(new Date(sy, sm - 1, sd));
-        const de = fmtDataBR.format(new Date(ey, em - 1, ed));
-        relPeriodo.textContent = (s === e) ? ds : `${ds} a ${de}`;
-      } catch { relPeriodo.textContent = '—'; }
-    }
-    function bindQuickRanges() {
-      document.querySelectorAll('[data-qk]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const qk = btn.getAttribute('data-qk');
-          const now = new Date(); const ymd = fmtYMD(now);
-          if (qk === 'hoje') { relStart.value = ymd; relEnd.value = ymd; }
-          else if (qk === 'ontem') {
-            const d = new Date(now); d.setDate(d.getDate() - 1);
-            const y1 = fmtYMD(d); relStart.value = y1; relEnd.value = y1;
-          } else if (qk === '7d') {
-            const d = new Date(now); d.setDate(d.getDate() - 6);
-            relStart.value = fmtYMD(d); relEnd.value = ymd;
-          } else if (qk === '30d') {
-            const d = new Date(now); d.setDate(d.getDate() - 29);
-            relStart.value = fmtYMD(d); relEnd.value = ymd;
-          }
-          updatePeriodoLabel();
-          refreshKPIs();
+        const r = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
         });
-      });
+        const j = await r.json();
+        if (j.ok) {
+          textarea.value = "";
+          autoGrow();
+          cancelarResposta();
+          hideTyping();
+          await carregarMensagens(true);
+        } else {
+          alert("Erro ao enviar: " + (j.erro || JSON.stringify(j)));
+        }
+      } catch (e) {
+        alert("Erro ao enviar mensagem. Verifique rede/CORS.");
+      } finally {
+        userTyping = false;
+        updateEnviarState();
+      }
     }
-    function chartTextColor() { return getCss('--text') || '#e5e7eb' }
 
-    async function refreshKPIs() {
-      updatePeriodoLabel();
+    function limparChat() {
+      chat.innerHTML = `<p id="loading" class="text-center muted">Pegue uma conversa para iniciar…</p>`;
+      textarea.value = "";
+      textarea.disabled = true;
+      btnEnviar.disabled = true;
+      cancelarResposta();
+    }
 
-      const qs = buildRelQS();
-      const urlResumo = `${API_BASE}/api/atendimentos/resumo${qs}`;
-      const urlMotivos = `${API_BASE}/api/atendimentos/motivos${qs}`;
+    /** ============== PDF (fallback robusto) ============== */
+    async function enviarPDF(event) {
+      if (!selecionado) { showModalFeedback('Selecione um ticket antes de enviar PDF.', 'PDF', 1400); return; }
+      const file = event?.target?.files?.[0];
+      if (!file) return;
+
+      if (file.size > 25 * 1024 * 1024) { showModalFeedback('PDF muito grande (limite 25MB).', 'PDF', 1600); event.target.value = ""; return; }
+
+      const form = new FormData();
+      form.append('file', file);
+      form.append('remetente', selecionado.remetente);
+      form.append('phone_id', String(selecionado.phone_id || ''));
+
+      const candidates = [
+        `${CONV_API}/api/conversas/pdf`,
+        `${CONV_API}/api/conversas/document`,
+        `${API_BASE}/api/upload/pdf`,
+        `${API_BASE}/api/upload/document`,
+      ];
 
       try {
-        const rRes = await fetch(urlResumo);
-        const resumo = rRes.ok ? await rRes.json() : {};
-        const em = Number(resumo.em_atendimento || 0);
-        const conc = Number(resumo.concluidos || 0);
-        kpiEm.textContent = String(em);
-        kpiConc.textContent = String(conc);
-        kpiTma.textContent = fmtDurSec(resumo.tma_segundos);
-        kpiFRT.textContent = fmtDurSec(resumo.tmr_segundos);
-
-        const ctxStatus = document.getElementById('pieStatus')?.getContext('2d');
-        if (ctxStatus) {
-          if (pieChart) pieChart.destroy();
-          pieChart = new Chart(ctxStatus, {
-            type: 'pie',
-            data: { labels: ['Em atendimento', 'Concluídos'], datasets: [{ data: [em, conc] }] },
-            options: { responsive: true, plugins: { legend: { labels: { color: chartTextColor() } } } }
-          });
+        showModalFeedback('Enviando PDF…', 'PDF', 900);
+        for (const url of candidates) {
+          try {
+            const r = await fetch(url, { method: 'POST', body: form });
+            if (r.status === 404) continue;
+            const j = await r.json().catch(() => ({}));
+            if (r.ok && (j.ok || j.url || j.link)) {
+              showModalFeedback('PDF enviado.', 'PDF', 1200);
+              await carregarMensagens(true);
+              event.target.value = "";
+              return;
+            }
+          } catch { }
         }
-
-        try {
-          const rMot = await fetch(urlMotivos);
-          const motivos = rMot.ok ? await rMot.json() : [];
-          const labels = Array.isArray(motivos) ? motivos.map(m => m.motivo || m.label || '—') : [];
-          const vals = Array.isArray(motivos) ? motivos.map(m => Number(m.qtd || m.total || 0)) : [];
-          const ctxMot = document.getElementById('pieMotivos')?.getContext('2d');
-          if (ctxMot) {
-            if (chartMotivos) chartMotivos.destroy();
-            chartMotivos = new Chart(ctxMot, { type: 'pie', data: { labels, datasets: [{ data: vals }] }, options: { plugins: { legend: { labels: { color: chartTextColor() } } } } });
-          }
-        } catch { }
-
-        await refreshExtrato();
-      } catch (e) { }
+        alert('Não consegui enviar o PDF: endpoint não encontrado/configurado.');
+      } finally {
+        event.target.value = "";
+      }
     }
 
-    function normalizeExtratoRow(row) {
-      if (!row) return null;
-      if (Array.isArray(row)) {
-        return {
-          data: row[0],
-          atendimentos: Number(row[1] || 0),
-          inativo: Number(row[2] || 0),
-          duvidas: Number(row[3] || 0),
-          segunda_via: Number(row[4] || 0),
-          recusou: Number(row[5] || 0),
-          negociacao: Number(row[6] || 0)
-        };
-      }
-      return {
-        data: row.data_hora || row.data || row.dia,
-        atendimentos: Number(row.atendimentos || row.total || 0),
-        inativo: Number(row.cliente_ficou_inativo || 0),
-        duvidas: Number(row.duvidas_gerais || 0),
-        segunda_via: Number(row.solicitou_2ª_via_de_boleto || row.solicitou_2a_via_de_boleto || 0),
-        recusou: Number(row.recusou_a_proposta || 0),
-        negociacao: Number(row.realizou_negociacao || 0)
+    /** ============== PAINEL DE AVISOS (mínimo seguro) ============== */
+    function noticesKey() { return `cz:notices_read:${agente?.carteira || 'cart'}:${agente?.codigo || 'anon'}` }
+    function loadNoticesReadSet() {
+      try {
+        const raw = localStorage.getItem(noticesKey());
+        const arr = raw ? JSON.parse(raw) : [];
+        return new Set(Array.isArray(arr) ? arr : []);
+      } catch { return new Set(); }
+    }
+    function persistNoticesReadSet() {
+      try { localStorage.setItem(noticesKey(), JSON.stringify(Array.from(noticesReadSet))); } catch { }
+    }
+    function sevClass(n) {
+      const s = String(n || '').toLowerCase();
+      if (s.includes('crit')) return 'sev-crit';
+      if (s.includes('warn')) return 'sev-warn';
+      if (s.includes('info')) return 'sev-info';
+      return 'sev-success';
+    }
+    function normalizeNotice(n) {
+      const id = n.id || n.notice_id || n.uuid || hashId(JSON.stringify(n));
+      const titulo = n.titulo || n.title || n.assunto || 'Aviso';
+      const corpo = n.mensagem || n.body || n.texto || n.text || '';
+      const created = n.created_at || n.data_hora || n.data || n.created || null;
+      const nivel = n.nivel || n.severidade || n.level || (n.critico ? 'crit' : 'info');
+      const tags = n.tags || n.carteiras || n.tag || [];
+      return { id: String(id), titulo, corpo, created, nivel, tags };
+    }
+    function noticeIsRead(id) { return noticesReadSet.has(String(id)); }
+
+    function renderHero() {
+      if (!heroWrap) return;
+      const unread = notices.filter(n => !noticeIsRead(n.id));
+      if (!unread.length) { heroWrap.classList.add('hidden'); return; }
+
+      // escolhe primeiro crítico ou o mais recente
+      let pick = unread.find(n => String(n.nivel).toLowerCase().includes('crit')) || unread[0];
+      heroWrap.classList.remove('hidden');
+      heroTitle.textContent = pick.titulo || 'Aviso';
+      heroMeta.textContent = pick.created ? `Publicado em ${fmtDataBR.format(new Date(pick.created))}` : 'Publicado agora';
+      heroBody.textContent = pick.corpo || '';
+
+      heroDismiss.onclick = () => { heroWrap.classList.add('hidden'); };
+      heroMarkRead.onclick = () => {
+        noticesReadSet.add(String(pick.id));
+        persistNoticesReadSet();
+        renderNotices();
+        renderHero();
       };
     }
-    function pct(v, tot) { if (!tot) return '0%'; return Math.round((v / tot) * 100) + '%'; }
 
-    function renderExtrato(rows) {
-      extratoWrap.innerHTML = '';
-      if (!Array.isArray(rows) || !rows.length) {
-        extratoWrap.innerHTML = `<div class="p-4 text-sm muted">Sem dados para o período selecionado.</div>`;
+    function renderNotices() {
+      if (!avisosWrap) return;
+
+      const all = notices || [];
+      const unread = all.filter(n => !noticeIsRead(n.id));
+      const showUnreadFilterBtn = document.querySelector('[data-avisos-filter="unread"]');
+      if (showUnreadFilterBtn) showUnreadFilterBtn.style.display = unread.length ? '' : 'none';
+
+      avisosCountPill.textContent = `${unread.length}/${all.length}`;
+      avisosResumo.textContent = all.length ? `${unread.length} não lido(s).` : 'Nenhum aviso disponível.';
+
+      const list = (noticesFilter === 'unread') ? unread : all;
+
+      avisosWrap.innerHTML = '';
+      list.forEach(n => {
+        const isRead = noticeIsRead(n.id);
+        const wrap = document.createElement('div');
+        wrap.className = `notice ${isRead ? '' : 'unread'} ${String(n.nivel).toLowerCase().includes('crit') ? 'crit' : ''}`;
+
+        const createdTxt = n.created ? `${fmtDataBR.format(new Date(n.created))} ${fmtHoraBR.format(new Date(n.created))}` : '';
+        const tagsArr = Array.isArray(n.tags) ? n.tags : (n.tags ? [String(n.tags)] : []);
+
+        wrap.innerHTML = `
+          <div class="notice-head">
+            <div class="notice-left">
+              <div class="sev ${sevClass(n.nivel)}"></div>
+              <div class="min-w-0">
+                <div class="notice-title">${escapeHtml(n.titulo)} ${String(n.nivel).toLowerCase().includes('crit') ? '<span class="crit-badge">CRÍTICO</span>' : ''}</div>
+                <div class="notice-meta">
+                  ${createdTxt ? `<span>🕒 ${escapeHtml(createdTxt)}</span>` : ''}
+                  <span>🆔 ${escapeHtml(n.id)}</span>
+                </div>
+                ${tagsArr.length ? `<div class="notice-tags mt-2">${tagsArr.map(t => `<span class="tag">${escapeHtml(String(t))}</span>`).join(' ')}</div>` : ''}
+              </div>
+            </div>
+            <div class="notice-actions">
+              <button type="button" data-act="read">Marcar lido</button>
+              <button type="button" data-act="dismiss">Dispensar</button>
+            </div>
+          </div>
+          <div class="notice-body">${escapeHtml(n.corpo || '')}</div>
+        `;
+
+        wrap.querySelector('[data-act="read"]').onclick = () => {
+          noticesReadSet.add(String(n.id));
+          persistNoticesReadSet();
+          renderNotices();
+          renderHero();
+        };
+        wrap.querySelector('[data-act="dismiss"]').onclick = () => {
+          // "dispensar" aqui é só esconder localmente (não remove do backend)
+          noticesReadSet.add(String(n.id));
+          persistNoticesReadSet();
+          renderNotices();
+          renderHero();
+        };
+
+        avisosWrap.appendChild(wrap);
+      });
+
+      document.querySelectorAll('.filter-btn[data-avisos-filter]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.avisosFilter === noticesFilter);
+      });
+    }
+
+    async function loadNoticesAndRender() {
+      try {
+        const r = await fetch(NOTICES_API(), { cache: 'no-store' });
+        const j = await r.json().catch(() => ([]));
+        const arr = Array.isArray(j) ? j : (Array.isArray(j?.avisos) ? j.avisos : []);
+        notices = arr.map(normalizeNotice);
+      } catch {
+        notices = [];
+      }
+      renderNotices();
+      renderHero();
+    }
+
+    if (btnAvisoRefresh) btnAvisoRefresh.onclick = loadNoticesAndRender;
+    document.querySelectorAll('.filter-btn[data-avisos-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        noticesFilter = btn.dataset.avisosFilter || 'all';
+        renderNotices();
+      });
+    });
+
+    /** ============== RELATÓRIO (fallback robusto) ============== */
+    function ensurePieCharts() {
+      const ctx1 = document.getElementById('pieStatus')?.getContext?.('2d');
+      const ctx2 = document.getElementById('pieMotivos')?.getContext?.('2d');
+      if (!ctx1 || !ctx2) return;
+
+      if (!pieChart) {
+        pieChart = new Chart(ctx1, { type: 'pie', data: { labels: [], datasets: [{ data: [] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+      }
+      if (!chartMotivos) {
+        chartMotivos = new Chart(ctx2, { type: 'pie', data: { labels: [], datasets: [{ data: [] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+      }
+    }
+
+    async function fetchFirstJson(urls) {
+      for (const url of urls) {
+        try {
+          const r = await fetch(url, { cache: 'no-store' });
+          if (r.status === 404) continue;
+          const j = await r.json().catch(() => null);
+          if (r.ok && j != null) return { ok: true, url, data: j };
+        } catch { }
+      }
+      return { ok: false, url: null, data: null };
+    }
+
+    function setRelPeriodoLabel() {
+      const a = relStart.value, b = relEnd.value;
+      if (!a || !b) { relPeriodo.textContent = '—'; return; }
+      relPeriodo.textContent = (a === b) ? `Dia ${a}` : `${a} → ${b}`;
+    }
+
+    async function refreshKPIs() {
+      try {
+        ensurePieCharts();
+        if (!agente?.codigo) return;
+
+        setRelPeriodoLabel();
+
+        const start = relStart?.value || fmtYMD(new Date());
+        const end = relEnd?.value || start;
+
+        const urls = [
+          `${API_BASE}/api/relatorio/agente?codigo=${encodeURIComponent(agente.codigo)}&inicio=${encodeURIComponent(start)}&fim=${encodeURIComponent(end)}`,
+          `${CONV_API}/api/relatorio/agente?codigo=${encodeURIComponent(agente.codigo)}&inicio=${encodeURIComponent(start)}&fim=${encodeURIComponent(end)}`,
+          `${API_BASE}/api/relatorio/individual?agente=${encodeURIComponent(agente.codigo)}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`,
+          `${CONV_API}/api/relatorio/individual?agente=${encodeURIComponent(agente.codigo)}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`
+        ];
+
+        const res = await fetchFirstJson(urls);
+
+        // fallback simples
+        let em = 0, conc = 0, tma = null, frt = null;
+        let statusDist = null, motivosDist = null, extrato = null;
+
+        if (res.ok) {
+          const j = res.data;
+
+          em = Number(j.em_atendimento ?? j.em ?? j.ativos ?? 0) || 0;
+          conc = Number(j.concluidos ?? j.conc ?? j.finalizados ?? 0) || 0;
+
+          const tmaMin = j.tma_min ?? j.tma ?? j.tma_media_min;
+          const frtSeg = j.frt_seg ?? j.frt ?? j.primeira_resposta_seg;
+
+          tma = (tmaMin == null) ? null : Number(tmaMin);
+          frt = (frtSeg == null) ? null : Number(frtSeg);
+
+          statusDist = j.status_dist || j.distribuicao_status || j.pie_status || null;
+          motivosDist = j.motivos_dist || j.distribuicao_motivos || j.pie_motivos || null;
+          extrato = j.extrato || j.motivos_por_dia || null;
+        }
+
+        kpiEm.textContent = String(em);
+        kpiConc.textContent = String(conc);
+        kpiTma.textContent = (tma == null || Number.isNaN(tma)) ? '—' : String(Math.round(tma));
+        kpiFRT.textContent = (frt == null || Number.isNaN(frt)) ? '—' : String(Math.round(frt));
+
+        // pie charts
+        if (pieChart) {
+          const map = statusDist && typeof statusDist === 'object' ? statusDist : { "Em atendimento": em, "Concluídos": conc };
+          pieChart.data.labels = Object.keys(map);
+          pieChart.data.datasets[0].data = Object.values(map).map(x => Number(x) || 0);
+          pieChart.update();
+        }
+        if (chartMotivos) {
+          const map = motivosDist && typeof motivosDist === 'object' ? motivosDist : {};
+          chartMotivos.data.labels = Object.keys(map);
+          chartMotivos.data.datasets[0].data = Object.values(map).map(x => Number(x) || 0);
+          chartMotivos.update();
+        }
+
+        // extrato
+        renderExtrato(extrato);
+
+      } catch (e) {
+        console.warn("Falha no relatório:", e);
+      }
+    }
+
+    function renderExtrato(data) {
+      if (!extratoWrap) return;
+
+      if (!data) {
+        extratoWrap.innerHTML = `<div class="p-3 text-sm muted">Sem dados.</div>`;
         return;
       }
-      rows.forEach((raw) => {
-        const r = normalizeExtratoRow(raw);
-        if (!r) return;
-        const dt = r.data ? new Date(r.data) : null;
-        const label = dt ? fmtDataBR.format(dt) : String(r.data || '—');
-        const total = r.atendimentos || 0;
+
+      // formatos aceitos: array de dias, ou objeto { "2025-12-01": {...} }
+      let days = [];
+      if (Array.isArray(data)) {
+        days = data;
+      } else if (typeof data === 'object') {
+        days = Object.entries(data).map(([dia, v]) => ({ dia, ...(typeof v === 'object' ? v : { total: v }) }));
+      }
+
+      if (!days.length) {
+        extratoWrap.innerHTML = `<div class="p-3 text-sm muted">Sem dados.</div>`;
+        return;
+      }
+
+      extratoWrap.innerHTML = '';
+      days.forEach((row, idx) => {
+        const dia = row.dia || row.data || row.day || `Dia ${idx + 1}`;
+        const motivos = row.motivos || row.itens || row.items || row;
+        const details = (typeof motivos === 'object' && !Array.isArray(motivos))
+          ? Object.entries(motivos).filter(([k]) => !['dia', 'data', 'day'].includes(k)).map(([k, v]) => `${k}: ${v}`).join('\n')
+          : '';
 
         const item = document.createElement('div');
         item.className = 'extrato-item';
-
-        const header = document.createElement('button');
-        header.type = 'button';
-        header.className = 'extrato-header';
-        header.setAttribute('aria-expanded', 'false');
-        header.innerHTML = `
-            <div class="flex items-center gap-3">
-              <span class="font-medium">${escapeHtml(label)}</span>
-              <span class="extrato-meta">Total: <strong style="color:var(--text)">${total}</strong></span>
-              <span class="extrato-meta">Negociações: <strong style="color:var(--text)">${r.negociacao}</strong> (${pct(r.negociacao, total)})</span>
+        item.innerHTML = `
+          <button class="extrato-header" type="button" aria-expanded="false">
+            <div class="min-w-0">
+              <div class="font-semibold">${escapeHtml(String(dia))}</div>
+              <div class="extrato-meta">${details ? escapeHtml(details.split('\n')[0]) : '—'}</div>
             </div>
-            <span class="extrato-chevron">▼</span>
-          `;
-
-        const content = document.createElement('div');
-        content.className = 'extrato-content hidden';
-        content.innerHTML = `
-            <div class="overflow-x-auto">
-              <table class="table-soft">
-                <thead>
-                  <tr>
-                    <th class="text-left">Motivo</th>
-                    <th class="text-right">Qtd</th>
-                    <th class="text-right">% do dia</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${[
-            ['Realizou negociação', r.negociacao],
-            ['Solicitou 2ª via de boleto', r.segunda_via],
-            ['Recusou a proposta', r.recusou],
-            ['Dúvidas gerais', r.duvidas],
-            ['Cliente ficou inativo', r.inativo]
-          ].map(([mot, v]) => `
-                    <tr>
-                      <td>${escapeHtml(mot)}</td>
-                      <td class="text-right">${v}</td>
-                      <td class="text-right">${pct(v, total)}</td>
-                    </tr>
-                  `).join('')}
-                  <tr class="font-medium">
-                    <td class="text-right">Total do dia</td>
-                    <td class="text-right">${total}</td>
-                    <td class="text-right">100%</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          `;
-
-        header.addEventListener('click', () => {
+            <div class="extrato-chevron">▾</div>
+          </button>
+          <div class="extrato-content hidden">
+            <pre class="codeblock">${escapeHtml(details || '—')}</pre>
+          </div>
+        `;
+        const btn = item.querySelector('.extrato-header');
+        const content = item.querySelector('.extrato-content');
+        btn.onclick = () => {
           const open = !content.classList.contains('hidden');
-          content.classList.toggle('hidden');
-          header.setAttribute('aria-expanded', String(!open));
-          header.querySelector('.extrato-chevron').textContent = open ? '▼' : '▲';
-        });
-
-        item.appendChild(header);
-        item.appendChild(content);
+          content.classList.toggle('hidden', open);
+          btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+        };
         extratoWrap.appendChild(item);
       });
     }
 
-    async function refreshExtrato() {
-      try {
-        const qs = buildExtratoQS();
-        const url = `${API_BASE}/api/dashboard/extrato_motivos_agentes${qs}`;
-        const r = await fetch(url);
-        const rows = r.ok ? await r.json() : [];
-        renderExtrato(rows);
-      } catch (e) {
-        extratoWrap.innerHTML = `<div class="p-4 text-sm text-red-600">Falha ao carregar extrato.</div>`;
-      }
-    }
-
-    if (btnExtratoRefresh) btnExtratoRefresh.addEventListener('click', refreshExtrato);
     if (btnRefreshRel) btnRefreshRel.onclick = refreshKPIs;
-    relStart?.addEventListener('change', () => { updatePeriodoLabel(); refreshKPIs(); });
-    relEnd?.addEventListener('change', () => { updatePeriodoLabel(); refreshKPIs(); });
-    bindQuickRanges();
+    if (btnExtratoRefresh) btnExtratoRefresh.onclick = refreshKPIs;
+    document.querySelectorAll('[data-qk]').forEach(b => {
+      b.addEventListener('click', () => {
+        const qk = b.dataset.qk;
+        const now = new Date();
+        const ymd = fmtYMD(now);
+        const minusDays = (n) => { const d = new Date(now); d.setDate(d.getDate() - n); return fmtYMD(d); };
 
-    /** ============== AVISOS (Painel) ============== */
-    function noticesKey() { return `cz:notices_read:${agente?.codigo || 'anon'}` }
-    function loadNoticesReadSet() { try { const raw = localStorage.getItem(noticesKey()); if (!raw) return new Set(); const arr = JSON.parse(raw); return new Set(Array.isArray(arr) ? arr : []); } catch { return new Set(); } }
-    function saveNoticesReadSet() { try { localStorage.setItem(noticesKey(), JSON.stringify(Array.from(noticesReadSet))); } catch { } }
+        if (qk === 'hoje') { relStart.value = ymd; relEnd.value = ymd; }
+        if (qk === 'ontem') { relStart.value = minusDays(1); relEnd.value = minusDays(1); }
+        if (qk === '7d') { relStart.value = minusDays(6); relEnd.value = ymd; }
+        if (qk === '30d') { relStart.value = minusDays(29); relEnd.value = ymd; }
 
-    function normalizeNotice(n) {
-      if (!n) return null;
-      return {
-        id: String(n.id ?? hashId(`${n.titulo}|${n.conteudo}|${n.created_at || ''}`)),
-        title: String(n.titulo || 'Aviso'),
-        body: String(n.conteudo || ''),
-        priority: Number(n.prioridade ?? 5),
-        created_at: n.created_at || null
-      };
-    }
-
-    function parseCssColorToRgb(c) {
-      if (!c) return [255, 255, 255];
-      c = c.trim();
-      if (c.startsWith('#')) {
-        const hex = c.replace('#', '');
-        const h = hex.length === 3 ? hex.split('').map(x => x + x).join('') : hex;
-        const r = parseInt(h.slice(0, 2), 16);
-        const g = parseInt(h.slice(2, 4), 16);
-        const b = parseInt(h.slice(4, 6), 16);
-        return [r, g, b];
-      }
-      const m = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-      if (m) return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
-      return [255, 255, 255];
-    }
-    function relLum([r, g, b]) {
-      const srgb = [r, g, b].map(v => v / 255).map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
-      return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
-    }
-    function isDarkTheme() {
-      const bg = getCss('--content-bg') || getCss('--bg') || '#ffffff';
-      return relLum(parseCssColorToRgb(bg)) < 0.45;
-    }
-
-    function priorityColors(pri) {
-      const t = Math.max(0, Math.min(10, Number(pri) || 0)) / 10;
-      const hue = 220 * t;
-      const dark = isDarkTheme();
-      const border = dark ? `hsl(${hue} 80% 60%)` : `hsl(${hue} 85% 45%)`;
-      const bg = dark
-        ? `color-mix(in srgb, hsl(${hue} 90% 45%) 18%, var(--content-bg))`
-        : `color-mix(in srgb, hsl(${hue} 90% 50%) 10%, var(--content-bg))`;
-      return { border, bg };
-    }
-
-    function sevClass(pri) {
-      const p = Number(pri) || 0;
-      if (p === 0) return 'sev-crit';
-      if (p <= 3) return 'sev-warn';
-      if (p <= 6) return 'sev-info';
-      return 'sev-success';
-    }
-
-    async function fetchNotices() {
-      try {
-        const url = NOTICES_API();
-        const r = await fetch(url);
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        const arr = await r.json();
-        return (Array.isArray(arr) ? arr : []).map(normalizeNotice).filter(Boolean);
-      } catch (err) {
-        console.warn('Avisos: fallback vazio', err);
-        return [];
-      }
-    }
-
-    function isNoticeRead(id) {
-      try { return noticesReadSet.has(String(id)); } catch { return false; }
-    }
-
-    function markNoticeRead(id) {
-      if (!id) return;
-      try { noticesReadSet.add(String(id)); saveNoticesReadSet(); } catch { }
-    }
-
-    function renderNotices(list) {
-      heroWrap.classList.add('hidden');
-
-      const sorted = [...(list || [])].sort((a, b) => {
-        if ((a.priority ?? 999) !== (b.priority ?? 999)) return (a.priority ?? 999) - (b.priority ?? 999);
-        const da = a.created_at ? +new Date(a.created_at) : 0;
-        const db = b.created_at ? +new Date(b.created_at) : 0;
-        return db - da;
-      });
-
-      const filtered = sorted.filter(n => {
-        if (noticesFilter === 'unread') return !isNoticeRead(n.id);
-        return true;
-      });
-
-      avisosWrap.innerHTML = "";
-      const unreadCount = sorted.filter(n => !isNoticeRead(n.id)).length;
-
-      avisosCountPill.textContent = `${filtered.length} / ${sorted.length}`;
-      avisosResumo.textContent = unreadCount ? `${unreadCount} não lido(s)` : `Tudo lido ✅`;
-
-      // mostra botão "Não lidos" quando fizer sentido
-      const btnUnread = document.querySelector('[data-avisos-filter="unread"]');
-      if (btnUnread) btnUnread.style.display = unreadCount ? 'inline-flex' : 'none';
-
-      // Hero: pega o primeiro crítico não lido, senão primeiro não lido
-      const hero = sorted.find(n => Number(n.priority) === 0 && !isNoticeRead(n.id)) || sorted.find(n => !isNoticeRead(n.id)) || null;
-      if (hero) {
-        heroWrap.classList.remove('hidden');
-        const when = hero.created_at ? `${fmtDataBR.format(new Date(hero.created_at))} ${fmtHoraBR.format(new Date(hero.created_at))}` : '—';
-        heroTitle.textContent = hero.title;
-        heroMeta.textContent = `Prioridade: ${Number.isFinite(hero.priority) ? hero.priority : '—'} • ${when}`;
-        heroBody.textContent = hero.body;
-
-        heroMarkRead.onclick = () => {
-          markNoticeRead(hero.id);
-          renderNotices(notices);
-        };
-        heroDismiss.onclick = () => {
-          // “dispensar” = marca como lido só pra não ficar reaparecendo
-          markNoticeRead(hero.id);
-          renderNotices(notices);
-        };
-      }
-
-      if (!filtered.length) {
-        avisosWrap.innerHTML = `<div class="notice p-4 text-sm muted">Nenhum aviso para exibir.</div>`;
-        return;
-      }
-
-      for (const n of filtered) {
-        const isCrit = Number(n.priority) === 0;
-        const read = isNoticeRead(n.id);
-
-        const el = document.createElement('div');
-        el.className = `notice${isCrit ? ' crit' : ''}${read ? '' : ' unread'}`;
-
-        const c = priorityColors(n.priority);
-        el.style.borderLeft = isCrit ? '8px solid #dc2626' : `6px solid ${c.border}`;
-        el.style.background = c.bg;
-
-        const when = n.created_at ? `${fmtDataBR.format(new Date(n.created_at))} ${fmtHoraBR.format(new Date(n.created_at))}` : '';
-        el.innerHTML = `
-          <div class="notice-head">
-            <div class="notice-left">
-              <div class="sev ${sevClass(n.priority)}"></div>
-              <div class="min-w-0">
-                <div class="notice-title">${isCrit ? '🚨 ' : ''}${escapeHtml(n.title)}${isCrit ? ' <span class="crit-badge">CRÍTICO</span>' : ''}</div>
-                <div class="notice-meta">
-                  <span>Prioridade: ${Number.isFinite(n.priority) ? n.priority : '—'}</span>
-                  ${when ? `<span>${when}</span>` : ``}
-                  ${read ? `<span class="pill" style="padding:2px 8px;font-size:11px;">lido</span>` : `<span class="pill" style="padding:2px 8px;font-size:11px;border-color:color-mix(in srgb, var(--primary) 40%, var(--border));background:color-mix(in srgb, var(--primary) 10%, var(--ghost-bg));">novo</span>`}
-                </div>
-              </div>
-            </div>
-            <div class="notice-actions">
-              ${read ? '' : `<button type="button" data-act="read" data-id="${escapeHtml(n.id)}">Marcar como lido</button>`}
-            </div>
-          </div>
-          <div class="notice-body">${escapeHtml(n.body)}</div>
-        `;
-
-        const btn = el.querySelector('button[data-act="read"]');
-        if (btn) {
-          btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-id');
-            markNoticeRead(id);
-            renderNotices(notices);
-          });
-        }
-
-        avisosWrap.appendChild(el);
-      }
-    }
-
-    async function loadNoticesAndRender() {
-      notices = await fetchNotices();
-      renderNotices(notices);
-    }
-
-    if (btnAvisoRefresh) btnAvisoRefresh.addEventListener('click', loadNoticesAndRender);
-
-    // filtros
-    document.querySelectorAll('[data-avisos-filter]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('[data-avisos-filter]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        noticesFilter = btn.getAttribute('data-avisos-filter') || 'all';
-        renderNotices(notices);
+        refreshKPIs();
       });
     });
 
-    /** ============== INIT (carregamento) ============== */
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Tema (para o look ficar ok mesmo antes de boot)
-      const t = loadTheme(); applyTheme(t || defaultTheme());
+    /** ============== PENDENTES NA FILA (Home) — 60s ============== */
+    const PENDENTES_REFRESH_MS = 60000;
+    let pendentesInterval = null;
+
+    function PENDENTES_API_CANDIDATES() {
+      const cart = agente?.carteira || '';
+      const params = cart ? `?carteira=${encodeURIComponent(cart)}` : '';
+      return [
+        `${FILA_API}/fila/pendentes${params}`,
+        `${FILA_API}/fila/pendentes_por_carteira${params}`
+      ];
+    }
+    function extractPendentesCount(payload) {
+      if (payload == null) return null;
+      if (typeof payload === 'number') return payload;
+      if (Array.isArray(payload)) {
+        const cart = agente?.carteira;
+        let row = null;
+        if (cart) {
+          row = payload.find(r =>
+            (r && (
+              (r.carteira && String(r.carteira) === String(cart)) ||
+              (r.fila && String(r.fila) === String(cart)) ||
+              (r.nome && String(r.nome) === String(cart))
+            )));
+        }
+        if (!row && payload.length === 1) row = payload[0];
+        if (row) {
+          for (const k of ['pendentes', 'qtd', 'qtde', 'total', 'count', 'qtd_pendentes']) {
+            const v = Number(row[k]);
+            if (!Number.isNaN(v)) return v;
+          }
+        }
+        const nums = payload.map(x => Number(x)).filter(v => !Number.isNaN(v));
+        if (nums.length) return nums.reduce((a, b) => a + b, 0);
+        return null;
+      }
+      if (typeof payload === 'object') {
+        for (const k of ['pendentes', 'qtd', 'qtde', 'total', 'count', 'qtd_pendentes']) {
+          const v = Number(payload[k]);
+          if (!Number.isNaN(v) && v >= 0) return v;
+        }
+        const cart = agente?.carteira;
+        if (cart && payload[cart] != null) {
+          const v = Number(payload[cart]);
+          if (!Number.isNaN(v)) return v;
+        }
+      }
+      return null;
+    }
+    async function fetchPendentesFilaOnce() {
+      if (!agente?.carteira) return null;
+      const els = [document.getElementById('homePendentesBadge')].filter(Boolean);
+      const setLoading = () => els.forEach(e => e && (e.textContent = '…'));
+      const setVal = (n) => els.forEach(e => e && (e.textContent = String(n)));
+      try {
+        setLoading();
+        const urls = PENDENTES_API_CANDIDATES();
+        for (const url of urls) {
+          try {
+            const r = await fetch(url);
+            if (!r.ok) continue;
+            const j = await r.json();
+            const n = extractPendentesCount(j);
+            if (n != null) { setVal(n); return n; }
+          } catch (_) { }
+        }
+        setVal('—');
+        return null;
+      } catch {
+        setVal('—');
+        return null;
+      }
+    }
+    function initPendentesFila() {
+      if (pendentesInterval) clearInterval(pendentesInterval);
+      fetchPendentesFilaOnce();
+      pendentesInterval = setInterval(fetchPendentesFilaOnce, PENDENTES_REFRESH_MS);
+    }
+
+    /** ============== BOOT ============== */
+    async function boot() {
+      const savedT = loadTheme();
+      applyTheme(savedT || defaultTheme());
+      try { syncThemeInputs(currentTheme); } catch (_) { }
+
+      agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
+      agente.origem = localStorage.getItem("agente_origem") || qsParam("origem") || 'web';
 
       updateAuthButton();
       toggleLoginLocks();
-      renderPermissaoEnvioIndividual();
 
-      if (isLogged()) {
-        showApp();
-        await boot();
-        switchTab('home');
-      } else {
-        hideApp();
-        // Mantém o mesmo comportamento da versão em produção: abre o modal imediatamente
-        // (sem isso, o app fica escondido e o usuário não consegue se identificar).
+      const today = new Date();
+      const ymd = fmtYMD(today);
+      if (relStart) relStart.value = ymd;
+      if (relEnd) relEnd.value = ymd;
+
+      noticesReadSet = loadNoticesReadSet();
+
+      if (!agente.codigo) {
+        elHomeNome.textContent = '—';
+        elHomeCart.textContent = '—';
+        setStatus(false);
+        relAgentePill.textContent = '—';
+        await loadNoticesAndRender();
         abrirModalLogin();
-        try { await loadNoticesAndRender(); } catch { }
+        return;
       }
+
+      try {
+        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(agente.codigo)}`);
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.erro || "Agente não encontrado");
+
+        agente.nome = j.agente?.nome || localStorage.getItem("agente_nome") || `Agente ${agente.codigo}`;
+        agente.carteira = j.agente?.carteira || localStorage.getItem("agente_carteira") || 'ConnectZap';
+        agente.origem_bd = j.agente?.origem_bd || localStorage.getItem("agente_origem_bd") || "";
+
+        localStorage.setItem("agente_nome", agente.nome);
+        localStorage.setItem("agente_carteira", agente.carteira);
+        localStorage.setItem("agente_origem_bd", agente.origem_bd || "");
+        localStorage.setItem("agente_permite_envio_individual", String(!!j.agente?.permite_envio_individual));
+
+        renderPermissaoEnvioIndividual();
+
+        elAgenteNome.textContent = `${agente.nome} (#${agente.codigo})`;
+        elAgenteCarteira.textContent = agente.carteira;
+        elHomeNome.textContent = agente.nome;
+        elHomeCart.textContent = agente.carteira;
+        relAgentePill.textContent = `${agente.nome} (#${agente.codigo})`;
+
+        loadUnread();
+        await verificarOnline();
+
+        try {
+          const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
+          const r2 = await fetch(url);
+          if (r2.ok) { tickets = await r2.json(); saveTickets(); }
+        } catch { }
+
+        renderTickets();
+        schedulePolls();
+        await refreshOrdemCarteira();
+        await refreshAtivosELimite();
+
+        await refreshKPIs();
+        await loadNoticesAndRender();
+        initPendentesFila();
+
+        wireComposer();
+        initEnvioIndividual();
+      } catch (e) {
+        elHomeAviso.classList.remove("hidden");
+        elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
+        await loadNoticesAndRender();
+      }
+    }
+
+    /** ============== LOGOUT ============== */
+    async function doLogout() {
+      try { btnLogout.textContent = 'Saindo…'; btnLogout.disabled = true; } catch { }
+
+      // tenta ficar offline, mas logout não depende disso
+      try {
+        if (agente?.codigo && agente?.carteira) {
+          await fetch(`${FILA_API}/fila/offline`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira })
+          }).catch(() => null);
+        }
+      } catch { }
+
+      // limpa timers/polls
+      try { if (pollingContatos) clearInterval(pollingContatos); } catch { }
+      try { if (pollingMensagens) clearInterval(pollingMensagens); } catch { }
+      try { if (pendentesInterval) clearInterval(pendentesInterval); } catch { }
+      try { if (msgsCtrl) msgsCtrl.abort(); } catch { }
+
+      // limpa estado
+      try {
+        // mantém tema
+        localStorage.removeItem("agente_codigo");
+        localStorage.removeItem("agente_nome");
+        localStorage.removeItem("agente_carteira");
+        localStorage.removeItem("agente_origem_bd");
+        localStorage.removeItem("agente_permite_envio_individual");
+      } catch { }
+
+      agente = { codigo: null, nome: null, carteira: null, origem: null, origem_bd: null, online: false };
+      tickets = [];
+      selecionado = null;
+      renderedKeys = new Set();
+      lastTimestampMs = null;
+      lastDayRendered = null;
+
+      // UI reset
+      setStatus(false);
+      elAgenteNome.textContent = '—';
+      elAgenteCarteira.textContent = '—';
+      elHomeNome.textContent = '—';
+      elHomeCart.textContent = '—';
+      relAgentePill.textContent = '—';
+      limparChat();
+      elListaTickets.innerHTML = '';
+      renderPermissaoEnvioIndividual();
+      toggleLoginLocks();
+
+      hideApp();
+      updateAuthButton();
+
+      try { btnLogout.disabled = false; btnLogout.textContent = 'Login'; } catch { }
+
+      if (LOGOUT_REDIRECT) { window.location.href = LOGOUT_REDIRECT; return; }
+      abrirModalLogin();
+    }
+
+    /** ============== START ============== */
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (isLogged()) showApp(); else hideApp();
+      await boot();
+      switchTab('home');
     });
   </script>
 </body>
