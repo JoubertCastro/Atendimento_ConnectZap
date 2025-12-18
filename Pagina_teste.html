@@ -646,161 +646,6 @@
       background: color-mix(in srgb, var(--primary) 10%, var(--ghost-bg));
       color: var(--text);
     }
-
-    /* ======= ENVIO INDIVIDUAL (CSS extra) ======= */
-    .label {
-      display: block;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-
-    .input {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: var(--input-bg);
-      color: var(--input-fg);
-      transition: box-shadow .15s ease, border-color .15s ease, background .15s ease;
-    }
-
-    .input:focus {
-      box-shadow: 0 0 0 3px var(--ring);
-      border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
-    }
-
-    .hint {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .codeblock {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: color-mix(in srgb, var(--ghost-bg) 70%, var(--content-bg));
-      padding: 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 12px;
-      color: var(--text);
-      overflow: auto;
-    }
-
-    .alert {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px;
-      background: var(--content-bg);
-    }
-
-    .alert-warn {
-      border-left: 6px solid #d97706;
-      background: color-mix(in srgb, #d97706 10%, var(--content-bg));
-    }
-
-    .btn-sm {
-      font-size: 12px;
-      padding: 6px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-    }
-
-    .btn-loading::after {
-      content: "";
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      width: 14px;
-      height: 14px;
-      margin-top: -7px;
-      border-radius: 9999px;
-      border: 2px solid rgba(255, 255, 255, .55);
-      border-top-color: rgba(255, 255, 255, 1);
-      animation: spin .8s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    /* ======= ENVIO INDIVIDUAL (RESULTADO LIMPO) ======= */
-    .pill-state {
-      border: 1px solid var(--border);
-      border-radius: 9999px;
-      padding: 4px 10px;
-      font-size: 12px;
-      font-weight: 800;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      user-select: none;
-      white-space: nowrap;
-    }
-
-    .pill-success {
-      border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-      background: color-mix(in srgb, var(--accent) 16%, var(--ghost-bg));
-      color: color-mix(in srgb, #065f46 90%, var(--text));
-    }
-
-    .pill-fail {
-      border-color: color-mix(in srgb, #dc2626 55%, var(--border));
-      background: color-mix(in srgb, #dc2626 14%, var(--ghost-bg));
-      color: color-mix(in srgb, #7f1d1d 90%, var(--text));
-    }
-
-    .pill-neutral {
-      border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
-      background: color-mix(in srgb, var(--primary) 12%, var(--ghost-bg));
-      color: color-mix(in srgb, #1e3a8a 90%, var(--text));
-    }
-
-    .result-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-
-    .result-meta {
-      font-size: 12px;
-      color: var(--muted);
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .result-meta code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 11px;
-      padding: 1px 6px;
-      border: 1px solid var(--border);
-      border-radius: 9999px;
-      background: color-mix(in srgb, var(--ghost-bg) 70%, var(--content-bg));
-      color: var(--text);
-    }
-  
-    /* Theme presets (Temas rápidos) */
-    .preset{
-      cursor:pointer;
-      border:1px solid var(--border);
-      background: color-mix(in srgb, var(--ghost-bg) 85%, var(--content-bg));
-      border-radius: 14px;
-      padding: 10px;
-      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-      user-select:none;
-    }
-    .preset:hover{
-      transform: translateY(-1px);
-      box-shadow: 0 10px 20px rgba(0,0,0,.08);
-      border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
-    }
-    .preset.active{
-      outline: 2px solid var(--primary);
-      outline-offset: 2px;
-    }
-
   </style>
 </head>
 
@@ -833,18 +678,6 @@
       <span class="sr-only">Conversas</span>
     </button>
 
-    <!-- Envio individual -->
-    <button id="tabBtnEnvioIndividual" class="btn-mini hidden transition-transform active:scale-95"
-      title="Envio individual" aria-label="Envio individual">
-      <!-- phone icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true">
-        <path d="M22 2 11 13" />
-        <path d="m22 2-7 20-4-9-9-4Z" />
-      </svg>
-      <span class="sr-only">Envio individual</span>
-    </button>
-
     <!-- Relatório -->
     <button id="tabBtnRelatorio" class="btn-mini transition-transform active:scale-95" title="Relatório"
       aria-label="Relatório" data-requires-login>
@@ -856,6 +689,17 @@
         <path d="M17 19.5v-8" />
       </svg>
       <span class="sr-only">Relatório</span>
+    </button>
+
+    <!-- Envio individual -->
+    <button id="tabBtnEnvioIndividual" class="btn-mini transition-transform active:scale-95 hidden" title="Envio individual"
+      aria-label="Envio individual" data-requires-login>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M22 2L11 13" />
+        <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+      </svg>
+      <span class="sr-only">Envio individual</span>
     </button>
   </nav>
 
@@ -1112,7 +956,7 @@
                   <div class="h-8 rounded" style="background:linear-gradient(90deg,#06b6d4,#10b981)"></div>
                   <div class="mt-1 text-xs">Ocean</div>
                 </div>
-                <div class="preset" data-preset="sunset">
+                <div class="preset" data-ppreset="sunset">
                   <div class="h-8 rounded" style="background:linear-gradient(90deg,#fb923c,#ef4444)"></div>
                   <div class="mt-1 text-xs">Sunset</div>
                 </div>
@@ -1193,120 +1037,6 @@
                 <button id="btnSaveTheme" class="btn btn-primary px-4 py-2">Salvar</button>
               </div>
             </section>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ENVIO INDIVIDUAL -->
-    <section id="tabEnvioIndividual" class="hidden flex-1 p-6">
-      <div class="max-w-6xl mx-auto space-y-4">
-        <div class="card p-6">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <h2 class="text-xl font-bold">Envio individual</h2>
-              <p class="muted mt-1">Envio rápido de template fixo <span class="font-semibold">ligacao_caiu</span></p>
-            </div>
-          </div>
-
-          <!-- AJUSTE DE LAYOUT: UX mais simples (status abaixo do botão) -->
-          <div class="mt-4">
-            <div class="card p-4">
-              <div class="flex items-center justify-between gap-2">
-                <h3 class="font-semibold">Dados do cliente</h3>
-</div>
-
-              <!-- Phone ID: obrigatório, mas escondido (sem edição) -->
-              <input id="envIndPhoneId" type="hidden" />
-
-              <div class="mt-3 grid md:grid-cols-2 gap-3">
-                
-                <!-- Busca de cadastro (substitui digitação manual) -->
-                <div class="md:col-span-2">
-                  <label class="label">Buscar cadastro</label>
-
-                  <div class="grid md:grid-cols-3 gap-2">
-                    <div>
-                      <label class="label text-xs muted">Base</label>
-                      <select id="envIndBase" class="input">
-                        <option value="bd5">BD5</option>
-                        <option value="bd4">BD4</option>
-                        <option value="bd7">BD7</option>
-                        <option value="bd8">BD8</option>
-                      </select>
-              <p id="envIndBaseHint" class="mt-1 text-xs text-slate-500 hidden">Definida pelo seu perfil.</p>
-                    </div>
-
-                    <div class="md:col-span-2">
-                      <label class="label text-xs muted">Código do cliente</label>
-                      <div class="flex flex-wrap gap-2">
-                        <input id="envIndCodigo" class="input flex-1" placeholder="Ex: 123456" />
-                        <button id="btnEnvIndBuscar" class="btn btn-ghost px-4 py-2" type="button">Buscar</button>
-                      </div>
-                      <p class="hint mt-1">Pesquise o cadastro usando o codigo interno e selecione o telefone que deseja usar.</p>
-                    </div>
-                  </div>
-
-                  <div id="envIndBuscaBox" class="mt-3 hidden">
-                    <div id="envIndBuscaMsg" class="text-sm muted">—</div>
-
-                    <div id="envIndResultadosWrap" class="mt-3 hidden">
-                      <div class="flex items-center flex-wrap gap-2">
-                        <span class="text-sm muted">Selecionado:</span>
-                        <span id="envIndTelefoneEscolhido" class="pill-state pill-neutral">Nenhum</span>
-                        <span id="envIndNomeEscolhido" class="text-sm muted"></span>
-                      </div>
-
-                      <div class="mt-2 overflow-x-auto">
-                        <table class="table-soft">
-                          <thead>
-                            <tr>
-                              <th class="w-40">Telefone</th>
-                              <th>Nome</th>
-                              <th class="w-28 text-right">Ação</th>
-                            </tr>
-                          </thead>
-                          <tbody id="envIndResultados"></tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="md:col-span-2">
-                  <div class="alert"
-                    style="border-left:6px solid var(--primary);background:color-mix(in srgb, var(--primary) 8%, var(--content-bg));">
-                    <div class="text-sm font-semibold">Prévia do que será enviado</div>
-                    <div class="text-sm mt-1" id="envIndPreview">
-                      Olá, <span class="font-semibold">cliente</span>! Perdemos a sua ligação. Se estiver disponível,
-                      responda aqui para continuar.
-                    </div>
-                  </div>
-                </div>
-
-                <div class="md:col-span-2 flex flex-wrap gap-2 pt-1">
-                  <button id="btnEnvIndEnviar" class="btn btn-primary px-4 py-2" type="button">Enviar mensagem</button>
-                  <button id="btnEnvIndLimpar" class="btn btn-ghost px-4 py-2" type="button">Limpar</button>
-                </div>
-
-                <!-- Status do envio (somente Sucesso/Falha/Enviando) -->
-                <div class="md:col-span-2">
-                  <div id="envIndStatusWrap" class="hidden mt-2">
-                    <div class="flex items-center gap-2">
-                      <span class="text-sm muted">Status:</span>
-                      <span id="envIndStatusPill" class="pill-state pill-neutral">—</span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-
-          <div id="envIndSemPermissao" class="hidden mt-4 alert alert-warn">
-            <div class="font-semibold">Sem permissão</div>
-            <div class="muted">Seu usuário não possui <code>permite_envio_individual</code> habilitado.</div>
           </div>
         </div>
       </div>
@@ -1394,6 +1124,43 @@
       </div>
     </section>
 
+    <section id="tabEnvioIndividual" class="flex-1 p-6 hidden">
+      <div class="max-w-4xl mx-auto">
+        <div class="card p-6">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h2 class="text-xl font-bold">Envio individual — Ligação caiu</h2>
+              <p class="muted mt-1">Envia o template fixo e, se o cliente não estiver em atendimento, puxa a conversa para a sua fila.</p>
+            </div>
+            <button id="btnEnvIndIrParaConversa" class="btn btn-ghost px-3 py-2 text-sm">Ir para Conversas</button>
+          </div>
+
+          <div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+              <label class="text-xs muted">Telefone (55DDDXXXXXXXX)</label>
+              <input id="envIndTelefone" class="input mt-1 w-full" placeholder="Ex: 5561999999999" autocomplete="off" />
+              <div id="envIndHint" class="text-xs muted mt-1">Se você estiver com uma conversa aberta, o telefone é preenchido automaticamente.</div>
+            </div>
+            <div>
+              <label class="text-xs muted">Phone ID</label>
+              <select id="envIndPhoneId" class="input mt-1 w-full"></select>
+              <div class="text-xs muted mt-1">Por padrão usamos o Phone ID da conversa (quando existir).</div>
+            </div>
+          </div>
+
+          <div class="mt-4 flex items-center gap-2">
+            <button id="btnEnvIndEnviar" class="btn btn-primary px-4 py-2 text-white disabled:opacity-50">Enviar template</button>
+            <span id="envIndStatus" class="text-sm muted"></span>
+          </div>
+
+          <details class="mt-4">
+            <summary class="text-sm link cursor-pointer">Ver detalhes do resultado</summary>
+            <pre id="envIndResult" class="mt-2 p-3 text-xs overflow-auto" style="max-height: 260px; border:1px solid var(--border); border-radius: 12px; background: var(--ghost-bg);"></pre>
+          </details>
+        </div>
+      </div>
+    </section>
+
   </div>
 
   <!-- MODAL DE LOGIN -->
@@ -1439,13 +1206,12 @@
     const FILA_API = (window.FILA_API || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/, '');
     const CONV_API = (window.CONV_API || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
     const API_BASE = (window.API_BASE || "https://dashboard-production-4c05.up.railway.app").replace(/\/+$/, '');
-    const ESTRAT_API = (window.ESTRAT_API || "https://consultasic-production.up.railway.app").replace(/\/+$/, '');
     const LOGOUT_REDIRECT = window.LOGOUT_REDIRECT || null;
     const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
 
     /** ============== CARTEIRAS / Phone IDs ============== */
-    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "802977069563598": "Recovery PF", "938298879357445": "Recovery Preventivo", "897647883433681": "Recovery Manutenção", "821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
-        const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
+    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "864779140046932": "Recovery PF", "802977069563598": "Recovery PF", "864779140046932,802977069563598": "Recovery PF", "873637622491517": "Mercado Pago Cobrança", "821562937700669": "Mercado Pago Cobrança", "873637622491517,821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
+    const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
 
     /** ============== ESTADO ============== */
     let agente = { codigo: null, nome: null, carteira: null, origem: null, online: false };
@@ -1495,7 +1261,15 @@
       const days = Math.floor(h / 24); return `${days}d atrás`;
     }
 
+    function betweenNow(starts_at, ends_at) {
+      const now = new Date();
+      const okStart = !starts_at || new Date(starts_at) <= now;
+      const okEnd = !ends_at || new Date(ends_at) >= now;
+      return okStart && okEnd;
+    }
+
     function hashId(s) {
+      // djb2
       let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h) + s.charCodeAt(i);
       return String(h >>> 0);
     }
@@ -1555,37 +1329,11 @@
     const tabBtnHome = document.getElementById('tabBtnHome');
     const tabBtnConversas = document.getElementById('tabBtnConversas');
     const tabBtnRelatorio = document.getElementById('tabBtnRelatorio');
-
     const tabBtnEnvioIndividual = document.getElementById('tabBtnEnvioIndividual');
-    const tabEnvioIndividual = document.getElementById('tabEnvioIndividual');
-
-    function _bool(v) {
-      if (typeof v === 'boolean') return v;
-      if (v === null || v === undefined) return false;
-      const s = String(v).trim().toLowerCase();
-      return s === '1' || s === 'true' || s === 'sim' || s === 'yes';
-    }
-
-    function hasPermEnvioIndividual() {
-      return _bool(localStorage.getItem('agente_permite_envio_individual'));
-    }
-
-    function renderPermissaoEnvioIndividual() {
-      const ok = hasPermEnvioIndividual();
-      if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.classList.toggle('hidden', !ok);
-      const warn = document.getElementById('envIndSemPermissao');
-      if (warn) warn.classList.toggle('hidden', ok);
-      if (!ok && tabEnvioIndividual && !tabEnvioIndividual.classList.contains('hidden')) {
-        switchTab('home');
-      }
-      const btnSend = document.getElementById('btnEnvIndEnviar');
-      if (btnSend) btnSend.disabled = !ok;
-    }
-
     const tabHome = document.getElementById('tabHome');
     const tabConversas = document.getElementById('tabConversas');
     const tabRelatorio = document.getElementById('tabRelatorio');
-
+    const tabEnvioIndividual = document.getElementById('tabEnvioIndividual');
     document.getElementById('goToConversas1').onclick = () => switchTab('conversas');
     document.getElementById('goToRelatorio1').onclick = () => switchTab('relatorio');
 
@@ -1611,55 +1359,13 @@
     btnConcluir.onclick = () => { menuConcluir.classList.contains("hidden") ? abrirMenuConcluir() : fecharMenuConcluir() };
     renderMenuConcluir();
 
-/** ============== LIBERAR / CONCLUIR ============== */
-    btnLiberar.onclick = async () => {
-      if (!selecionado) return;
-      try {
-        const r = await fetch(`${CONV_API}/api/tickets/liberar`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id }) });
-        const j = await r.json();
-        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível liberar."); return; }
-        const k = keyFrom(selecionado.remetente, selecionado.phone_id); delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
-        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id))); saveTickets(); renderTickets(); limparChat();
-        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
-
-        // Segurança extra: ao liberar, removemos a seleção e interrompemos o polling de mensagens
-        selecionado = null;
-        if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
-        if (typeof schedulePolls === 'function') schedulePolls();
-
-        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
-      } catch (e) { alert("Erro ao liberar.") }
-    };
-
-    async function concluirAtendimento(motivo) {
-      if (!selecionado) return;
-      try {
-        btnConcluir.disabled = true;
-        const r = await fetch(`${CONV_API}/api/tickets/concluir`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id, motivo }) });
-        const j = await r.json();
-        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível concluir."); btnConcluir.disabled = false; return; }
-        const k = keyFrom(selecionado.remetente, selecionado.phone_id); delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
-        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id))); saveTickets(); renderTickets(); limparChat();
-        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
-        selecionado = null;
-        if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
-        if (typeof schedulePolls === 'function') schedulePolls();
-
-        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
-      } catch (e) { alert("Erro ao concluir."); btnConcluir.disabled = false; }
-    }
-
-
-
     /** ============== THEME ============== */
     function themeKey() { return 'cz:theme:v2' }
     function defaultTheme() {
       return { primary: "#3b82f6", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6", outG1: "#dcf8c6", outG2: "#b8f0a4", outFg: "#111827", inBg: "#ffffff", inBorder: "#e2e8f0", inFg: "#0f172a", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", ticketSelectedBg: "#f0f9ff", hover: "#f1f5f9", hoverStrong: "#e2e8f0", inputBg: "#ffffff", inputFg: "#0f172a", scrollbar: "#cbd5e1", replyBg: "rgba(0,0,0,.06)", replyBorder: "rgba(0,0,0,.08)", replyFg: "#334155" }
     }
-    let currentTheme = defaultTheme();
     function applyTheme(t) {
       const r = document.documentElement.style; const base = defaultTheme(); const x = { ...base, ...t };
-      currentTheme = x;
       r.setProperty('--ticket-selected-bg', x.ticketSelectedBg);
       r.setProperty('--sidebar-bg', x.sidebar); r.setProperty('--content-bg', x.contentBg);
       r.setProperty('--bg', x.bg); r.setProperty('--text', x.text);
@@ -1674,6 +1380,14 @@
       r.setProperty('--input-bg', x.inputBg || x.contentBg); r.setProperty('--input-fg', x.inputFg || x.text);
       r.setProperty('--reply-bg', x.replyBg || 'rgba(0,0,0,.06)'); r.setProperty('--reply-border', x.replyBorder || 'rgba(0,0,0,.08)'); r.setProperty('--reply-fg', x.replyFg || '#334155');
 
+      // Sincroniza com os inputs do drawer
+      inputs.tPrimary.value = x.primary; inputs.tAccent.value = x.accent; inputs.tSidebar.value = x.sidebar;
+      inputs.tContentBg.value = x.contentBg; inputs.tBg.value = x.bg; inputs.tText.value = x.text;
+      inputs.tOutG1.value = x.outG1; inputs.tOutG2.value = x.outG2; inputs.tInBg.value = x.inBg; inputs.tInBorder.value = x.inBorder;
+      inputs.tRadius.value = x.bubbleRadius; inputs.tBgOp.value = x.wallOp; inputs.tFontSize.value = x.fontSize;
+      inputs.tBtnRadius.value = x.btnRadius; inputs.tCardRadius.value = x.cardRadius;
+
+      // Atualiza gráficos
       setTimeout(() => refreshKPIs(), 0);
     }
     function readThemeFromInputs() {
@@ -1719,122 +1433,18 @@
       tBtnRadius: document.getElementById('tBtnRadius'),
       tCardRadius: document.getElementById('tCardRadius')
     };
-        function syncThemeInputs(t) {
-      if (!t) return;
-      try {
-        if (inputs.tPrimary && t.primary) inputs.tPrimary.value = t.primary;
-        if (inputs.tAccent && t.accent) inputs.tAccent.value = t.accent;
-        if (inputs.tSidebar && t.sidebar) inputs.tSidebar.value = t.sidebar;
-        if (inputs.tContentBg && t.contentBg) inputs.tContentBg.value = t.contentBg;
-        if (inputs.tBg && t.bg) inputs.tBg.value = t.bg;
-        if (inputs.tText && t.text) inputs.tText.value = t.text;
-        if (inputs.tOutG1 && t.outG1) inputs.tOutG1.value = t.outG1;
-        if (inputs.tOutG2 && t.outG2) inputs.tOutG2.value = t.outG2;
-        if (inputs.tInBg && t.inBg) inputs.tInBg.value = t.inBg;
-        if (inputs.tInBorder && t.inBorder) inputs.tInBorder.value = t.inBorder;
-
-        if (inputs.tRadius && (t.bubbleRadius != null)) inputs.tRadius.value = String(t.bubbleRadius);
-        if (inputs.tBgOp && (t.wallOp != null)) inputs.tBgOp.value = String(t.wallOp);
-        if (inputs.tFontSize && (t.fontSize != null)) inputs.tFontSize.value = String(t.fontSize);
-        if (inputs.tBtnRadius && (t.btnRadius != null)) inputs.tBtnRadius.value = String(t.btnRadius);
-        if (inputs.tCardRadius && (t.cardRadius != null)) inputs.tCardRadius.value = String(t.cardRadius);
-      } catch (_) { }
-    }
-
-    const THEME_PRESETS = {
-      corporate: {
-        primary: "#2563eb", accent: "#0ea5e9",
-        outG1: "#0ea5e9", outG2: "#2563eb",
-        bg: "#f3f4f6", sidebar: "#ffffff", contentBg: "#ffffff",
-        text: "#0f172a"
-      },
-      ocean: {
-        primary: "#06b6d4", accent: "#10b981",
-        outG1: "#06b6d4", outG2: "#10b981",
-        bg: "#f1f5f9", sidebar: "#ffffff", contentBg: "#ffffff",
-        text: "#0f172a"
-      },
-      sunset: {
-        primary: "#ef4444", accent: "#fb923c",
-        outG1: "#fb923c", outG2: "#ef4444",
-        bg: "#fff7ed", sidebar: "#ffffff", contentBg: "#ffffff",
-        text: "#0f172a"
-      },
-      dark: {
-        primary: "#60a5fa", accent: "#22c55e",
-        sidebar: "#0b1220", contentBg: "#0f172a", bg: "#070b14",
-        text: "#e5e7eb", muted: "#94a3b8", border: "rgba(255,255,255,.10)",
-        link: "#60a5fa", ghostBg: "rgba(255,255,255,.06)",
-        outG1: "#111827", outG2: "#374151",
-        outFg: "#e5e7eb",
-        inBg: "#0f172a", inBorder: "rgba(255,255,255,.12)", inFg: "#e5e7eb",
-        ticketSelectedBg: "rgba(96,165,250,.18)"
-      },
-      minimal: {
-        primary: "#0f172a", accent: "#334155",
-        outG1: "#e2e8f0", outG2: "#f8fafc",
-        bg: "#f8fafc", sidebar: "#ffffff", contentBg: "#ffffff",
-        text: "#0f172a"
-      },
-      funky: {
-        primary: "#a78bfa", accent: "#ec4899",
-        outG1: "#a78bfa", outG2: "#ec4899",
-        bg: "#faf5ff", sidebar: "#ffffff", contentBg: "#ffffff",
-        text: "#0f172a"
-      }
-    };
-
-    function setActivePreset(name) {
-      document.querySelectorAll('.preset[data-preset]').forEach(el => {
-        el.classList.toggle('active', (el.dataset.preset || '') === String(name || ''));
-      });
-    }
-
-    function applyPreset(name) {
-      const p = THEME_PRESETS[name];
-      if (!p) return;
-      const t = { ...defaultTheme(), ...p };
-      applyTheme(t);
-      saveTheme(t);
-      syncThemeInputs(currentTheme);
-      setActivePreset(name);
-    }
-
-    document.querySelectorAll('.preset[data-preset]').forEach(el => {
-      el.setAttribute('role', 'button');
-      el.setAttribute('tabindex', '0');
-      el.addEventListener('click', () => applyPreset(el.dataset.preset));
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyPreset(el.dataset.preset); }
-      });
-    });
-
-    if (btnTheme) btnTheme.addEventListener('click', () => { syncThemeInputs(currentTheme); themeDrawer.classList.add('open'); });
+    if (btnTheme) btnTheme.addEventListener('click', () => themeDrawer.classList.add('open'));
     if (btnThemeClose) btnThemeClose.addEventListener('click', () => themeDrawer.classList.remove('open'));
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && themeDrawer.classList.contains('open')) themeDrawer.classList.remove('open') });
     [inputs.tPrimary, inputs.tAccent, inputs.tSidebar, inputs.tContentBg, inputs.tBg, inputs.tText, inputs.tOutG1, inputs.tOutG2, inputs.tInBg, inputs?.tInBorder, inputs.tRadius, inputs.tBgOp, inputs.tFontSize, inputs.tBtnRadius, inputs.tCardRadius]
       .filter(Boolean).forEach(i => i.addEventListener('input', () => applyTheme(readThemeFromInputs())));
     if (btnSaveTheme) btnSaveTheme.addEventListener('click', () => { const t = readThemeFromInputs(); saveTheme(t); themeDrawer.classList.remove('open') });
-    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t); syncThemeInputs(currentTheme); setActivePreset(''); });
+    if (btnReset) btnReset.addEventListener('click', () => { const t = defaultTheme(); applyTheme(t); saveTheme(t) });
     if (btnRandom) btnRandom.addEventListener('click', () => {
       const rand = () => ('#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0'));
       const b1 = rand(), b2 = rand();
-      const t = {
-        ...defaultTheme(),
-        primary: rand(),
-        accent: rand(),
-        outG1: b1,
-        outG2: b2,
-        bg: '#f8fafc',
-        bubbleRadius: 16 + Math.floor(Math.random() * 18),
-        wallOp: Number((Math.random() * 0.25).toFixed(2)),
-        btnRadius: 10 + Math.floor(Math.random() * 8),
-        cardRadius: 14 + Math.floor(Math.random() * 8)
-      };
-      applyTheme(t);
-      saveTheme(t);
-      syncThemeInputs(currentTheme);
-      setActivePreset('');
+      const t = { ...defaultTheme(), primary: rand(), accent: rand(), outG1: b1, outG2: b2, bg: '#f8fafc', wallOp: (Math.random() > .5 ? .08 : 0), bubbleRadius: 14 + Math.floor(Math.random() * 12), btnRadius: 8 + Math.floor(Math.random() * 6), cardRadius: 14 + Math.floor(Math.random() * 8) };
+      applyTheme(t)
     });
 
     /** ============== VISIBILIDADE DO APP (novo) ============== */
@@ -1860,12 +1470,10 @@
         localStorage.setItem("agente_codigo", String(codigo));
         localStorage.setItem("agente_nome", j.agente?.nome || `Agente ${codigo}`);
         localStorage.setItem("agente_carteira", j.agente?.carteira || 'ConnectZap');
-        localStorage.setItem("agente_origem_bd", j.agente?.origem_bd || "");
-        localStorage.setItem("agente_permite_envio_individual", String(!!j.agente?.permite_envio_individual));
-        renderPermissaoEnvioIndividual();
+        localStorage.setItem("agente_perm_envio_individual", j.agente?.permite_envio_individual ? "1" : "0");
         fecharModalLogin();
-        showApp();
-        await boot();
+        showApp();                       
+        await boot();                    
         switchTab('home');
         updateAuthButton();
       } catch (e) { erro.textContent = e?.message || 'Falha ao validar código.'; erro.classList.remove('hidden') }
@@ -1912,11 +1520,11 @@
         let row = null;
         if (cart) {
           row = payload.find(r =>
-            (r && (
-              (r.carteira && String(r.carteira) === String(cart)) ||
-              (r.fila && String(r.fila) === String(cart)) ||
-              (r.nome && String(r.nome) === String(cart))
-            )));
+          (r && (
+            (r.carteira && String(r.carteira) === String(cart)) ||
+            (r.fila && String(r.fila) === String(cart)) ||
+            (r.nome && String(r.nome) === String(cart))
+          )));
         }
         if (!row && payload.length === 1) row = payload[0];
         if (row) {
@@ -1973,7 +1581,6 @@
     function getCss(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() }
     async function boot() {
       const savedT = loadTheme(); applyTheme(savedT || defaultTheme());
-      try { syncThemeInputs(currentTheme); } catch (_) { }
 
       // agente
       agente.codigo = localStorage.getItem("agente_codigo") || qsParam("codigo") || null;
@@ -1981,6 +1588,7 @@
 
       updateAuthButton();
       toggleLoginLocks();
+      try { renderPermissaoEnvioIndividual(); } catch (_) { }
 
       // datas padrão (hoje)
       const today = new Date(); const ymd = fmtYMD(today);
@@ -1992,7 +1600,6 @@
         elHomeNome.textContent = '—'; elHomeCart.textContent = '—'; setStatus(false);
         relAgentePill.textContent = '—';
         await loadNoticesAndRender();
-        abrirModalLogin();
         return;
       }
 
@@ -2003,9 +1610,6 @@
         agente.carteira = j.agente?.carteira || localStorage.getItem("agente_carteira") || 'ConnectZap';
         localStorage.setItem("agente_nome", agente.nome);
         localStorage.setItem("agente_carteira", agente.carteira);
-        localStorage.setItem("agente_origem_bd", j.agente?.origem_bd || "");
-        localStorage.setItem("agente_permite_envio_individual", String(!!j.agente?.permite_envio_individual));
-        renderPermissaoEnvioIndividual();
 
         elAgenteNome.textContent = `${agente.nome} (#${agente.codigo})`;
         elAgenteCarteira.textContent = agente.carteira;
@@ -2037,9 +1641,6 @@
         initPendentesFila();
 
         wireComposer();
-
-        // ENVIO INDIVIDUAL: bind
-        initEnvioIndividual();
       } catch (e) {
         elHomeAviso.classList.remove("hidden");
         elHomeAviso.textContent = "Falha ao carregar agente. Verifique seu código ou API.";
@@ -2051,6 +1652,7 @@
     function updateAuthButton() {
       const logged = isLogged();
       if (!btnLogout) return;
+      // Reset classes base
       btnLogout.classList.remove('btn-neutral', 'btn-primary', 'btn-danger');
       if (logged) {
         btnLogout.textContent = "Logout";
@@ -2070,621 +1672,215 @@
         if (!btn) return;
         if (locked) btn.classList.add('locked'); else btn.classList.remove('locked');
         btn.setAttribute('aria-disabled', locked ? 'true' : 'false');
-        btn.title = locked
-          ? 'Faça login para acessar'
-          : (btn === tabBtnConversas ? 'Conversas' : (btn === tabBtnRelatorio ? 'Relatório' : 'Envio individual'));
+        btn.title = locked ? 'Faça login para acessar' : (btn === tabBtnConversas ? 'Conversas' : (btn === tabBtnRelatorio ? 'Relatório' : 'Envio individual'));
       });
     }
 
     /** ============== TABS ============== */
-    function bindTabsOnce() {
-      if (tabBtnHome) tabBtnHome.onclick = () => switchTab('home');
-
-      if (tabBtnConversas) tabBtnConversas.onclick = () => {
-        if (!isLogged()) { abrirModalLogin(); return; }
-        switchTab('conversas');
-      };
-
-      if (tabBtnRelatorio) tabBtnRelatorio.onclick = () => {
-        if (!isLogged()) { abrirModalLogin(); return; }
-        switchTab('relatorio');
-      };
-
-      if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.onclick = () => {
-        if (!isLogged()) { abrirModalLogin(); return; }
-        switchTab('envio_individual');
-      };
-    }
-    bindTabsOnce();
-
     function switchTab(tab) {
-      if (['conversas', 'relatorio', 'envio_individual'].includes(tab) && !isLogged()) {
+      // Gate de login
+      if ((tab === 'conversas' || tab === 'relatorio' || tab === 'envio_individual') && !isLogged()) {
         abrirModalLogin();
+        showModalFeedback('Faça login para acessar Conversas e Relatório.', 'Acesso restrito', 1400);
         return;
       }
-
-      if (tab === 'envio_individual' && !hasPermEnvioIndividual()) {
-        const warn = document.getElementById('envIndSemPermissao');
-        if (warn) warn.classList.remove('hidden');
-        if (typeof showModalFeedback === 'function') {
-          showModalFeedback('Seu usuário não possui permissão para Envio individual.', 'Sem permissão', 1400);
-        }
-        tab = 'home';
-      }
-
-      [tabHome, tabConversas, tabRelatorio, tabEnvioIndividual]
-        .filter(Boolean)
-        .forEach(el => el.classList.add('hidden'));
-
-      [tabBtnHome, tabBtnConversas, tabBtnRelatorio, tabBtnEnvioIndividual]
-        .filter(Boolean)
-        .forEach(btn => btn.classList.remove('active'));
-
-      if (tab === 'home') {
-        tabHome.classList.remove('hidden');
-        tabBtnHome.classList.add('active');
-      } else if (tab === 'conversas') {
-        tabConversas.classList.remove('hidden');
-        tabBtnConversas.classList.add('active');
-      } else if (tab === 'relatorio') {
-        tabRelatorio.classList.remove('hidden');
-        tabBtnRelatorio.classList.add('active');
-      } else if (tab === 'envio_individual') {
-        tabEnvioIndividual.classList.remove('hidden');
-        tabBtnEnvioIndividual.classList.add('active');
-        envIndSyncFromConversa();
-      } else {
-        tabHome.classList.remove('hidden');
-        tabBtnHome.classList.add('active');
-      }
-    }
-
-    /** ============== ENVIO INDIVIDUAL (ligacao_caiu) — AJUSTE 1 ============== */
-    let __envIndBound = false;
-    let envIndContatoSelecionado = null;
-    let envIndBuscaRows = [];
-
-
-    function normalizeMsisdnBR(v) {
-      if (!v) return "";
-      let digits = String(v).replace(/\D+/g, "");
-      if (!digits) return "";
-      if (!digits.startsWith("55")) digits = "55" + digits;
-      return digits;
-    }
-
-    function firstNameOf(n) {
-      const s = String(n || '').trim();
-      if (!s) return '';
-      return s.split(/\s+/)[0] || s;
-    }
-
-    function pickDefaultPhoneId() {
-      const ids = (carteiraToPhoneIds[agente?.carteira] || []).map(String);
-      return ids.length ? ids[0] : '';
-    }
-
-    function envIndSetPreview() {
-      const nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome)
-        || firstNameOf(selecionado?.nome_exibicao)
-        || 'cliente';
-
-      const el = document.getElementById('envIndPreview');
-      if (!el) return;
-      el.innerHTML = `Olá, <span class="font-semibold">${escapeHtml(nome)}</span>! Perdemos a sua ligação. Se estiver disponível, responda aqui para continuar.`;
-    }
-
-    function envIndUpdatePhoneIdLabel(phone_id) {
-      const el = document.getElementById('envIndPhoneIdLabel');
-      const hint = document.getElementById('envIndPhoneIdHint');
-      if (!el) return;
-      const pid = String(phone_id || '').trim();
-      if (!pid) {
-        el.textContent = '—';
-        if (hint) hint.textContent = 'não identificado';
-        return;
-      }
-      const nome = phoneIdMap[pid] || '';
-      el.textContent = nome ? `${pid} (${nome})` : pid;
-      if (hint) hint.textContent = 'preenchido automaticamente';
-    }
-
-    // Resultado “mínimo”: somente Sucesso/Falha/Enviando (sem detalhes na tela)
-    function envIndSetResultCompact(payload) {
-      const wrap = document.getElementById('envIndStatusWrap');
-      const pill = document.getElementById('envIndStatusPill');
-
-      const obj = payload || {};
-      const statusKind = obj.__kind || 'neutral'; // 'success' | 'fail' | 'neutral'
-      const statusText = obj.__statusText || '—';
-
-      if (pill) {
-        pill.classList.remove('pill-success', 'pill-fail', 'pill-neutral');
-        pill.classList.add(
-          statusKind === 'success' ? 'pill-success' :
-          statusKind === 'fail' ? 'pill-fail' : 'pill-neutral'
-        );
-        pill.textContent = statusText;
-      }
-
-      if (wrap) {
-        const shouldShow = !(statusKind === 'neutral' && (statusText === '—' || !statusText));
-        wrap.classList.toggle('hidden', !shouldShow);
-      }
-    }
-
-    function envIndResetResultUI() {
-      // esconde o status (mostra apenas após Sucesso/Falha)
-      envIndSetResultCompact({ __kind: 'neutral', __statusText: '—' });
-    }
-
-
-    // ===== Busca de cadastro (SIC) — Envio Individual =====
-    function formatTelefoneBR(msisdn) {
-      const d = String(msisdn || '').replace(/\D+/g, '');
-      let x = d;
-      if (x.startsWith('55')) x = x.slice(2);
-      if (x.length < 10) return msisdn || '';
-      const dd = x.slice(0, 2);
-      const num = x.slice(2);
-      if (num.length === 9) return `(${dd}) ${num.slice(0, 5)}-${num.slice(5)}`;
-      if (num.length === 8) return `(${dd}) ${num.slice(0, 4)}-${num.slice(4)}`;
-      return `(${dd}) ${num}`;
-    }
-
-    function envIndUpdateChosenUI() {
-      const pill = document.getElementById('envIndTelefoneEscolhido');
-      const nomeEl = document.getElementById('envIndNomeEscolhido');
-
-      const tel = envIndContatoSelecionado?.to_msisdn ? formatTelefoneBR(envIndContatoSelecionado.to_msisdn) : '';
-      const nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome);
-
-      if (pill) {
-        pill.classList.remove('pill-success', 'pill-fail', 'pill-neutral');
-        pill.classList.add(tel ? 'pill-success' : 'pill-neutral');
-        pill.textContent = tel || 'Nenhum';
-      }
-      if (nomeEl) {
-        nomeEl.textContent = nome ? `• ${nome}` : '';
-      }
-    }
-
-    function envIndResetBuscaUI() {
-      envIndBuscaRows = [];
-      envIndContatoSelecionado = null;
-
-      const box = document.getElementById('envIndBuscaBox');
-      const msg = document.getElementById('envIndBuscaMsg');
-      const wrap = document.getElementById('envIndResultadosWrap');
-      const tbody = document.getElementById('envIndResultados');
-
-      if (box) box.classList.add('hidden');
-      if (msg) msg.textContent = '—';
-      if (wrap) wrap.classList.add('hidden');
-      if (tbody) tbody.innerHTML = '';
-      envIndUpdateChosenUI();
-      envIndSetPreview();
-    }
-
-    function envIndRenderResultados(rows) {
-      const tbody = document.getElementById('envIndResultados');
-      const wrap = document.getElementById('envIndResultadosWrap');
-      if (!tbody || !wrap) return;
-
-      tbody.innerHTML = '';
-      rows.forEach((r, i) => {
-        const tel = normalizeMsisdnBR(r.TELEFONE || r.telefone || r.to_msisdn || r.to || '');
-        const nome = firstNameOf(r.PrimeiroNome || r.primeiro_nome || r.nome || '');
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="font-mono text-sm">${escapeHtml(formatTelefoneBR(tel))}</td>
-          <td class="text-sm">${escapeHtml(nome || '—')}</td>
-          <td class="text-right">
-            <button class="btn btn-ghost btn-sm" type="button" onclick="envIndSelectFromBusca(${i})">Selecionar</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      wrap.classList.remove('hidden');
-    }
-
-    function envIndSelectFromBusca(i) {
-      const r = envIndBuscaRows?.[i];
-      if (!r) return;
-      const tel = normalizeMsisdnBR(r.TELEFONE || r.telefone || '');
-      const nome = firstNameOf(r.PrimeiroNome || r.primeiro_nome || r.nome || '');
-
-      envIndContatoSelecionado = {
-        to_msisdn: tel,
-        primeiro_nome: nome,
-        __raw: r,
-        __from: 'busca'
-      };
-
-      envIndUpdateChosenUI();
-      envIndSetPreview();
-    }
-
-    async function pesquisarCadastroEnvInd() {
-      const base = (document.getElementById('envIndBase')?.value || '').trim();
-      const codigo = (document.getElementById('envIndCodigo')?.value || '').trim();
-
-      const box = document.getElementById('envIndBuscaBox');
-      const msg = document.getElementById('envIndBuscaMsg');
-      const wrap = document.getElementById('envIndResultadosWrap');
-
-      if (box) box.classList.remove('hidden');
-      if (msg) msg.textContent = '⏳ Buscando cadastro...';
-      if (wrap) wrap.classList.add('hidden');
-
-      envIndBuscaRows = [];
-      envIndContatoSelecionado = null;
-      envIndUpdateChosenUI();
-      envIndSetPreview();
-
-      if (!base || !codigo) {
-        if (msg) msg.textContent = 'Informe a base e o código do cliente.';
-        return;
-      }
-
-      try {
-        const url = `${ESTRAT_API}/api/estrategias/pesquisa/${encodeURIComponent(base)}/${encodeURIComponent(codigo)}`;
-        const res = await fetch(url, {
-          method: 'GET',
-          mode: 'cors',
-          credentials: 'omit',
-          cache: 'no-store'
-        });
-
-        if (!res.ok) {
-          const t = await res.text();
-          throw new Error(`Falha ao buscar cadastro (${res.status}): ${t}`);
-        }
-
-        const data = await res.json();
-        const rows = Array.isArray(data) ? data : (Array.isArray(data?.dados) ? data.dados : []);
-        const norm = rows
-          .map(r => ({
-            ...r,
-            TELEFONE: normalizeMsisdnBR(r.TELEFONE || r.telefone || r.to_msisdn || r.to || ''),
-            PrimeiroNome: firstNameOf(r.PrimeiroNome || r.primeiro_nome || r.nome || '')
-          }))
-          .filter(r => r.TELEFONE && r.TELEFONE.length >= 12);
-
-        if (!norm.length) {
-          if (msg) msg.textContent = 'Nenhum telefone encontrado para esse código.';
-          envIndBuscaRows = [];
+      [tabBtnHome, tabBtnConversas, tabBtnRelatorio, tabBtnEnvioIndividual].forEach(b => b && b.classList.remove('active'));
+      tabHome.classList.add('hidden'); tabConversas.classList.add('hidden'); tabRelatorio.classList.add('hidden'); if (tabEnvioIndividual) tabEnvioIndividual.classList.add('hidden');
+      if (tab === 'conversas') { tabBtnConversas.classList.add('active'); tabConversas.classList.remove('hidden') }
+      else if (tab === 'relatorio') { tabBtnRelatorio.classList.add('active'); tabRelatorio.classList.remove('hidden') }
+      else if (tab === 'envio_individual') {
+        if (!hasPermEnvioIndividual()) {
+          showModalFeedback('Seu usuário não tem permissão para “Envio individual”.', 'Acesso restrito', 1400);
+          tabBtnHome.classList.add('active'); tabHome.classList.remove('hidden');
           return;
         }
-
-        envIndBuscaRows = norm;
-        if (msg) msg.textContent = `✅ ${norm.length} telefone(s) encontrado(s). Selecione um para enviar.`;
-        envIndRenderResultados(norm);
-      } catch (err) {
-        if (msg) msg.textContent = `❌ ${err?.message || 'Falha ao buscar cadastro.'}`;
+        tabBtnEnvioIndividual && tabBtnEnvioIndividual.classList.add('active');
+        tabEnvioIndividual && tabEnvioIndividual.classList.remove('hidden');
+        try { envIndSyncFromConversa(); } catch (_) { }
       }
+      else { tabBtnHome.classList.add('active'); tabHome.classList.remove('hidden') }
+    }
+    tabBtnHome.onclick = () => switchTab('home');
+    tabBtnConversas.onclick = () => switchTab('conversas');
+    tabBtnRelatorio.onclick = () => switchTab('relatorio');
+    if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.onclick = () => switchTab('envio_individual');
+
+
+    /** ============== ENVIO INDIVIDUAL (Ligação caiu) ============== */
+    const envIndTelefone = document.getElementById('envIndTelefone');
+    const envIndPhoneId = document.getElementById('envIndPhoneId');
+    const btnEnvIndEnviar = document.getElementById('btnEnvIndEnviar');
+    const envIndStatus = document.getElementById('envIndStatus');
+    const envIndResult = document.getElementById('envIndResult');
+    const btnEnvIndIrParaConversa = document.getElementById('btnEnvIndIrParaConversa');
+
+    function hasPermEnvioIndividual() {
+      return localStorage.getItem('agente_perm_envio_individual') === '1';
+    }
+
+    function renderPermissaoEnvioIndividual() {
+      const ok = hasPermEnvioIndividual();
+      if (tabBtnEnvioIndividual) tabBtnEnvioIndividual.classList.toggle('hidden', !ok);
+      if (!ok && tabEnvioIndividual && !tabEnvioIndividual.classList.contains('hidden')) switchTab('home');
+      if (ok) {
+        try { envIndPopulatePhoneIds(selecionado ? selecionado.phone_id : null); } catch (_) { }
+      }
+      envIndUpdateSendState();
+    }
+
+    function envIndDedupe(arr) {
+      return Array.from(new Set((arr || []).map(x => String(x)).filter(Boolean)));
+    }
+
+    function envIndPopulatePhoneIds(prefer) {
+      if (!envIndPhoneId) return;
+      const ids = envIndDedupe((typeof phoneIdsForCarteira === 'function') ? phoneIdsForCarteira() : (carteiraToPhoneIds[agente.carteira] || []).map(String));
+      envIndPhoneId.innerHTML = ids.map(id => `<option value="${id}">${(phoneIdMap[id] || id)}</option>`).join('');
+      const p = prefer ? String(prefer) : null;
+      if (p && ids.includes(p)) envIndPhoneId.value = p;
+      else if (ids.length) envIndPhoneId.value = ids[0];
+    }
+
+    function envIndSetStatus(msg, tone = 'muted', detailObj = null) {
+      if (envIndStatus) {
+        envIndStatus.textContent = msg || '';
+        envIndStatus.classList.remove('muted', 'text-green-600', 'text-red-600', 'text-amber-600');
+        if (tone === 'ok') envIndStatus.classList.add('text-green-600');
+        else if (tone === 'err') envIndStatus.classList.add('text-red-600');
+        else if (tone === 'warn') envIndStatus.classList.add('text-amber-600');
+        else envIndStatus.classList.add('muted');
+      }
+      if (envIndResult && detailObj !== undefined) {
+        envIndResult.textContent = detailObj ? JSON.stringify(detailObj, null, 2) : '';
+      }
+    }
+
+    function envIndTelefoneAtual() {
+      const raw = (envIndTelefone && envIndTelefone.value) ? envIndTelefone.value : (selecionado ? (selecionado.remetente || '') : '');
+      if (typeof normalizarTelefone === 'function') return normalizarTelefone(raw);
+      // fallback simples
+      return String(raw || '').replace(/\D/g, '');
+    }
+
+    function envIndPhoneIdAtual() {
+      if (selecionado && selecionado.phone_id) return String(selecionado.phone_id);
+      if (envIndPhoneId && envIndPhoneId.value) return String(envIndPhoneId.value);
+      const ids = (typeof phoneIdsForCarteira === 'function') ? phoneIdsForCarteira() : (carteiraToPhoneIds[agente.carteira] || []).map(String);
+      return ids && ids.length ? String(ids[0]) : '';
     }
 
     function envIndSyncFromConversa() {
-      const phoneIdEl = document.getElementById('envIndPhoneId');
-      if (phoneIdEl && !phoneIdEl.value && selecionado?.phone_id) phoneIdEl.value = String(selecionado.phone_id || '');
-
-      // Se já há um telefone selecionado pela busca, não sobrescreve
-      if (!envIndContatoSelecionado && selecionado?.remetente) {
-        const tel = normalizeMsisdnBR(selecionado.remetente || '');
-        const nome = firstNameOf(selecionado.nome_exibicao || '');
-        if (tel) {
-          envIndContatoSelecionado = { to_msisdn: tel, primeiro_nome: nome, __from: 'conversa' };
-        }
-      }
-
-      envIndUpdateChosenUI();
-      envIndUpdatePhoneIdLabel(phoneIdEl?.value || '');
-      envIndSetPreview();
+      if (!envIndTelefone || !envIndPhoneId) return;
+      const tel = selecionado ? (selecionado.remetente || '') : '';
+      if (tel) envIndTelefone.value = tel;
+      envIndPopulatePhoneIds(selecionado ? selecionado.phone_id : null);
+      envIndUpdateSendState();
     }
 
+    function envIndUpdateSendState() {
+      if (!btnEnvIndEnviar) return;
+      const logged = isLogged();
+      const allowed = hasPermEnvioIndividual();
+      const tel = envIndTelefoneAtual();
+      const hasTel = !!tel && String(tel).replace(/\D/g, '').length >= 11;
+      btnEnvIndEnviar.disabled = !(logged && allowed && hasTel);
+    }
 
-    async function postJson(url, payload) {
-      const r = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      let j = null;
-      try { j = await r.json(); } catch { }
-      return { r, j };
+    async function safeJson(r) { try { return await r.json(); } catch { return null; } }
+
+    async function atualizarTicketsDoServidorEabrir(remetenteNorm) {
+      try {
+        const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo || '')}&carteira=${encodeURIComponent(agente.carteira || '')}`;
+        const r = await fetch(url);
+        if (r.ok) {
+          tickets = await r.json();
+          saveTickets();
+          renderTickets();
+          await refreshOrdemCarteira();
+          await refreshAtivosELimite();
+          const alvo = String(remetenteNorm || '').replace(/\D/g, '');
+          const achado = (tickets || []).find(t => String(t.remetente || '').replace(/\D/g, '') === alvo);
+          if (achado) {
+            switchTab('conversas');
+            await abrirTicket(achado);
+          }
+        }
+      } catch (e) {
+        console.error('Falha ao atualizar tickets', e);
+      }
     }
 
     async function enviarLigacaoCaiu() {
-      if (!hasPermEnvioIndividual()) {
-        showModalFeedback('Sem permissão para Envio individual.', 'Sem permissão', 1400);
+      if (!hasPermEnvioIndividual()) { showModalFeedback('Seu usuário não tem permissão para “Envio individual”.', 'Acesso restrito', 1400); return; }
+
+      const to_msisdn = envIndTelefoneAtual();
+      const phone_id = envIndPhoneIdAtual();
+
+      if (!to_msisdn || String(to_msisdn).replace(/\D/g, '').length < 11) {
+        envIndSetStatus('Informe um telefone válido.', 'warn', { to_msisdn });
         return;
       }
-
-      const phoneIdEl = document.getElementById('envIndPhoneId');
-      const btn = document.getElementById('btnEnvIndEnviar');
-
-      const rawTel = (envIndContatoSelecionado?.to_msisdn || '').trim() || (selecionado?.remetente || '');
-      const to_msisdn = normalizeMsisdnBR(rawTel);
-      const primeiro_nome = firstNameOf(envIndContatoSelecionado?.primeiro_nome || '') || firstNameOf(selecionado?.nome_exibicao || '') || 'cliente';
-      
-// Phone ID é obrigatório (mas UI fica escondida)
-      const phone_id = (phoneIdEl?.value || '').trim()
-        || (selecionado?.phone_id ? String(selecionado.phone_id) : '')
-        || pickDefaultPhoneId();
-
-      if (!to_msisdn || to_msisdn.length < 12) {
-        envIndSetResultCompact({ __kind: 'fail', __statusText: 'Falha' });
-        return;
-      }
-
       if (!phone_id) {
-        envIndSetResultCompact({ __kind: 'fail', __statusText: 'Falha' });
+        envIndSetStatus('Não foi possível identificar o Phone ID da carteira.', 'warn', { carteira: agente.carteira });
         return;
       }
 
-      // payload compatível
-      const payload = {
-        to_msisdn,
-        phone_id,
-        primeiro_nome,
-        to: to_msisdn,
-        telefone: to_msisdn,
-        nome: primeiro_nome
-      };
-
-      envIndUpdatePhoneIdLabel(phone_id);
-
+      // Envio do template fixo (tenta nos 2 backends, se estiverem separados)
+      const payload = { to_msisdn, phone_id };
       const candidates = [
-        `${FILA_API}/ligacao_caiu`,
-        `${FILA_API}/api/ligacao_caiu`,
-        `${FILA_API}/templates/ligacao_caiu`,
-        `${FILA_API}/api/templates/ligacao_caiu`,
-        `${CONV_API}/api/ligacao_caiu`,
-        `${CONV_API}/api/envio_individual/ligacao_caiu`,
-        `${CONV_API}/api/templates/ligacao_caiu`,
-        `${CONV_API}/api/templates/ligacao_caiu/send`,
+        `${FILA_API}/api/envio_individual/ligacao_caiu`,
+        `${CONV_API}/api/envio_individual/ligacao_caiu`
       ];
 
-      try {
-        if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); }
+      btnEnvIndEnviar && (btnEnvIndEnviar.disabled = true);
+      envIndSetStatus('Enviando template…', 'muted', { payload, candidates });
 
-        // estado “neutro” enquanto envia (sem JSON sujo)
-        envIndSetResultCompact({ __kind: 'neutral', __statusText: '—' });
-
-        for (const url of candidates) {
-          try {
-            const { r, j } = await postJson(url, payload);
-
-            const okByJson = !!(j && (j.ok === true || j.messages || j.msg_id || j.meta_response));
-            const okByHttp = !!(r && r.ok);
-            if (okByHttp || okByJson) {
-              envIndSetResultCompact({ __kind: 'success', __statusText: 'Sucesso' });
-              showModalFeedback('Template enviado com sucesso.', 'Envio individual', 1200);
-              return;
-            }
-
-            // ✅ NOVO: tenta reservar/criar a conversa após o envio
-            const reserva = await reservarConversaPosLigacaoCaiu(telefone);
-
-            if (reserva.ok && reserva.warn) {
-              (window.toast ? toast(reserva.message || "Mensagem enviada ✅ (outro operador já atende este cliente).", "warning")
-                            : alert(reserva.message || "Mensagem enviada ✅ (outro operador já atende este cliente)."));
-            } else if (reserva.ok) {
-              (window.toast ? toast("Mensagem enviada ✅ e conversa criada/reservada.", "success")
-                            : alert("Mensagem enviada ✅ e conversa criada/reservada."));
-            } else {
-              // não bloqueia o envio
-              (window.toast ? toast("Mensagem enviada ✅, mas não consegui reservar/criar a conversa.", "warning")
-                            : alert("Mensagem enviada ✅, mas não consegui reservar/criar a conversa."));
-            }
-
-            // JSON de erro explícito
-            if (j && (j.erro || j.error || j.message)) {
-              envIndSetResultCompact({
-                __kind: 'fail',
-                __statusText: 'Falha',
-                __statusMsg: 'Não enviado',
-                ok: false,
-                endpoint_testado: url,
-                http_status: r?.status,
-                erro: j.erro || j.error || j.message,
-                response: j,
-                request: payload,
-                __raw: {
-                  ok: false,
-                  endpoint_testado: url,
-                  http_status: r?.status,
-                  erro: j.erro || j.error || j.message,
-                  response: j,
-                  request: payload
-                }
-              });
-              continue;
-            }
-          } catch (err) {
-            // tenta próximo
-          }
-        }
-
-        envIndSetResultCompact({
-          __kind: 'fail',
-          __statusText: 'Falha',
-          __statusMsg: 'Não enviado',
-          erro: 'Não consegui enviar usando os endpoints candidatos. (Provável: caminho do endpoint diferente / CORS / backend offline).',
-          request: payload,
-          endpoints_testados: candidates,
-          __raw: {
-            ok: false,
-            erro: 'Não consegui enviar usando os endpoints candidatos.',
-            request: payload,
-            endpoints_testados: candidates
-          }
-        });
-
-      } finally {
-        if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); }
-      }
-    }
-
-      async function reservarConversaPosLigacaoCaiu(telefone) {
-        const tel = String(telefone || "").replace(/\D/g, "");
-        if (!tel) return { ok: false, warn: true, message: "Telefone inválido para reservar conversa." };
-
-        const codigo = parseInt((agente && agente.codigo) ? agente.codigo : "0", 10);
-        const carteira = (agente && agente.carteira) ? agente.carteira : "";
-
-        // payload “compatível” (manda remetente e telefone)
-        const payload = {
-          codigo_do_agente: codigo,
-          carteira,
-          remetente: tel,
-          telefone: tel
-        };
-
-        const headers = { "Content-Type": "application/json" };
-        const token = (localStorage.getItem("token") || "").trim();
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-
-        // tenta primeiro o endpoint “novo” (se existir), e depois faz fallback pro claim
-        const endpoints = [
-          `${CONV_API}/api/envio_individual/ligacao_caiu/reserva`,
-          `${CONV_API}/api/tickets/claim`
-        ];
-
-        for (const url of endpoints) {
-          try {
-            const r = await fetch(url, { method: "POST", headers, body: JSON.stringify(payload) });
-
-            // se não existir esse endpoint, tenta o próximo
-            if (r.status === 404) continue;
-
-            let j = null;
-            try { j = await r.json(); } catch {}
-
-            if (r.ok) return { ok: true, warn: false, data: j };
-
-            // se outro agente já estiver com a conversa, tratamos como “sucesso com aviso”
-            if (r.status === 409) {
-              return {
-                ok: true,
-                warn: true,
-                data: j,
-                message: (j && (j.message || j.error)) || "Outro operador já está atendendo este cliente."
-              };
-            }
-
-            return {
-              ok: false,
-              warn: true,
-              data: j,
-              message: (j && (j.message || j.error)) || `Falha ao reservar conversa (HTTP ${r.status}).`
-            };
-          } catch (e) {
-            // tenta o próximo endpoint
-          }
-        }
-
-        return { ok: false, warn: true, message: "Não foi possível reservar/criar a conversa (rede/endpoint)." };
+      let sent = null;
+      for (const url of candidates) {
+        try {
+          const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          const j = await safeJson(r);
+          if (r.ok && (j ? (j.ok === true || j.status === 'sent') : true)) { sent = { url, http_ok: r.ok, json: j }; break; }
+        } catch (e) { /* tenta o próximo */ }
       }
 
-    function envIndUsarConversaAtual() {
-      if (!selecionado) {
-        showModalFeedback('Selecione uma conversa em "Conversas" antes.', 'Envio individual', 1600);
+      if (!sent) {
+        envIndSetStatus('Falha ao enviar o template. Verifique o backend/env.', 'err', { payload });
+        envIndUpdateSendState();
         return;
       }
-      const phoneIdEl = document.getElementById('envIndPhoneId');
-      if (phoneIdEl) phoneIdEl.value = String(selecionado.phone_id || '');
 
-      const tel = normalizeMsisdnBR(selecionado.remetente || '');
-      const nome = firstNameOf(selecionado.nome_exibicao || '') || '';
+      // Depois do envio: tenta puxar a conversa pra fila (mesma ideia do "pedir prioridade")
+      envIndSetStatus('Template enviado. Tentando puxar a conversa…', 'muted', sent);
 
-      envIndContatoSelecionado = tel ? { to_msisdn: tel, primeiro_nome: nome, __from: 'conversa' } : null;
+      if (!agente.online) {
+        envIndSetStatus('Template enviado. Você está offline, então não puxei a conversa para a fila.', 'warn', sent);
+        envIndUpdateSendState();
+        return;
+      }
 
-      envIndUpdateChosenUI();
-      envIndUpdatePhoneIdLabel(phoneIdEl?.value || '');
-      envIndSetPreview();
-      switchTab('envio_individual');
-    }
-
-
-    function initEnvioIndividual() {
-      if (__envIndBound) return;
-      __envIndBound = true;
-
-      const btnSend = document.getElementById('btnEnvIndEnviar');
-      const btnClear = document.getElementById('btnEnvIndLimpar');
-      const btnBuscar = document.getElementById('btnEnvIndBuscar');
-      const codigoEl = document.getElementById('envIndCodigo');
-      const baseEl = document.getElementById('envIndBase');
-      const phoneIdEl = document.getElementById('envIndPhoneId');
-
-      // Origem BD vem no payload do agente (origem_bd). Se existir, travamos a seleção.
-      let lockedOrigem = '';
       try {
-        lockedOrigem = String((agente && agente.origem_bd) ? agente.origem_bd : (localStorage.getItem('agente_origem_bd') || '')).trim().toLowerCase();
-      } catch (e) { lockedOrigem = ''; }
-
-      if (baseEl) {
-        const hintEl = document.getElementById('envIndBaseHint');
-        if (lockedOrigem) {
-          const hasOpt = Array.from(baseEl.options).some(o => String(o.value).toLowerCase() === lockedOrigem);
-          if (!hasOpt) {
-            const opt = document.createElement('option');
-            opt.value = lockedOrigem;
-            opt.textContent = lockedOrigem.toUpperCase();
-            baseEl.appendChild(opt);
-          }
-          baseEl.value = lockedOrigem;
-          baseEl.disabled = true;
-          baseEl.classList.add('opacity-70', 'cursor-not-allowed');
-          baseEl.title = 'Origem definida pelo seu perfil';
-          if (hintEl) {
-            hintEl.textContent = `Definida pelo seu perfil (${lockedOrigem.toUpperCase()}).`;
-            hintEl.classList.remove('hidden');
-          }
+        const body = { codigo_do_agente: parseInt(agente.codigo, 10), carteira: agente.carteira, remetente: to_msisdn };
+        const r = await fetch(`${CONV_API}/api/tickets/claim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const j = await safeJson(r);
+        if (r.ok && j && j.ok) {
+          envIndSetStatus('Conversa puxada com sucesso ✅', 'ok', { sent, claim: j });
+          await atualizarTicketsDoServidorEabrir(to_msisdn);
         } else {
-          baseEl.disabled = false;
-          if (hintEl) hintEl.classList.add('hidden');
+          const msg = (j && (j.erro || j.msg || j.message)) || 'Não foi possível puxar a conversa.';
+          envIndSetStatus(`Template enviado, mas não puxei a conversa: ${msg}`, 'warn', { sent, claim: j, http: r.status });
         }
+      } catch (e) {
+        envIndSetStatus('Template enviado, mas falhou ao puxar a conversa (rede/CORS).', 'warn', { sent, erro: String(e) });
+      } finally {
+        envIndUpdateSendState();
       }
-
-
-      if (btnSend) btnSend.addEventListener('click', enviarLigacaoCaiu);
-
-      if (btnBuscar) btnBuscar.addEventListener('click', pesquisarCadastroEnvInd);
-
-      if (codigoEl) {
-        codigoEl.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            pesquisarCadastroEnvInd();
-          }
-        });
-      }
-
-      if (btnClear) btnClear.addEventListener('click', () => {
-        if (codigoEl) codigoEl.value = '';
-        if (baseEl) {
-          if (lockedOrigem) baseEl.value = lockedOrigem;
-          else if (!baseEl.value) baseEl.value = 'bd5';
-        }
-        if (phoneIdEl) phoneIdEl.value = '';
-        envIndResetBuscaUI();
-        envIndResetResultUI();
-      });
-
-      envIndResetResultUI();
-      envIndUpdateChosenUI();
-
-      // Se já tiver conversa selecionada, usa como contexto (sem precisar de botão)
-      envIndSyncFromConversa();
-
-      renderPermissaoEnvioIndividual();
     }
 
+    if (btnEnvIndIrParaConversa) btnEnvIndIrParaConversa.onclick = () => switchTab('conversas');
+    if (envIndTelefone) envIndTelefone.addEventListener('input', envIndUpdateSendState);
+    if (envIndPhoneId) envIndPhoneId.addEventListener('change', envIndUpdateSendState);
+    if (btnEnvIndEnviar) btnEnvIndEnviar.onclick = enviarLigacaoCaiu;
 
     /** ============== ONLINE/OFFLINE, LIMITES ============== */
     async function verificarOnline() {
@@ -2717,7 +1913,6 @@
         }
       }
     }
-
     async function refreshOrdemCarteira() {
       if (!agente.carteira) return;
       const phoneIds = (carteiraToPhoneIds[agente.carteira] || []).map(String);
@@ -2745,7 +1940,6 @@
         persistUnread(); saveTickets(); renderTickets();
       } catch (e) { console.error("Falha ao atualizar ordem", e) }
     }
-
     async function refreshAtivosELimite() {
       try {
         const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo || '')}&carteira=${encodeURIComponent(agente.carteira || '')}`;
@@ -2757,7 +1951,6 @@
       } catch { limitPerAgent = 0 }
       renderAtivosLimiteUI();
     }
-
     function renderAtivosLimiteUI() {
       badgeAtivos.textContent = String(ativosCount);
       badgeLimite.textContent = limitPerAgent > 0 ? String(limitPerAgent) : "∞";
@@ -2809,10 +2002,7 @@
       finally { spinner.classList.add('hidden'); label.textContent = 'Pegar próxima'; btnPegarProxima.disabled = !agente.online || (limitPerAgent > 0 && ativosCount >= limitPerAgent); }
     };
 
-    /** ============== LISTA / CHAT ============== */
-    
-
-// Prioridade
+    // Prioridade
     const priorityModal = document.getElementById('priorityModal');
     const priorityTelefone = document.getElementById('priorityTelefone');
     const priorityInfo = document.getElementById('priorityInfo');
@@ -2880,9 +2070,8 @@
       finally { btnPriorityBuscar.disabled = false; prioritySpinner.classList.add('hidden'); priorityBtnLabel.textContent = 'Buscar e solicitar' }
     };
 
-    
-
-function renderTickets(filtro = "") {
+    /** ============== LISTA / CHAT ============== */
+    function renderTickets(filtro = "") {
       const q = (filtro || "").toLowerCase().trim(); const frag = document.createDocumentFragment(); elListaTickets.innerHTML = "";
       tickets.forEach(t => {
         const nome = t.nome_exibicao || t.remetente; const hay = `${nome} ${t.remetente}`.toLowerCase(); if (q && !hay.includes(q)) return;
@@ -2907,13 +2096,7 @@ function renderTickets(filtro = "") {
     let msgsCtrl = null;
     async function abrirTicket(t) {
       selecionado = t;
-
-      // Atualiza phone_id oculto do envio individual (sem edição)
-      const phoneIdEl = document.getElementById('envIndPhoneId');
-      if (phoneIdEl && t?.phone_id) phoneIdEl.value = String(t.phone_id || '');
-      envIndUpdatePhoneIdLabel(phoneIdEl?.value || '');
-      envIndSetPreview();
-
+      try { if (typeof envIndSyncFromConversa === 'function') envIndSyncFromConversa(); } catch (_) { }
       try { const k = keyFrom(t.remetente, t.phone_id); unreadCountByKey[k] = 0; lastContatoTsByKey[k] = Date.now(); persistUnread(); } catch { }
       renderTickets();
       elTitulo.textContent = t.nome_exibicao ? `${t.nome_exibicao} (${t.remetente})` : t.remetente;
@@ -2968,10 +2151,45 @@ function renderTickets(filtro = "") {
       } else if (typeof m.mensagem_final === "string" && m.mensagem_final.startsWith("📎 PDF:")) {
         const lines = m.mensagem_final.split("\n"); const filename = (lines[0] || "").replace("📎 PDF:", "").trim() || "Arquivo"; const link = (lines[1] || "").replace("🔗", "").trim();
         div.innerHTML = `<div class="flex items-start gap-2"><div class="text-xl leading-none">📄</div><div class="min-w-0"><div class="font-semibold">${escapeHtml(filename)}</div>${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="underline break-all" style="color:var(--link)">Abrir/baixar</a>` : `<span class="muted">sem link</span>`}</div></div><span class="hora">${hora}</span>`;
+      } else if (m.tipo === "emoji" || m.mensagem_final === "[reaction]") {
+        const wrap = document.createElement("div"); wrap.className = "flex items-center gap-2";
+        const emojiEl = document.createElement("span"); emojiEl.className = "text-2xl"; emojiEl.textContent = "🙂";
+        const label = document.createElement("span"); label.className = "muted italic"; label.textContent = "enviou um emote";
+        wrap.appendChild(emojiEl); wrap.appendChild(label); div.appendChild(wrap);
+        const horaSpan = document.createElement("span"); horaSpan.className = "hora"; horaSpan.textContent = hora; div.appendChild(horaSpan);
+        if (m.msg_id) {
+          fetch(`${CONV_API}/api/conversas/emoji/${encodeURIComponent(m.msg_id)}`).then(r => r.json())
+            .then(j => { if (j.ok && j.emoji) emojiEl.textContent = j.emoji; else label.textContent = "emoji não carregado"; })
+            .catch(() => label.textContent = "falha ao carregar emoji");
+        }
+      } else if (m.tipo === "system" || m.mensagem_final === "[system]") {
+        div.className = "msg system";
+        div.innerHTML = `<div class="sys-title"><span>ℹ️ Evento do sistema</span> <span class="sys-pill">carregando…</span></div><div class="sys-body mt-1">Obtendo detalhes…</div><div class="sys-meta mt-1"></div><span class="hora">${hora}</span>`;
+        if (!m.msg_id) { div.querySelector(".sys-body").textContent = "Detalhes indisponíveis (sem msg_id)."; const pill = div.querySelector(".sys-pill"); if (pill) pill.textContent = "indisponível"; }
+        else {
+          (async () => {
+            try {
+              const r = await fetch(`${CONV_API}/api/conversas/system/${encodeURIComponent(m.msg_id)}`); const j = await r.json();
+              const pill = div.querySelector(".sys-pill"); const bodyEl = div.querySelector(".sys-body"); const metaEl = div.querySelector(".sys-meta");
+              if (!j.ok) { if (pill) pill.textContent = "erro"; bodyEl.textContent = j.erro || "Falha ao obter detalhes do evento."; return; }
+              if (pill) pill.textContent = j.type || "system";
+              if (j.type === "user_changed_number" && j.old_wa_id && j.wa_id) { bodyEl.innerHTML = `O cliente alterou o número:<br><span class="font-semibold">${escapeHtml(j.old_wa_id)}</span> <span class="mx-1">→</span> <span class="font-semibold">${escapeHtml(j.wa_id)}</span>`; }
+              else { bodyEl.textContent = j.body || "Evento de sistema recebido." }
+              const src = j.from || j.old_wa_id || ""; const pid = j.phone_id ? ` • conta: ${escapeHtml(j.phone_id)}` : ""; metaEl.textContent = `${src ? ("Origem: " + src) : ""}${pid}`;
+            } catch (e) { const pill = div.querySelector(".sys-pill"); if (pill) pill.textContent = "erro"; div.querySelector(".sys-body").textContent = "Falha ao carregar detalhes do evento."; }
+          })()
+        }
       } else {
         div.innerHTML = `<div>${escapeHtml(m.mensagem_final || "")}</div><span class="hora">${hora}</span>`;
       }
 
+      if (incoming && !(m.tipo === "system" || m.mensagem_final === "[system]")) {
+        const btn = document.createElement("button");
+        btn.className = "reply-btn"; btn.title = "Responder"; btn.setAttribute("aria-label", "Responder");
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 8V5l-7 7 7 7v-3h4c3.314 0 6 2.686 6 6v-2c0-4.418-3.582-8-8-8h-2z"/></svg>`;
+        btn.onclick = (ev) => { ev.stopPropagation(); responderMensagem(m.msg_id, m.mensagem_final || "") };
+        div.appendChild(btn);
+      }
       chat.appendChild(div); renderedKeys.add(key); if (lastTimestampMs === null || tMs > lastTimestampMs) lastTimestampMs = tMs;
     }
 
@@ -2985,6 +2203,35 @@ function renderTickets(filtro = "") {
         }
         else throw new Error(j.erro || "Resposta inválida");
       } catch { alert("Erro ao carregar imagem"); btn.disabled = false; btn.textContent = "👁 Ver imagem" }
+    }
+    async function carregarAudio(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/audio/${encodeURIComponent(msg_id)}`); const j = await r.json();
+        if (j.ok && j.data_uri) { const audio = document.createElement("audio"); audio.src = j.data_uri; audio.controls = true; audio.preload = "metadata"; audio.className = "mt-2"; div.insertBefore(audio, btn); btn.remove() }
+        else throw new Error(j.erro || "Resposta inválida");
+      } catch { alert("Erro ao carregar áudio"); btn.disabled = false; btn.textContent = "▶ Reproduzir áudio" }
+    }
+    async function carregarDocumento(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}`); const j = await r.json();
+        if (!j.ok) throw new Error(j.erro || "Falha no backend");
+        const filename = j.filename || "arquivo"; const mime = j.mime_type || "application/octet-stream"; const size = j.size_bytes ?? null;
+        const box = document.createElement("div"); box.className = "mt-2 space-y-1";
+        if (mime.startsWith("application/pdf") && j.data_uri && (size === null || size <= DOC_PREVIEW_MAX)) {
+          const preview = document.createElement("embed"); preview.src = j.data_uri; preview.type = mime; preview.className = "w-[260px] h-[200px] rounded border"; preview.style.borderColor = getCss('--border'); box.appendChild(preview);
+          const meta = document.createElement("div"); meta.className = "text-xs"; meta.style.color = getCss('--muted');
+          const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+          meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div><div>${size ? bytesToHuman(size) : ""}</div><a href="${link}" target="_blank" rel="noopener noreferrer" class="underline" style="color:var(--link)">Abrir/baixar</a>`; box.appendChild(meta);
+        } else {
+          const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+          const row = document.createElement("div"); row.className = "flex items-start gap-2";
+          row.innerHTML = `<div class="text-xl leading-none">📎</div><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(filename)}</div><div class="text-xs" style="color:var(--muted)">${escapeHtml(mime)} ${size ? ("• " + bytesToHuman(size)) : ""}</div><a href="${link}" target="_blank" rel="noopener noreferrer" class="underline break-all" style="color:var(--link)">Baixar documento</a></div>`;
+          box.appendChild(row);
+        }
+        div.insertBefore(box, btn); btn.remove();
+      } catch (e) { console.error(e); alert("Erro ao carregar documento"); btn.disabled = false; btn.textContent = "📎 Ver documento" }
     }
 
     // ==== Modal de imagem ====
@@ -3026,20 +2273,77 @@ function renderTickets(filtro = "") {
       finally { userTyping = false; updateEnviarState(); }
     }
 
-    /** ============== LOGOUT ============== */
+    // PDF upload
+    async function enviarPDF(event) {
+      const file = event.target.files[0]; if (!file) return;
+      if (!selecionado) { alert("Abra um ticket antes de enviar PDF."); event.target.value = ""; return; }
+      if (file.type !== "application/pdf") { alert("Somente arquivos PDF são permitidos."); event.target.value = ""; return; }
+      try {
+        const res = await fetch(`${CONV_API}/api/upload/pdf`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ filename: file.name }) });
+        const j = await res.json(); if (!j.ok) { console.error("Presign falhou:", j); alert("Erro ao gerar URL: " + j.erro); return; }
+        const putResp = await fetch(j.upload_url, { method: "PUT", headers: { "Content-Type": "application/pdf" }, body: file });
+        if (!putResp.ok) { const txt = await putResp.text().catch(() => ""); console.error("S3 PUT falhou", putResp.status, txt); alert(`Falha no upload (S3): HTTP ${putResp.status}\n${txt.slice(0, 300)}`); return; }
+        const send = await fetch(`${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone_id: selecionado.phone_id, file_url: j.file_url, original_filename: file.name }) });
+        const sj = await send.json().catch(() => ({ ok: false, erro: "resposta inválida" }));
+        if (sj.ok) { await carregarMensagens(true) } else { console.error("Erro ao enviar PDF para WhatsApp:", sj); alert("Erro ao enviar PDF (API META): " + (sj.erro || JSON.stringify(sj))); }
+      } catch (e) { console.error("Erro geral ao enviar PDF:", e); alert("Erro ao enviar PDF (rede)."); }
+      finally { event.target.value = ""; }
+    }
+
+    /** ============== LIBERAR / CONCLUIR / LOGOUT ============== */
+    btnLiberar.onclick = async () => {
+      if (!selecionado) return;
+      try {
+        const r = await fetch(`${CONV_API}/api/tickets/liberar`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id }) });
+        const j = await r.json();
+        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível liberar."); return; }
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id); delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
+        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id))); saveTickets(); renderTickets(); limparChat();
+        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
+
+        // Segurança extra: ao liberar, removemos a seleção e interrompemos o polling de mensagens
+        selecionado = null;
+        if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+        if (typeof schedulePolls === 'function') schedulePolls();
+
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+      } catch (e) { alert("Erro ao liberar.") }
+    };
+
+    async function concluirAtendimento(motivo) {
+      if (!selecionado) return;
+      try {
+        btnConcluir.disabled = true;
+        const r = await fetch(`${CONV_API}/api/tickets/concluir`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id, motivo }) });
+        const j = await r.json();
+        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível concluir."); btnConcluir.disabled = false; return; }
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id); delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
+        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id))); saveTickets(); renderTickets(); limparChat();
+        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
+        selecionado = null;
+        if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+        if (typeof schedulePolls === 'function') schedulePolls();
+
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+      } catch (e) { alert("Erro ao concluir."); btnConcluir.disabled = false; }
+    }
+
     async function doLogout() {
+      // Feedback imediato no botão
       try { btnLogout.textContent = 'Saindo…'; btnLogout.disabled = true; } catch (_) { }
       try { await fetch(`${FILA_API}/fila/offline`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), carteira: agente.carteira || '' }) }).catch(() => { }); } catch (_) { }
       try {
-        localStorage.removeItem("agente_codigo"); localStorage.removeItem("agente_nome"); localStorage.removeItem("agente_carteira"); localStorage.removeItem("agente_origem");
-        localStorage.removeItem("agente_origem_bd"); localStorage.removeItem("agente_permite_envio_individual"); Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:") || k.startsWith("cz:unreadCount:") || k.startsWith("cz:lastContatoTs:")) localStorage.removeItem(k) });
+        localStorage.removeItem("agente_codigo"); localStorage.removeItem("agente_nome"); localStorage.removeItem("agente_carteira"); localStorage.removeItem("agente_origem"); localStorage.removeItem("agente_perm_envio_individual");
+        Object.keys(localStorage).forEach(k => { if (k.startsWith("cz:tickets:") || k.startsWith("cz:unreadCount:") || k.startsWith("cz:lastContatoTs:")) localStorage.removeItem(k) });
       } catch (_) { }
       if (pollingContatos) clearInterval(pollingContatos);
       if (pollingMensagens) clearInterval(pollingMensagens);
       if (pendentesInterval) clearInterval(pendentesInterval);
 
+      // Modal de confirmação de logout
       showModalFeedback('Agente deslogado com sucesso.', 'Logout', 900);
 
+      // Redireciona / recarrega após breve confirmação
       setTimeout(() => {
         if (LOGOUT_REDIRECT) window.location.href = LOGOUT_REDIRECT;
         else location.reload();
@@ -3048,8 +2352,9 @@ function renderTickets(filtro = "") {
 
     function limparChat() { chat.innerHTML = '<p id="loading" class="text-center muted">Pegue uma conversa para iniciar…</p>' }
 
-    /** ============== KPIs & Relatório (mantido) ============== */
+    /** ============== KPIs & Relatório ============== */
     function fmtDurSec(s) { if (s == null) return "—"; const m = Math.floor(s / 60), sec = s % 60; if (m >= 60) { const h = Math.floor(m / 60), mm = m % 60; return `${h}h ${mm}m`; } return `${m}m ${sec}s`; }
+
     function buildRelQS() {
       const start = relStart.value || fmtYMD(new Date());
       const end = relEnd.value || start;
@@ -3060,6 +2365,8 @@ function renderTickets(filtro = "") {
       if (agente?.codigo) p.set('agentes', String(agente.codigo));
       return `?${p.toString()}`;
     }
+
+    // QS específico do extrato (sem carteira)
     function buildExtratoQS() {
       const start = relStart.value || fmtYMD(new Date());
       const end = relEnd.value || start;
@@ -3069,6 +2376,7 @@ function renderTickets(filtro = "") {
       if (agente?.codigo) p.set('agentes', String(agente.codigo));
       return `?${p.toString()}`;
     }
+
     function updatePeriodoLabel() {
       try {
         const s = relStart.value, e = relEnd.value;
@@ -3080,6 +2388,7 @@ function renderTickets(filtro = "") {
         relPeriodo.textContent = (s === e) ? ds : `${ds} a ${de}`;
       } catch { relPeriodo.textContent = '—'; }
     }
+
     function bindQuickRanges() {
       document.querySelectorAll('[data-qk]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -3101,6 +2410,7 @@ function renderTickets(filtro = "") {
         });
       });
     }
+
     function chartTextColor() { return getCss('--text') || '#e5e7eb' }
 
     async function refreshKPIs() {
@@ -3111,6 +2421,7 @@ function renderTickets(filtro = "") {
       const urlMotivos = `${API_BASE}/api/atendimentos/motivos${qs}`;
 
       try {
+        // Resumo
         const rRes = await fetch(urlResumo);
         const resumo = rRes.ok ? await rRes.json() : {};
         const em = Number(resumo.em_atendimento || 0);
@@ -3120,6 +2431,7 @@ function renderTickets(filtro = "") {
         kpiTma.textContent = fmtDurSec(resumo.tma_segundos);
         kpiFRT.textContent = fmtDurSec(resumo.tmr_segundos);
 
+        // Status pie
         const ctxStatus = document.getElementById('pieStatus')?.getContext('2d');
         if (ctxStatus) {
           if (pieChart) pieChart.destroy();
@@ -3130,6 +2442,7 @@ function renderTickets(filtro = "") {
           });
         }
 
+        // Motivos (pizza)
         try {
           const rMot = await fetch(urlMotivos);
           const motivos = rMot.ok ? await rMot.json() : [];
@@ -3142,10 +2455,15 @@ function renderTickets(filtro = "") {
           }
         } catch { }
 
+        // Extrato (acordeão)
         await refreshExtrato();
-      } catch (e) { }
+
+      } catch (e) {
+        // fallback silencioso
+      }
     }
 
+    // ------- Extrato (acordeão) -------
     function normalizeExtratoRow(row) {
       if (!row) return null;
       if (Array.isArray(row)) {
@@ -3169,6 +2487,7 @@ function renderTickets(filtro = "") {
         negociacao: Number(row.realizou_negociacao || 0)
       };
     }
+
     function pct(v, tot) { if (!tot) return '0%'; return Math.round((v / tot) * 100) + '%'; }
 
     function renderExtrato(rows) {
@@ -3339,15 +2658,6 @@ function renderTickets(filtro = "") {
       }
     }
 
-    function isNoticeRead(id) {
-      try { return noticesReadSet.has(String(id)); } catch { return false; }
-    }
-
-    function markNoticeRead(id) {
-      if (!id) return;
-      try { noticesReadSet.add(String(id)); saveNoticesReadSet(); } catch { }
-    }
-
     function renderNotices(list) {
       heroWrap.classList.add('hidden');
 
@@ -3355,132 +2665,130 @@ function renderTickets(filtro = "") {
         if ((a.priority ?? 999) !== (b.priority ?? 999)) return (a.priority ?? 999) - (b.priority ?? 999);
         const da = a.created_at ? +new Date(a.created_at) : 0;
         const db = b.created_at ? +new Date(b.created_at) : 0;
-        return db - da;
-      });
-
-      const filtered = sorted.filter(n => {
-        if (noticesFilter === 'unread') return !isNoticeRead(n.id);
-        return true;
+        return da - db;
       });
 
       avisosWrap.innerHTML = "";
-      const unreadCount = sorted.filter(n => !isNoticeRead(n.id)).length;
-
-      avisosCountPill.textContent = `${filtered.length} / ${sorted.length}`;
-      avisosResumo.textContent = unreadCount ? `${unreadCount} não lido(s)` : `Tudo lido ✅`;
-
-      // mostra botão "Não lidos" quando fizer sentido
-      const btnUnread = document.querySelector('[data-avisos-filter="unread"]');
-      if (btnUnread) btnUnread.style.display = unreadCount ? 'inline-flex' : 'none';
-
-      // Hero: pega o primeiro crítico não lido, senão primeiro não lido
-      const hero = sorted.find(n => Number(n.priority) === 0 && !isNoticeRead(n.id)) || sorted.find(n => !isNoticeRead(n.id)) || null;
-      if (hero) {
-        heroWrap.classList.remove('hidden');
-        const when = hero.created_at ? `${fmtDataBR.format(new Date(hero.created_at))} ${fmtHoraBR.format(new Date(hero.created_at))}` : '—';
-        heroTitle.textContent = hero.title;
-        heroMeta.textContent = `Prioridade: ${Number.isFinite(hero.priority) ? hero.priority : '—'} • ${when}`;
-        heroBody.textContent = hero.body;
-
-        heroMarkRead.onclick = () => {
-          markNoticeRead(hero.id);
-          renderNotices(notices);
-        };
-        heroDismiss.onclick = () => {
-          // “dispensar” = marca como lido só pra não ficar reaparecendo
-          markNoticeRead(hero.id);
-          renderNotices(notices);
-        };
-      }
-
-      if (!filtered.length) {
+      if (!sorted.length) {
         avisosWrap.innerHTML = `<div class="notice p-4 text-sm muted">Nenhum aviso para exibir.</div>`;
-        return;
-      }
+      } else {
+        for (const n of sorted) {
+          const isCrit = Number(n.priority) === 0;
+          const el = document.createElement('div');
+          el.className = `notice${isCrit ? ' crit' : ''}`;
+          const c = priorityColors(n.priority);
+          el.style.borderLeft = isCrit ? '8px solid #dc2626' : `6px solid ${c.border}`;
+          el.style.background = c.bg;
 
-      for (const n of filtered) {
-        const isCrit = Number(n.priority) === 0;
-        const read = isNoticeRead(n.id);
-
-        const el = document.createElement('div');
-        el.className = `notice${isCrit ? ' crit' : ''}${read ? '' : ' unread'}`;
-
-        const c = priorityColors(n.priority);
-        el.style.borderLeft = isCrit ? '8px solid #dc2626' : `6px solid ${c.border}`;
-        el.style.background = c.bg;
-
-        const when = n.created_at ? `${fmtDataBR.format(new Date(n.created_at))} ${fmtHoraBR.format(new Date(n.created_at))}` : '';
-        el.innerHTML = `
-          <div class="notice-head">
-            <div class="notice-left">
-              <div class="sev ${sevClass(n.priority)}"></div>
-              <div class="min-w-0">
-                <div class="notice-title">${isCrit ? '🚨 ' : ''}${escapeHtml(n.title)}${isCrit ? ' <span class="crit-badge">CRÍTICO</span>' : ''}</div>
-                <div class="notice-meta">
-                  <span>Prioridade: ${Number.isFinite(n.priority) ? n.priority : '—'}</span>
-                  ${when ? `<span>${when}</span>` : ``}
-                  ${read ? `<span class="pill" style="padding:2px 8px;font-size:11px;">lido</span>` : `<span class="pill" style="padding:2px 8px;font-size:11px;border-color:color-mix(in srgb, var(--primary) 40%, var(--border));background:color-mix(in srgb, var(--primary) 10%, var(--ghost-bg));">novo</span>`}
+          const when = n.created_at ? `${fmtDataBR.format(new Date(n.created_at))} ${fmtHoraBR.format(new Date(n.created_at))}` : '';
+          el.innerHTML = `
+              <div class="notice-head">
+                <div class="notice-left">
+                  <div class="sev ${sevClass(n.priority)}"></div>
+                  <div class="min-w-0">
+                    <div class="notice-title">${isCrit ? '🚨 ' : ''}${escapeHtml(n.title)}${isCrit ? ' <span class="crit-badge">CRÍTICO</span>' : ''}</div>
+                    <div class="notice-meta">
+                      <span>Prioridade: ${Number.isFinite(n.priority) ? n.priority : '—'}</span>
+                      ${when ? `<span>${when}</span>` : ``}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="notice-actions">
-              ${read ? '' : `<button type="button" data-act="read" data-id="${escapeHtml(n.id)}">Marcar como lido</button>`}
-            </div>
-          </div>
-          <div class="notice-body">${escapeHtml(n.body)}</div>
-        `;
-
-        const btn = el.querySelector('button[data-act="read"]');
-        if (btn) {
-          btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-id');
-            markNoticeRead(id);
-            renderNotices(notices);
-          });
+              <div class="notice-body">${escapeHtml(n.body)}</div>
+            `;
+          avisosWrap.appendChild(el);
         }
-
-        avisosWrap.appendChild(el);
       }
+
+      const critCount = sorted.filter(n => Number(n.priority) === 0).length;
+      avisosResumo.textContent = `${sorted.length} aviso(s) • ${critCount} crítico(s) • atenção aos recados da supervisão`;
+      avisosCountPill.textContent = String(sorted.length);
     }
 
     async function loadNoticesAndRender() {
-      notices = await fetchNotices();
+      try {
+        notices = (await fetchNotices()).filter(Boolean);
+      } catch { notices = []; }
       renderNotices(notices);
     }
 
     if (btnAvisoRefresh) btnAvisoRefresh.addEventListener('click', loadNoticesAndRender);
 
-    // filtros
     document.querySelectorAll('[data-avisos-filter]').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('[data-avisos-filter]').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        noticesFilter = btn.getAttribute('data-avisos-filter') || 'all';
         renderNotices(notices);
       });
     });
 
-    /** ============== INIT (carregamento) ============== */
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Tema (para o look ficar ok mesmo antes de boot)
-      const t = loadTheme(); applyTheme(t || defaultTheme());
-
-      updateAuthButton();
+    /** ============== Navegação inicial ============== */
+    window.addEventListener('load', async () => {
+      const saved = loadTheme(); applyTheme(saved || defaultTheme());
       toggleLoginLocks();
-      renderPermissaoEnvioIndividual();
-
       if (isLogged()) {
-        showApp();
-        await boot();
+        showApp();                 
+        await boot();              
         switchTab('home');
+        fecharModalLogin();
       } else {
-        hideApp();
-        // Mantém o mesmo comportamento da versão em produção: abre o modal imediatamente
-        // (sem isso, o app fica escondido e o usuário não consegue se identificar).
-        abrirModalLogin();
-        try { await loadNoticesAndRender(); } catch { }
+        hideApp();                 
+        abrirModalLogin();         
       }
     });
+  </script>
+  <script>
+    const presets = {
+      corporate: { primary: "#2563eb", accent: "#22c55e", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f3f4f6", text: "#0f172a", outG1: "#e0f2fe", outG2: "#bfdbfe", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 18, btnRadius: 10, cardRadius: 16, wallOp: 0, fontSize: "14px", muted: "#6b7280", border: "#e5e7eb", link: "#2563eb", ghostBg: "#f3f4f6" },
+      ocean: { primary: "#06b6d4", accent: "#10b981", sidebar: "#f0fdff", contentBg: "#ecfeff", bg: "#f0fdfa", text: "#0b1320", outG1: "#cffafe", outG2: "#a7f3d0", inBg: "#ffffff", inBorder: "#cbd5e1", bubbleRadius: 18, btnRadius: 12, cardRadius: 18, wallOp: .05, fontSize: "14px", muted: "#475569", border: "#cbd5e1", link: "#0891b2", ghostBg: "#e2f2f3" },
+      sunset: { primary: "#f97316", accent: "#ef4444", sidebar: "#fff7ed", contentBg: "#fff7ed", bg: "#fff1f2", text: "#111827", outG1: "#fed7aa", outG2: "#fda4af", inBg: "#ffffff", inBorder: "#fecaca", bubbleRadius: 20, btnRadius: 12, cardRadius: 20, wallOp: .06, fontSize: "14px", muted: "#6b7280", border: "#f3d4cf", link: "#f97316", ghostBg: "#fff3e8" },
+      dark: { primary: "#60a5fa", accent: "#22c55e", sidebar: "#0b1220", contentBg: "#0b1220", bg: "#0a0f1a", text: "#e5e7eb", muted: "#94a3b8", border: "#1f2937", link: "#93c5fd", ghostBg: "#111827", outG1: "#1f2937", outG2: "#0f172a", outFg: "#e5e7eb", inBg: "#0e1726", inBorder: "#1f2937", inFg: "#e5e7eb", bubbleRadius: 16, btnRadius: 10, cardRadius: 16, wallOp: 1, fontSize: "14px", hover: "#111827", hoverStrong: "#0f172a", inputBg: "#0e1726", inputFg: "#e5e7eb", scrollbar: "#334155", ticketSelectedBg: "#111827", replyBg: "rgba(255,255,255,.08)", replyBorder: "rgba(255,255,255,.12)", replyFg: "#e5e7eb" },
+      minimal: { primary: "#111827", accent: "#64748b", sidebar: "#ffffff", contentBg: "#ffffff", bg: "#f8fafc", text: "#0f172a", outG1: "#f3f4f6", outG2: "#e5e7eb", inBg: "#ffffff", inBorder: "#e2e8f0", bubbleRadius: 14, btnRadius: 8, cardRadius: 16, wallOp: 0, fontSize: "15px", muted: "#6b7280", border: "#e5e7eb", link: "#111827", ghostBg: "#f3f4f6" },
+      funky: { primary: "#a78bfa", accent: "#ec4899", sidebar: "#faf5ff", contentBg: "#fff0f7", bg: "#fafafa", text: "#111827", outG1: "#e9d5ff", outG2: "#fecdd3", inBg: "#ffffff", inBorder: "#f5d0fe", bubbleRadius: 22, btnRadius: 14, cardRadius: 22, wallOp: .08, fontSize: "14px", muted: "#6b7280", border: "#e9d5ff", link: "#a78bfa", ghostBg: "#f5f3ff" }
+    };
+
+    (function () {
+      const themeDrawer = document.getElementById('themeDrawer');
+      const btnTheme = document.getElementById('btnTheme');
+      const btnThemeClose = document.getElementById('btnThemeClose');
+      const btnThemeExport = document.getElementById('btnThemeExport');
+      const importTheme = document.getElementById('importTheme');
+
+      function openDrawer() { if (!themeDrawer) return; themeDrawer.classList.add('open'); themeDrawer.setAttribute('aria-hidden', 'false') }
+      function closeDrawer() { if (!themeDrawer) return; themeDrawer.classList.remove('open'); themeDrawer.setAttribute('aria-hidden', 'true') }
+      if (btnTheme) btnTheme.addEventListener('click', openDrawer);
+      if (btnThemeClose) btnThemeClose.addEventListener('click', closeDrawer);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeDrawer() } });
+
+      // Preset clicks
+      document.querySelectorAll('.preset').forEach(el => {
+        el.addEventListener('click', () => {
+          const name = el.dataset.preset;
+          const base = (typeof defaultTheme === 'function') ? defaultTheme() : {};
+          const t = Object.assign({}, base, presets[name] || {});
+          if (typeof applyTheme === 'function') applyTheme(t);
+          if (typeof saveTheme === 'function') saveTheme(t);
+        });
+      });
+
+      // Export / Import
+      if (btnThemeExport && typeof loadTheme === 'function') {
+        btnThemeExport.addEventListener('click', () => {
+          const t = (typeof loadTheme === 'function') ? loadTheme() : {};
+          const blob = new Blob([JSON.stringify(t, null, 2)], { type: 'application/json' });
+          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'connectzap_theme.json'; a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 500);
+        });
+      }
+      if (importTheme) {
+        importTheme.addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0]; if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => { try { const t = JSON.parse(ev.target.result); if (typeof applyTheme === 'function') applyTheme(t); if (typeof saveTheme === 'function') saveTheme(t); } catch (err) { console.error('Tema inválido', err) } };
+          reader.readAsText(file); e.target.value = '';
+        });
+      }
+    })();
   </script>
 </body>
 
