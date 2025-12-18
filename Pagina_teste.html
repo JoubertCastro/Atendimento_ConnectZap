@@ -678,6 +678,17 @@
       <span class="sr-only">Conversas</span>
     </button>
 
+    <!-- Envio individual -->
+    <button id="tabBtnEnvioIndividual" class="btn-mini transition-transform active:scale-95 hidden" title="Envio individual"
+      aria-label="Envio individual" data-requires-login>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M22 2L11 13" />
+        <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+      </svg>
+      <span class="sr-only">Envio individual</span>
+    </button>
+
     <!-- Relatório -->
     <button id="tabBtnRelatorio" class="btn-mini transition-transform active:scale-95" title="Relatório"
       aria-label="Relatório" data-requires-login>
@@ -691,16 +702,6 @@
       <span class="sr-only">Relatório</span>
     </button>
 
-    <!-- Envio individual -->
-    <button id="tabBtnEnvioIndividual" class="btn-mini transition-transform active:scale-95 hidden" title="Envio individual"
-      aria-label="Envio individual" data-requires-login>
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M22 2L11 13" />
-        <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-      </svg>
-      <span class="sr-only">Envio individual</span>
-    </button>
   </nav>
 
   <!-- Tabs Wrapper -->
@@ -1715,7 +1716,8 @@
     const btnEnvIndIrParaConversa = document.getElementById('btnEnvIndIrParaConversa');
 
     function hasPermEnvioIndividual() {
-      return localStorage.getItem('agente_perm_envio_individual') === '1';
+      return localStorage.setItem("agente_perm_envio_individual", j.agente?.permite_envio_individual ? "1" : "0");
+            //localStorage.getItem('agente_perm_envio_individual') === '1';
     }
 
     function renderPermissaoEnvioIndividual() {
