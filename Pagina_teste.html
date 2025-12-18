@@ -1601,59 +1601,42 @@
       try { updateEnviarState(); } catch (_) {}
     }
 
+    /** ============== LIBERAR / CONCLUIR / LOGOUT ============== */
     btnLiberar.onclick = async () => {
       if (!selecionado) return;
-      if (!confirm('Liberar este atendimento?\n\nO cliente voltará para a fila e poderá ser atendido por outro operador.')) return;
-
-      btnLiberar.disabled = true;
-      btnConcluir.disabled = true;
       try {
-        await postJson(`${CONV_API}/api/tickets/liberar`, {
-          codigo_do_agente: AGENTE.codigo_do_agente,
-          remetente: selecionado.remetente,
-          phone_id: selecionado.phone_id,
-        });
+        const r = await fetch(`${CONV_API}/api/tickets/liberar`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id }) });
+        const j = await r.json();
+        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível liberar."); return; }
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id); delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
+        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id))); saveTickets(); renderTickets(); limparChat();
+        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; fecharMenuConcluir();
 
-        showModalFeedback('O cliente voltou para a fila.', 'Atendimento liberado');
-        resetAtendimentoUI();
-        await refreshTicketsMinhas();
-      } catch (err) {
-        console.error(err);
-        showModalFeedback((err && err.message) ? err.message : 'Erro ao liberar atendimento.', 'Falha ao liberar');
-        if (selecionado) {
-          btnLiberar.disabled = false;
-          btnConcluir.disabled = false;
-        }
-      }
+        // Segurança extra: ao liberar, removemos a seleção e interrompemos o polling de mensagens
+        selecionado = null;
+        if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+        if (typeof schedulePolls === 'function') schedulePolls();
+
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+      } catch (e) { alert("Erro ao liberar.") }
     };
 
     async function concluirAtendimento(motivo) {
       if (!selecionado) return;
-      if (!motivo) return;
-
-      if (!confirm(`Concluir este atendimento?\n\nMotivo: ${motivo}`)) return;
-
-      btnLiberar.disabled = true;
-      btnConcluir.disabled = true;
       try {
-        await postJson(`${CONV_API}/api/tickets/concluir`, {
-          codigo_do_agente: AGENTE.codigo_do_agente,
-          remetente: selecionado.remetente,
-          phone_id: selecionado.phone_id,
-          motivo,
-        });
+        btnConcluir.disabled = true;
+        const r = await fetch(`${CONV_API}/api/tickets/concluir`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo_do_agente: parseInt(agente.codigo || '0', 10), remetente: selecionado.remetente, phone_id: selecionado.phone_id, motivo }) });
+        const j = await r.json();
+        if (!r.ok || !j.ok) { alert(j.erro || "Não foi possível concluir."); btnConcluir.disabled = false; return; }
+        const k = keyFrom(selecionado.remetente, selecionado.phone_id); delete unreadCountByKey[k]; delete lastContatoTsByKey[k]; persistUnread();
+        tickets = tickets.filter((t) => (!(t.remetente === selecionado.remetente && t.phone_id === selecionado.phone_id))); saveTickets(); renderTickets(); limparChat();
+        elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
+        selecionado = null;
+        if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+        if (typeof schedulePolls === 'function') schedulePolls();
 
-        showModalFeedback(`Motivo: ${motivo}`, 'Atendimento concluído');
-        resetAtendimentoUI();
-        await refreshTicketsMinhas();
-      } catch (err) {
-        console.error(err);
-        showModalFeedback((err && err.message) ? err.message : 'Erro ao concluir atendimento.', 'Falha ao concluir');
-        if (selecionado) {
-          btnLiberar.disabled = false;
-          btnConcluir.disabled = false;
-        }
-      }
+        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+      } catch (e) { alert("Erro ao concluir."); btnConcluir.disabled = false; }
     }
 
 
