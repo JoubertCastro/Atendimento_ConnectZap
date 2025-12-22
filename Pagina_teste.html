@@ -1625,6 +1625,10 @@
         // Segurança extra: ao liberar, removemos a seleção e interrompemos o polling de mensagens
         selecionado = null;
         if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+        // Refresh imediato (evita "ticket fantasma" após Liberar/Concluir)
+        if (typeof refreshOrdemCarteira === 'function') { await refreshOrdemCarteira(); }
+        if (typeof refreshAtivosELimite === 'function') { await refreshAtivosELimite(); }
+
         if (typeof schedulePolls === 'function') schedulePolls();
 
         if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
@@ -1643,6 +1647,10 @@
         elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
         selecionado = null;
         if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
+        // Refresh imediato (evita "ticket fantasma" após Liberar/Concluir)
+        if (typeof refreshOrdemCarteira === 'function') { await refreshOrdemCarteira(); }
+        if (typeof refreshAtivosELimite === 'function') { await refreshAtivosELimite(); }
+
         if (typeof schedulePolls === 'function') schedulePolls();
 
         if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
