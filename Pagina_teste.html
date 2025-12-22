@@ -2719,31 +2719,80 @@
     }
 
     async function refreshOrdemCarteira() {
-      if (!agente.carteira) return;
-      const phoneIds = (carteiraToPhoneIds[agente.carteira] || []).map(String);
-      if (!phoneIds.length) return;
+      // Sincroniza "Minhas conversas" via endpoint do backend (tickets/minhas)
+      if (!agente.carteira || !agente.codigo) return;
+
       try {
-        const res = await fetch(`${CONV_API}/api/conversas/contatos`);
-        const contatos = await res.json();
-        const filtrados = (contatos || []).filter(c => phoneIds.includes(String(c.phone_id)));
-        filtrados.sort((a, b) => { const ai = a.status === 'in', bi = b.status === 'in'; if (ai !== bi) return bi - ai; return new Date(b.data_hora) - new Date(a.data_hora) });
-        ordemCache = filtrados;
-        const ticketByKey = new Map((tickets || []).map(t => [keyFrom(t.remetente, t.phone_id), t]));
-        filtrados.forEach(c => {
-          const k = keyFrom(c.remetente, c.phone_id);
-          const t = ticketByKey.get(k);
-          if (!t) { lastContatoTsByKey[k] = +new Date(c.data_hora || 0); return; }
-          const ts = +new Date(c.data_hora || 0);
-          const prev = lastContatoTsByKey[k] || 0;
-          const isOpen = !!(selecionado && selecionado.remetente === c.remetente && selecionado.phone_id === c.phone_id);
-          if (c.status === 'in' && ts > prev && !isOpen) { unreadCountByKey[k] = (unreadCountByKey[k] || 0) + 1; }
-          lastContatoTsByKey[k] = ts;
-          if (c.mensagem_final) t.mensagem_final = c.mensagem_final;
-          else if (c.ultima_mensagem) t.mensagem_final = c.ultima_mensagem;
-          if (c.data_hora) t.data_hora = c.data_hora;
-        });
-        persistUnread(); saveTickets(); renderTickets();
-      } catch (e) { console.error("Falha ao atualizar ordem", e) }
+        const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
+        const r = await fetch(url, { cache: "no-store" });
+        if (!r.ok) throw new Error("Erro tickets/minhas");
+
+        const rows = await r.json();
+        const lista = Array.isArray(rows) ? rows : [];
+
+        const selectedKey = selecionado ? keyFrom(selecionado.remetente, selecionado.phone_id) : null;
+
+        const prevByKey = new Map((tickets || []).map(t => [keyFrom(t.remetente, t.phone_id), t]));
+        const newTickets = [];
+        const newKeys = new Set();
+
+        for (const raw of lista) {
+          if (!raw || !raw.remetente) continue;
+
+          const k = keyFrom(raw.remetente, raw.phone_id);
+          newKeys.add(k);
+
+          // mantém campos locais (ex.: flags/UI) caso existam
+          const prev = prevByKey.get(k) || {};
+          const t = { ...prev, ...raw };
+          newTickets.push(t);
+
+          // Atualiza contadores de "não lidas" com base na última msg do ticket
+          const ts = raw.data_hora ? +new Date(raw.data_hora) : 0;
+          const prevTs = lastContatoTsByKey[k] || 0;
+
+          if (ts && ts > prevTs) {
+            if (String(raw.status || "").toLowerCase() === "in" && selectedKey !== k) {
+              unreadCountByKey[k] = (unreadCountByKey[k] || 0) + 1;
+            }
+            lastContatoTsByKey[k] = ts;
+          }
+
+          // Se está aberto, zera badge
+          if (selectedKey === k) unreadCountByKey[k] = 0;
+        }
+
+        // Remove lixo de chaves que não existem mais na carteira do agente (conversa concluída/reatribuída)
+        for (const k of Object.keys(unreadCountByKey)) { if (!newKeys.has(k)) delete unreadCountByKey[k]; }
+        for (const k of Object.keys(lastContatoTsByKey)) { if (!newKeys.has(k)) delete lastContatoTsByKey[k]; }
+
+        tickets = newTickets;
+        ordemCache = newTickets;
+
+        saveTickets();
+        persistUnread();
+
+        // Atualiza referência do selecionado (para refletir nome_exibicao/mensagem_final/hora atualizados)
+        if (selectedKey) {
+          const found = tickets.find(t => keyFrom(t.remetente, t.phone_id) === selectedKey);
+          if (found) {
+            selecionado = found;
+          } else {
+            // conversa não está mais ativa para esse agente
+            selecionado = null;
+            try { if (msgsCtrl) msgsCtrl.abort(); } catch { }
+            limparChat();
+            elTitulo.textContent = "Minhas conversas";
+            elSubInfo.textContent = "";
+            textarea.value = ""; textarea.disabled = true;
+            btnEnviar.disabled = true; btnLiberar.disabled = true; btnConcluir.disabled = true;
+          }
+        }
+
+        renderTickets();
+      } catch (e) {
+        console.error("Falha ao atualizar ordem", e);
+      }
     }
 
     async function refreshAtivosELimite() {
