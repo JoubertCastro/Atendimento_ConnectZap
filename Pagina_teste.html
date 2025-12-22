@@ -1456,6 +1456,7 @@
     let ordemCache = []; let pieChart = null; // status
     let chartMotivos = null; // motivos
     let typingTimer = null;
+    let activeTab = 'home';
 
     // Avisos
     let notices = [];
@@ -1464,7 +1465,7 @@
 
     /** ============== UTILS ============== */
     const DOC_PREVIEW_MAX = 2 * 1024 * 1024;
-    const POLL_ACTIVE_MS = 5000, POLL_HIDDEN_MS = 30000;
+    const POLL_ACTIVE_MS = 5000, POLL_BG_MS = 15000, POLL_HIDDEN_MS = 30000;
     const fmtHoraBR = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
     const fmtDataBR = new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/Sao_Paulo' });
     function fmtYMD(d) { const z = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}` }
@@ -1482,8 +1483,25 @@
     function loadUnread() { try { const { unread, lastTs } = storageKeys(); unreadCountByKey = JSON.parse(localStorage.getItem(unread) || "{}"); lastContatoTsByKey = JSON.parse(localStorage.getItem(lastTs) || "{}") } catch { unreadCountByKey = {}; lastContatoTsByKey = {} } }
     function persistUnread() { try { const { unread, lastTs } = storageKeys(); localStorage.setItem(unread, JSON.stringify(unreadCountByKey)); localStorage.setItem(lastTs, JSON.stringify(lastContatoTsByKey)) } catch { } }
     function keyFrom(remetente, phone_id) { return `${remetente}|${phone_id || ''}` }
-    function schedulePolls() { if (pollingContatos) clearInterval(pollingContatos); if (pollingMensagens) clearInterval(pollingMensagens); const gap = document.hidden ? POLL_HIDDEN_MS : POLL_ACTIVE_MS; pollingContatos = setInterval(refreshOrdemCarteira, gap); if (selecionado) { pollingMensagens = setInterval(() => { if (!userTyping && !isModalOpen && selecionado) carregarMensagens(true) }, gap) } }
-    document.addEventListener('visibilitychange', schedulePolls);
+    function schedulePolls() {
+  if (pollingContatos) clearInterval(pollingContatos);
+  if (pollingMensagens) clearInterval(pollingMensagens);
+
+  // Ajuste de performance:
+  // - Em abas fora de "Conversas", diminui o polling de tickets (evita bater no endpoint a cada 5s sem necessidade)
+  // - Mensagens só fazem polling quando a aba "Conversas" está ativa
+  const gapTickets = document.hidden ? POLL_HIDDEN_MS : (activeTab === 'conversas' ? POLL_ACTIVE_MS : POLL_BG_MS);
+  const gapMsgs = document.hidden ? POLL_HIDDEN_MS : (activeTab === 'conversas' ? POLL_ACTIVE_MS : null);
+
+  pollingContatos = setInterval(() => refreshOrdemCarteira({ mode: 'poll' }), gapTickets);
+
+  if (selecionado && gapMsgs) {
+    pollingMensagens = setInterval(() => {
+      if (!userTyping && !isModalOpen && selecionado && activeTab === 'conversas') carregarMensagens(true);
+    }, gapMsgs);
+  }
+}
+document.addEventListener('visibilitychange', schedulePolls);
 
     function timeAgo(iso) {
       if (!iso) return '';
@@ -1625,13 +1643,16 @@
         // Segurança extra: ao liberar, removemos a seleção e interrompemos o polling de mensagens
         selecionado = null;
         if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
-        // Refresh imediato (evita "ticket fantasma" após Liberar/Concluir)
-        if (typeof refreshOrdemCarteira === 'function') { await refreshOrdemCarteira(); }
-        if (typeof refreshAtivosELimite === 'function') { await refreshAtivosELimite(); }
+        
+// Refresh inteligente: evita duplicar chamadas (se um refresh automático estiver em voo, reaproveita)
+await refreshOrdemCarteira({ mode: 'action', expectGoneKey: k });
 
-        if (typeof schedulePolls === 'function') schedulePolls();
+// Limite é cacheado; não precisa travar a UI aguardando
+refreshAtivosELimite();
 
-        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+if (typeof schedulePolls === 'function') schedulePolls();
+
+ativosCount = tickets.length; renderAtivosLimiteUI();
       } catch (e) { alert("Erro ao liberar.") }
     };
 
@@ -1647,13 +1668,16 @@
         elTitulo.textContent = "Selecione um ticket"; elSubInfo.textContent = ""; btnLiberar.disabled = true; btnConcluir.disabled = true; selecionado = null;
         selecionado = null;
         if (typeof msgsCtrl !== 'undefined' && msgsCtrl) { try { msgsCtrl.abort(); } catch { } }
-        // Refresh imediato (evita "ticket fantasma" após Liberar/Concluir)
-        if (typeof refreshOrdemCarteira === 'function') { await refreshOrdemCarteira(); }
-        if (typeof refreshAtivosELimite === 'function') { await refreshAtivosELimite(); }
+        
+// Refresh inteligente: evita duplicar chamadas (se um refresh automático estiver em voo, reaproveita)
+await refreshOrdemCarteira({ mode: 'action', expectGoneKey: k });
 
-        if (typeof schedulePolls === 'function') schedulePolls();
+// Limite é cacheado; não precisa travar a UI aguardando
+refreshAtivosELimite();
 
-        if (ativosCount > 0) ativosCount--; renderAtivosLimiteUI();
+if (typeof schedulePolls === 'function') schedulePolls();
+
+ativosCount = tickets.length; renderAtivosLimiteUI();
       } catch (e) { alert("Erro ao concluir."); btnConcluir.disabled = false; }
     }
 
@@ -2145,6 +2169,10 @@
         tabHome.classList.remove('hidden');
         tabBtnHome.classList.add('active');
       }
+
+      // Performance: ajusta o polling conforme a aba ativa
+      activeTab = tab;
+      try { schedulePolls(); } catch (_) { }
     }
 
     /** ============== ENVIO INDIVIDUAL (ligacao_caiu) — AJUSTE 1 ============== */
@@ -2747,94 +2775,169 @@
       }
     }
 
-    async function refreshOrdemCarteira() {
-      // Sincroniza "Minhas conversas" via endpoint do backend (tickets/minhas)
-      if (!agente.carteira || !agente.codigo) return;
+    
+// ===== PERFORMANCE: refresh de "Minhas conversas" sem chamadas duplicadas =====
+let __ticketsRefreshPromise = null;
+let __ticketsRefreshStartedAt = 0;
+let __ticketsRefreshLastAppliedAt = 0;
+let __ticketsRefreshSeq = 0;
 
-      try {
-        const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
-        const r = await fetch(url, { cache: "no-store" });
-        if (!r.ok) throw new Error("Erro tickets/minhas");
+// Quando uma ação (liberar/concluir) acontece, esperamos que um ticket SUMA.
+// Se um refresh automático estiver em voo, aguardamos ele e só forçamos outro caso necessário.
+let __expectGoneKey = null;
+let __expectGoneUntil = 0;
 
-        const rows = await r.json();
-        const lista = Array.isArray(rows) ? rows : [];
+// Cache do limite por agente (evita bater no endpoint a cada refresh/ação)
+const __LIMIT_CACHE_MS = 60000;
+let __limitCache = { ts: 0, value: 0 };
 
-        const selectedKey = selecionado ? keyFrom(selecionado.remetente, selecionado.phone_id) : null;
+async function refreshOrdemCarteira(opts = {}) {
+  // Sincroniza "Minhas conversas" via endpoint do backend (tickets/minhas)
+  if (!agente.carteira || !agente.codigo) return;
 
-        const prevByKey = new Map((tickets || []).map(t => [keyFrom(t.remetente, t.phone_id), t]));
-        const newTickets = [];
-        const newKeys = new Set();
+  const mode = opts.mode || 'poll';          // 'poll' | 'action' | 'boot' | 'force'
+  const force = !!opts.force || mode === 'force';
+  const expectGoneKey = opts.expectGoneKey || null;
 
-        for (const raw of lista) {
-          if (!raw || !raw.remetente) continue;
+  const now = Date.now();
 
-          const k = keyFrom(raw.remetente, raw.phone_id);
-          newKeys.add(k);
+  if (expectGoneKey) {
+    __expectGoneKey = expectGoneKey;
+    __expectGoneUntil = now + 5000; // 5s para o ticket desaparecer no backend
+  }
 
-          // mantém campos locais (ex.: flags/UI) caso existam
-          const prev = prevByKey.get(k) || {};
-          const t = { ...prev, ...raw };
-          newTickets.push(t);
+  // Se já existe um refresh em andamento, reaproveita (não cria outra chamada)
+  if (__ticketsRefreshPromise) {
+    try { await __ticketsRefreshPromise; } catch { }
 
-          // Atualiza contadores de "não lidas" com base na última msg do ticket
-          const ts = raw.data_hora ? +new Date(raw.data_hora) : 0;
-          const prevTs = lastContatoTsByKey[k] || 0;
-
-          if (ts && ts > prevTs) {
-            if (String(raw.status || "").toLowerCase() === "in" && selectedKey !== k) {
-              unreadCountByKey[k] = (unreadCountByKey[k] || 0) + 1;
-            }
-            lastContatoTsByKey[k] = ts;
-          }
-
-          // Se está aberto, zera badge
-          if (selectedKey === k) unreadCountByKey[k] = 0;
+    // Em modo "action", se o ticket ainda aparece (possível corrida), força 1 refresh extra (raríssimo)
+    if (mode === 'action') {
+      const keyToCheck = expectGoneKey || (__expectGoneUntil > Date.now() ? __expectGoneKey : null);
+      if (keyToCheck) {
+        const stillThere = (tickets || []).some(t => keyFrom(t.remetente, t.phone_id) === keyToCheck);
+        if (stillThere) {
+          await new Promise(r => setTimeout(r, 180)); // dá tempo do commit no backend
+          return refreshOrdemCarteira({ mode: 'force', force: true });
         }
-
-        // Remove lixo de chaves que não existem mais na carteira do agente (conversa concluída/reatribuída)
-        for (const k of Object.keys(unreadCountByKey)) { if (!newKeys.has(k)) delete unreadCountByKey[k]; }
-        for (const k of Object.keys(lastContatoTsByKey)) { if (!newKeys.has(k)) delete lastContatoTsByKey[k]; }
-
-        tickets = newTickets;
-        ordemCache = newTickets;
-
-        saveTickets();
-        persistUnread();
-
-        // Atualiza referência do selecionado (para refletir nome_exibicao/mensagem_final/hora atualizados)
-        if (selectedKey) {
-          const found = tickets.find(t => keyFrom(t.remetente, t.phone_id) === selectedKey);
-          if (found) {
-            selecionado = found;
-          } else {
-            // conversa não está mais ativa para esse agente
-            selecionado = null;
-            try { if (msgsCtrl) msgsCtrl.abort(); } catch { }
-            limparChat();
-            elTitulo.textContent = "Minhas conversas";
-            elSubInfo.textContent = "";
-            textarea.value = ""; textarea.disabled = true;
-            btnEnviar.disabled = true; btnLiberar.disabled = true; btnConcluir.disabled = true;
-          }
-        }
-
-        renderTickets();
-      } catch (e) {
-        console.error("Falha ao atualizar ordem", e);
       }
     }
+    return;
+  }
 
-    async function refreshAtivosELimite() {
-      try {
-        const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo || '')}&carteira=${encodeURIComponent(agente.carteira || '')}`;
-        const r = await fetch(url); const rows = r.ok ? await r.json() : []; ativosCount = Array.isArray(rows) ? rows.length : 0;
-      } catch { ativosCount = tickets.length }
-      try {
-        const j = await fetch(`${CONV_API}/api/supervisao/tickets-limit?carteira=${encodeURIComponent(agente.carteira || '')}`).then(r => r.json());
-        limitPerAgent = Number(j.limit_per_agent || 0);
-      } catch { limitPerAgent = 0 }
+  // Throttle simples (evita chamadas coladas em sequência)
+  const MIN_GAP_MS = 650;
+  if (!force && mode === 'poll' && (now - __ticketsRefreshLastAppliedAt) < MIN_GAP_MS) return;
+
+  const seq = ++__ticketsRefreshSeq;
+  __ticketsRefreshStartedAt = now;
+
+  __ticketsRefreshPromise = (async () => {
+    try {
+      const url = `${CONV_API}/api/tickets/minhas?agente=${encodeURIComponent(agente.codigo)}&carteira=${encodeURIComponent(agente.carteira)}`;
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) throw new Error("Erro tickets/minhas");
+
+      const rows = await r.json();
+      const lista = Array.isArray(rows) ? rows : [];
+
+      // Se chegou resposta de um refresh "antigo", ignora
+      if (seq !== __ticketsRefreshSeq) return;
+
+      const selectedKey = selecionado ? keyFrom(selecionado.remetente, selecionado.phone_id) : null;
+
+      const prevByKey = new Map((tickets || []).map(t => [keyFrom(t.remetente, t.phone_id), t]));
+      const newTickets = [];
+      const newKeys = new Set();
+
+      for (const raw of lista) {
+        if (!raw || !raw.remetente) continue;
+
+        const k = keyFrom(raw.remetente, raw.phone_id);
+        newKeys.add(k);
+
+        // mantém campos locais (ex.: flags/UI) caso existam
+        const prev = prevByKey.get(k) || {};
+        const t = { ...prev, ...raw };
+        newTickets.push(t);
+
+        // Atualiza contadores de "não lidas" com base na última msg do ticket
+        const ts = raw.data_hora ? +new Date(raw.data_hora) : 0;
+        const prevTs = lastContatoTsByKey[k] || 0;
+
+        if (ts && ts > prevTs) {
+          if (String(raw.status || "").toLowerCase() === "in" && selectedKey !== k) {
+            unreadCountByKey[k] = (unreadCountByKey[k] || 0) + 1;
+          }
+          lastContatoTsByKey[k] = ts;
+        }
+
+        // Se está aberto, zera badge
+        if (selectedKey === k) unreadCountByKey[k] = 0;
+      }
+
+      // Remove lixo de chaves que não existem mais na carteira do agente (conversa concluída/reatribuída)
+      for (const k of Object.keys(unreadCountByKey)) { if (!newKeys.has(k)) delete unreadCountByKey[k]; }
+      for (const k of Object.keys(lastContatoTsByKey)) { if (!newKeys.has(k)) delete lastContatoTsByKey[k]; }
+
+      tickets = newTickets;
+      ordemCache = newTickets;
+      ativosCount = newTickets.length;
+
+      saveTickets();
+      persistUnread();
+
+      // Atualiza referência do selecionado (para refletir nome_exibicao/mensagem_final/hora atualizados)
+      if (selectedKey) {
+        const found = tickets.find(t => keyFrom(t.remetente, t.phone_id) === selectedKey);
+        if (found) {
+          selecionado = found;
+        } else {
+          // conversa não está mais ativa para esse agente
+          selecionado = null;
+          try { if (msgsCtrl) msgsCtrl.abort(); } catch { }
+          limparChat();
+          elTitulo.textContent = "Minhas conversas";
+          elSubInfo.textContent = "";
+          textarea.value = ""; textarea.disabled = true;
+          btnEnviar.disabled = true; btnLiberar.disabled = true; btnConcluir.disabled = true;
+        }
+      }
+
+      renderTickets();
       renderAtivosLimiteUI();
+      __ticketsRefreshLastAppliedAt = Date.now();
+    } catch (e) {
+      console.error("Falha ao atualizar ordem", e);
     }
+  })().finally(() => {
+    __ticketsRefreshPromise = null;
+  });
+
+  return __ticketsRefreshPromise;
+}
+
+async function refreshAtivosELimite(forceLimit = false) {
+  // ativos = o que já carregamos em memória (evita outro GET tickets/minhas só pra contar)
+  ativosCount = Array.isArray(tickets) ? tickets.length : 0;
+
+  try {
+    const now = Date.now();
+    if (!forceLimit && __limitCache.ts && (now - __limitCache.ts) < __LIMIT_CACHE_MS) {
+      limitPerAgent = Number(__limitCache.value || 0);
+      renderAtivosLimiteUI();
+      return;
+    }
+
+    const j = await fetch(`${CONV_API}/api/supervisao/tickets-limit?carteira=${encodeURIComponent(agente.carteira || '')}`, { cache: "no-store" }).then(r => r.json());
+    limitPerAgent = Number(j.limit_per_agent || 0);
+    __limitCache = { ts: now, value: limitPerAgent };
+  } catch {
+    limitPerAgent = 0;
+    __limitCache = { ts: Date.now(), value: 0 };
+  }
+
+  renderAtivosLimiteUI();
+}
 
     function renderAtivosLimiteUI() {
       badgeAtivos.textContent = String(ativosCount);
@@ -2983,6 +3086,8 @@ function renderTickets(filtro = "") {
     }
 
     let msgsCtrl = null;
+    let msgsRefreshPromise = null;
+    let msgsRefreshLastAt = 0;
     async function abrirTicket(t) {
       selecionado = t;
 
@@ -3008,20 +3113,45 @@ function renderTickets(filtro = "") {
     }
     function startMensagensPoll() { schedulePolls() }
 
-    async function carregarMensagens(incremental = true) {
-      if (!selecionado) return;
-      let url = `${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`; if (selecionado.phone_id) url += `?phone_id=${encodeURIComponent(selecionado.phone_id)}`;
-      try {
-        const r = await fetch(url, { signal: msgsCtrl?.signal }); if (!r.ok) throw new Error("Erro histórico");
-        const msgs = await r.json(); msgs.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
-        if (!incremental) { chat.innerHTML = ""; lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); }
-        const isNearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 200;
-        msgs.forEach(m => renderMsg(m, incremental));
-        if (isNearBottom) requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" }));
-      } catch (e) { if (String(e?.name) !== "AbortError") console.error(e) }
-    }
+    
+async function carregarMensagens(incremental = true) {
+  if (!selecionado) return;
 
-    function renderMsg(m, incremental) {
+  // Performance: evita chamadas concorrentes (setInterval + envio + re-render)
+  if (msgsRefreshPromise) return msgsRefreshPromise;
+
+  const now = Date.now();
+  const MIN_GAP_MS = 650;
+  if (incremental && (now - msgsRefreshLastAt) < MIN_GAP_MS) return;
+  msgsRefreshLastAt = now;
+
+  msgsRefreshPromise = (async () => {
+    let url = `${CONV_API}/api/conversas/${encodeURIComponent(selecionado.remetente)}`;
+    if (selecionado.phone_id) url += `?phone_id=${encodeURIComponent(selecionado.phone_id)}`;
+
+    try {
+      const r = await fetch(url, { signal: msgsCtrl?.signal });
+      if (!r.ok) throw new Error("Erro histórico");
+
+      const msgs = await r.json();
+      msgs.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
+
+      if (!incremental) { chat.innerHTML = ""; lastTimestampMs = null; lastDayRendered = null; renderedKeys.clear(); }
+
+      const isNearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 200;
+      msgs.forEach(m => renderMsg(m, incremental));
+      if (isNearBottom) requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" }));
+    } catch (e) {
+      if (String(e?.name) !== "AbortError") console.error(e);
+    }
+  })().finally(() => {
+    msgsRefreshPromise = null;
+  });
+
+  return msgsRefreshPromise;
+}
+
+function renderMsg(m, incremental) {
       const tMs = new Date(m.data_hora).getTime();
       const key = `${m.data_hora}|${m.status}|${m.mensagem_final || m.tipo || ""}`;
       if (renderedKeys.has(key)) return;
