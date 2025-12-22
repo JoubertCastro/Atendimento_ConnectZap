@@ -2432,7 +2432,17 @@
         primeiro_nome,
         to: to_msisdn,
         telefone: to_msisdn,
-        nome: primeiro_nome
+        nome: primeiro_nome,
+
+        // ✅ envia também info do agente/carteira para o backend conseguir criar a conversa
+        codigo_do_agente: parseInt(agente?.codigo || 0, 10) || null,
+        nome_agente: agente?.nome || null,
+        carteira: agente?.carteira || null,
+        agente: {
+          codigo_do_agente: parseInt(agente?.codigo || 0, 10) || null,
+          nome_agente: agente?.nome || null,
+          carteira: agente?.carteira || null
+        }
       };
 
       envIndUpdatePhoneIdLabel(phone_id);
@@ -2462,23 +2472,27 @@
             const okByHttp = !!(r && r.ok);
             if (okByHttp || okByJson) {
               envIndSetResultCompact({ __kind: 'success', __statusText: 'Sucesso' });
+
+              // ✅ Reserva/cria conversa em andamento (mesma regra do 'pedir prioridade')
+              const reserva = await reservarConversaPosLigacaoCaiu(to_msisdn, phone_id);
+
+              if (reserva.ok && reserva.warn) {
+                (window.toast ? toast(reserva.message || "Mensagem enviada ✅ (outro operador já atende este cliente).", "warning")
+                              : alert(reserva.message || "Mensagem enviada ✅ (outro operador já atende este cliente)."));
+              } else if (reserva.ok) {
+                (window.toast ? toast("Mensagem enviada ✅ e conversa criada/reservada.", "success")
+                              : alert("Mensagem enviada ✅ e conversa criada/reservada."));
+              } else {
+                // não bloqueia o envio
+                (window.toast ? toast("Mensagem enviada ✅, mas não consegui reservar/criar a conversa.", "warning")
+                              : alert("Mensagem enviada ✅, mas não consegui reservar/criar a conversa."));
+              }
+
+              // Atualiza lista 'Minhas conversas' via tickets/minhas
+              try { await refreshOrdemCarteira(); } catch { }
+
               showModalFeedback('Template enviado com sucesso.', 'Envio individual', 1200);
               return;
-            }
-
-            // ✅ NOVO: tenta reservar/criar a conversa após o envio
-            const reserva = await reservarConversaPosLigacaoCaiu(telefone);
-
-            if (reserva.ok && reserva.warn) {
-              (window.toast ? toast(reserva.message || "Mensagem enviada ✅ (outro operador já atende este cliente).", "warning")
-                            : alert(reserva.message || "Mensagem enviada ✅ (outro operador já atende este cliente)."));
-            } else if (reserva.ok) {
-              (window.toast ? toast("Mensagem enviada ✅ e conversa criada/reservada.", "success")
-                            : alert("Mensagem enviada ✅ e conversa criada/reservada."));
-            } else {
-              // não bloqueia o envio
-              (window.toast ? toast("Mensagem enviada ✅, mas não consegui reservar/criar a conversa.", "warning")
-                            : alert("Mensagem enviada ✅, mas não consegui reservar/criar a conversa."));
             }
 
             // JSON de erro explícito
@@ -2529,19 +2543,26 @@
       }
     }
 
-      async function reservarConversaPosLigacaoCaiu(telefone) {
+      async function reservarConversaPosLigacaoCaiu(telefone, phone_id) {
         const tel = String(telefone || "").replace(/\D/g, "");
         if (!tel) return { ok: false, warn: true, message: "Telefone inválido para reservar conversa." };
 
         const codigo = parseInt((agente && agente.codigo) ? agente.codigo : "0", 10);
         const carteira = (agente && agente.carteira) ? agente.carteira : "";
 
-        // payload “compatível” (manda remetente e telefone)
+        const pid = String(phone_id || "").trim();
+        if (!pid) return { ok: false, warn: true, message: "Phone ID ausente para reservar conversa." };
+
+        // payload compatível (manda remetente + phone_id + info do agente)
         const payload = {
           codigo_do_agente: codigo,
+          nome_agente: (agente && agente.nome) ? agente.nome : null,
           carteira,
+          phone_id: pid,
           remetente: tel,
-          telefone: tel
+          telefone: tel,
+          to_msisdn: tel,
+          agente: { codigo_do_agente: codigo, nome_agente: (agente && agente.nome) ? agente.nome : null, carteira, phone_id: pid }
         };
 
         const headers = { "Content-Type": "application/json" };
