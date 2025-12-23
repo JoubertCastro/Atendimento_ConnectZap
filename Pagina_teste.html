@@ -3195,6 +3195,59 @@ function renderMsg(m, incremental) {
       } catch { alert("Erro ao carregar imagem"); btn.disabled = false; btn.textContent = "👁 Ver imagem" }
     }
 
+    async function carregarAudio(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/audio/${encodeURIComponent(msg_id)}`);
+        const j = await r.json().catch(() => ({}));
+        if (j.ok && j.data_uri) {
+          const audio = document.createElement("audio");
+          audio.controls = true;
+          audio.preload = "metadata";
+          audio.src = j.data_uri;
+          audio.className = "mt-2 w-full";
+          div.insertBefore(audio, btn);
+          btn.remove();
+          // tentativa de tocar (pode ser bloqueado pelo navegador)
+          try { await audio.play(); } catch { /* ignore */ }
+        } else {
+          btn.textContent = (j && j.erro) ? "Áudio indisponível" : "Áudio indisponível";
+          btn.disabled = false;
+        }
+      } catch (e) {
+        console.error("Erro ao carregar áudio", e);
+        btn.textContent = "Erro ao carregar áudio";
+        btn.disabled = false;
+      }
+    }
+
+    async function carregarDocumento(div, btn, msg_id) {
+      btn.disabled = true; btn.textContent = "⏳ Carregando…";
+      try {
+        const r = await fetch(`${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}`);
+        const j = await r.json().catch(() => ({}));
+        if (j.ok && j.data_uri) {
+          const a = document.createElement("a");
+          a.href = j.data_uri;
+          a.target = "_blank";
+          a.rel = "noopener";
+          a.className = "underline mt-2 inline-block";
+          a.style.color = "var(--link)";
+          a.textContent = "📎 Abrir documento";
+          div.insertBefore(a, btn);
+          btn.remove();
+        } else {
+          btn.textContent = "Documento indisponível";
+          btn.disabled = false;
+        }
+      } catch (e) {
+        console.error("Erro ao carregar documento", e);
+        btn.textContent = "Erro ao carregar documento";
+        btn.disabled = false;
+      }
+    }
+
+
     // ==== Modal de imagem ====
     const imageModal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImg');
