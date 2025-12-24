@@ -3221,27 +3221,23 @@ function renderMsg(m, incremental) {
     async function carregarDocumento(div, btn, msg_id) {
       btn.disabled = true; btn.textContent = "⏳ Carregando…";
       try {
-        const r = await fetch(`${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}`);
-        const j = await r.json().catch(() => ({}));
-        if (j.ok && j.data_uri) {
-          const a = document.createElement("a");
-          a.href = j.data_uri;
-          a.target = "_blank";
-          a.rel = "noopener";
-          a.className = "underline mt-2 inline-block";
-          a.style.color = "var(--link)";
-          a.textContent = "📎 Abrir documento";
-          div.insertBefore(a, btn);
-          btn.remove();
+        const r = await fetch(`${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}`); const j = await r.json();
+        if (!j.ok) throw new Error(j.erro || "Falha no backend");
+        const filename = j.filename || "arquivo"; const mime = j.mime_type || "application/octet-stream"; const size = j.size_bytes ?? null;
+        const box = document.createElement("div"); box.className = "mt-2 space-y-1";
+        if (mime.startsWith("application/pdf") && j.data_uri && (size === null || size <= DOC_PREVIEW_MAX)) {
+          const preview = document.createElement("embed"); preview.src = j.data_uri; preview.type = mime; preview.className = "w-[260px] h-[200px] rounded border"; preview.style.borderColor = getCss('--border'); box.appendChild(preview);
+          const meta = document.createElement("div"); meta.className = "text-xs"; meta.style.color = getCss('--muted');
+          const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+          meta.innerHTML = `<div class="font-semibold truncate">${escapeHtml(filename)}</div><div>${size ? bytesToHuman(size) : ""}</div><a href="${link}" target="_blank" rel="noopener noreferrer" class="underline" style="color:var(--link)">Abrir/baixar</a>`; box.appendChild(meta);
         } else {
-          btn.textContent = "Documento indisponível";
-          btn.disabled = false;
+          const link = `${CONV_API}/api/conversas/document/${encodeURIComponent(msg_id)}/download`;
+          const row = document.createElement("div"); row.className = "flex items-start gap-2";
+          row.innerHTML = `<div class="text-xl leading-none">📎</div><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(filename)}</div><div class="text-xs" style="color:var(--muted)">${escapeHtml(mime)} ${size ? ("• " + bytesToHuman(size)) : ""}</div><a href="${link}" target="_blank" rel="noopener noreferrer" class="underline break-all" style="color:var(--link)">Baixar documento</a></div>`;
+          box.appendChild(row);
         }
-      } catch (e) {
-        console.error("Erro ao carregar documento", e);
-        btn.textContent = "Erro ao carregar documento";
-        btn.disabled = false;
-      }
+        div.insertBefore(box, btn); btn.remove();
+      } catch (e) { console.error(e); alert("Erro ao carregar documento"); btn.disabled = false; btn.textContent = "📎 Ver documento" }
     }
 
 
