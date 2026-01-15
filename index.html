@@ -1443,7 +1443,7 @@
     const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
 
     /** ============== CARTEIRAS / Phone IDs ============== */
-    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "802977069563598": "Recovery PF", "938298879357445": "Recovery Preventivo", "897647883433681": "Recovery Manutenção", "821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
+    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "802977069563598": "Recovery PF", "938298879357445": "Recovery Preventivo", "897647883433681": "Recovery Manutenção", "821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero_P2", "922259637643727": "DivZero_LP", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
         const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
 
     /** ============== ESTADO ============== */
