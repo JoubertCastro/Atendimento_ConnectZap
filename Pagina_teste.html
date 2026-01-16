@@ -1395,27 +1395,63 @@
 
   </div>
 
-  <!-- MODAL DE LOGIN -->
-  <div id="modalLogin" class="modal">
+    <!-- MODAL DE LOGIN -->
+  <div id="modalLogin" class="modal" aria-live="polite" aria-modal="true" role="dialog">
     <div class="modal-inner">
       <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--border)">
-        <h3 class="font-semibold">Identifique-se</h3>
+        <h3 id="loginTitle" class="font-semibold">Identifique-se</h3>
         <button class="btn btn-ghost px-2 py-1 text-xs" onclick="fecharModalLogin()" aria-label="Fechar">✖</button>
       </div>
+
       <div class="p-4 space-y-3">
-        <label class="block text-sm muted">Informe seu código de agente</label>
-        <input id="loginCodigoAgente" inputmode="numeric" pattern="[0-9]*" class="w-full p-2 border rounded-md"
-          placeholder="Ex: 101" />
-        <p class="text-xs muted">Seja bem-vindo(a) ao ConnectZap.</p>
+        <div class="space-y-1">
+          <label class="block text-sm muted">Código do agente</label>
+          <input id="loginCodigoAgente" inputmode="numeric" pattern="[0-9]*" class="w-full p-2 border rounded-md" placeholder="Ex: 101" autocomplete="username" />
+        </div>
+
+        <!-- Modo LOGIN -->
+        <div id="loginSection" class="space-y-2">
+          <div class="space-y-1">
+            <label class="block text-sm muted">Senha</label>
+            <input id="loginSenha" type="password" class="w-full p-2 border rounded-md" placeholder="Sua senha" autocomplete="current-password" />
+          </div>
+          <div class="flex items-center justify-between">
+            <p id="loginHint" class="text-xs muted">Seja bem-vindo(a) ao ConnectZap.</p>
+            <button id="btnLoginCriarSenha" type="button" class="text-xs" style="color:var(--link)">Criar/trocar senha</button>
+          </div>
+        </div>
+
+        <!-- Modo CRIAR/TROCAR SENHA -->
+        <div id="senhaSection" class="hidden space-y-3">
+          <div id="senhaAtualWrap" class="hidden space-y-1">
+            <label class="block text-sm muted">Senha atual</label>
+            <input id="senhaAtual" type="password" class="w-full p-2 border rounded-md" placeholder="Sua senha atual" autocomplete="current-password" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-sm muted">Nova senha</label>
+            <input id="novaSenha" type="password" class="w-full p-2 border rounded-md" placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-sm muted">Confirmar nova senha</label>
+            <input id="confirmarSenha" type="password" class="w-full p-2 border rounded-md" placeholder="Repita a nova senha" autocomplete="new-password" />
+          </div>
+
+          <p id="senhaHint" class="text-xs muted">Sua senha expira a cada 90 dias.</p>
+        </div>
+
         <div id="loginErro" class="text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
       </div>
+
       <div class="p-4 border-t flex items-center justify-end gap-2" style="border-color:var(--border)">
-        <button class="btn btn-neutral px-3 py-2 text-sm" onclick="fecharModalLogin()">Cancelar</button>
-        <button id="btnDoLogin" class="px-3 py-2 text-sm text-white rounded-md"
-          style="background:var(--primary)">Confirmar</button>
+        <button id="btnLoginBack" class="btn btn-neutral px-3 py-2 text-sm hidden" type="button">Voltar</button>
+        <button class="btn btn-neutral px-3 py-2 text-sm" onclick="fecharModalLogin()" type="button">Cancelar</button>
+        <button id="btnDoLogin" class="px-3 py-2 text-sm text-white rounded-md" style="background:var(--primary)" type="button">Entrar</button>
       </div>
     </div>
   </div>
+
 
   <!-- MODAL DE FEEDBACK CURTO (logout / login required) -->
   <div id="modalFeedback" class="modal" aria-live="polite" aria-modal="true" role="dialog">
@@ -1443,7 +1479,7 @@
     const NOTICES_API = () => `${FILA_API}/painel/avisos_agentes${agente?.carteira ? `?carteira=${encodeURIComponent(agente.carteira)}` : ''}`;
 
     /** ============== CARTEIRAS / Phone IDs ============== */
-    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "802977069563598": "Recovery PF", "938298879357445": "Recovery Preventivo", "897647883433681": "Recovery Manutenção", "821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
+    const phoneIdMap = { "789025174304270": "ConnectZap", "805610009301153": "Banco PAN", "727586317113885": "Recovery PJ", "802977069563598": "Recovery PF", "938298879357445": "Recovery Preventivo", "897647883433681": "Recovery Manutenção", "821562937700669": "Mercado Pago Cobrança", "779797401888141": "DivZero_P2", "922259637643727": "DivZero_LP", "829210283602406": "Arc4U","905309685992125": "Arc4U Veiculos", "713021321904495": "Serasa", "803535039503723": "Mercado Pago Vendas" };
         const carteiraToPhoneIds = Object.entries(phoneIdMap).reduce((acc, [ids, nome]) => { const parts = String(ids).split(',').map(s => s.trim()).filter(Boolean); acc[nome] = Array.from(new Set([...(acc[nome] || []), ...parts])); return acc; }, {})
 
     /** ============== ESTADO ============== */
@@ -1891,31 +1927,320 @@ ativosCount = tickets.length; renderAtivosLimiteUI();
       document.getElementById('tabsWrapper')?.classList.remove('hidden');
     }
 
-    /** ============== LOGIN MODAL ============== */
+        /** ============== LOGIN MODAL ============== */
     function isLogged() { try { return !!localStorage.getItem('agente_codigo') } catch { return false } }
-    function abrirModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'flex'; setTimeout(() => document.getElementById('loginCodigoAgente').focus(), 50); isModalOpen = true }
-    function fecharModalLogin() { const m = document.getElementById('modalLogin'); m.style.display = 'none'; const e = document.getElementById('loginErro'); e.textContent = ''; e.classList.add('hidden'); isModalOpen = false }
-    async function login() {
-      const codigo = (document.getElementById('loginCodigoAgente').value || '').trim(); const erro = document.getElementById('loginErro');
-      if (!codigo || !/^\d+$/.test(codigo)) { erro.textContent = 'Informe um código numérico válido.'; erro.classList.remove('hidden'); return }
+
+    let loginMode = 'login'; // 'login' | 'create' | 'change'
+
+    function _el(id) { return document.getElementById(id); }
+
+    function setLoginMode(mode) {
+      loginMode = mode;
+      const title = _el('loginTitle');
+      const loginSection = _el('loginSection');
+      const senhaSection = _el('senhaSection');
+      const senhaAtualWrap = _el('senhaAtualWrap');
+      const btnBack = _el('btnLoginBack');
+      const btnPrimary = _el('btnDoLogin');
+      const btnCriar = _el('btnLoginCriarSenha');
+      const hint = _el('loginHint');
+
+      // limpa erros sempre que troca modo
+      clearLoginError();
+
+      if (mode === 'login') {
+        if (title) title.textContent = 'Identifique-se';
+        if (loginSection) loginSection.classList.remove('hidden');
+        if (senhaSection) senhaSection.classList.add('hidden');
+        if (senhaAtualWrap) senhaAtualWrap.classList.add('hidden');
+        if (btnBack) btnBack.classList.add('hidden');
+        if (btnPrimary) btnPrimary.textContent = 'Entrar';
+        if (btnCriar) btnCriar.classList.remove('hidden');
+        if (hint) hint.textContent = 'Seja bem-vindo(a) ao ConnectZap.';
+        return;
+      }
+
+      // create / change
+      if (loginSection) loginSection.classList.add('hidden');
+      if (senhaSection) senhaSection.classList.remove('hidden');
+      if (btnBack) btnBack.classList.remove('hidden');
+      if (btnCriar) btnCriar.classList.add('hidden');
+
+      if (mode === 'create') {
+        if (title) title.textContent = 'Criar senha';
+        if (senhaAtualWrap) senhaAtualWrap.classList.add('hidden');
+        if (btnPrimary) btnPrimary.textContent = 'Salvar senha';
+        return;
+      }
+
+      if (mode === 'change') {
+        if (title) title.textContent = 'Trocar senha';
+        if (senhaAtualWrap) senhaAtualWrap.classList.remove('hidden');
+        if (btnPrimary) btnPrimary.textContent = 'Trocar senha';
+      }
+    }
+
+    function abrirModalLogin() {
+      const m = _el('modalLogin');
+      if (m) m.style.display = 'flex';
+      isModalOpen = true;
+
+      // reset
       try {
-        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(codigo)}`); const j = await r.json();
-        if (!j.ok) { throw new Error(j.erro || 'Agente não encontrado') }
-        localStorage.setItem("agente_codigo", String(codigo));
-        localStorage.setItem("agente_nome", j.agente?.nome || `Agente ${codigo}`);
-        localStorage.setItem("agente_carteira", j.agente?.carteira || 'ConnectZap');
-        localStorage.setItem("agente_origem_bd", j.agente?.origem_bd || "");
-        localStorage.setItem("agente_permite_envio_individual", String(!!j.agente?.permite_envio_individual));
-        renderPermissaoEnvioIndividual();
+        _el('loginCodigoAgente').value = '';
+        if (_el('loginSenha')) _el('loginSenha').value = '';
+        if (_el('senhaAtual')) _el('senhaAtual').value = '';
+        if (_el('novaSenha')) _el('novaSenha').value = '';
+        if (_el('confirmarSenha')) _el('confirmarSenha').value = '';
+      } catch { }
+
+      setLoginMode('login');
+      setTimeout(() => _el('loginCodigoAgente')?.focus(), 50);
+    }
+
+    function fecharModalLogin() {
+      const m = _el('modalLogin');
+      if (m) m.style.display = 'none';
+      clearLoginError();
+      isModalOpen = false;
+    }
+
+    function showLoginError(msg) {
+      const e = _el('loginErro');
+      if (!e) return;
+      e.textContent = msg || 'Erro ao autenticar.';
+      e.classList.remove('hidden');
+    }
+
+    function clearLoginError() {
+      const e = _el('loginErro');
+      if (!e) return;
+      e.textContent = '';
+      e.classList.add('hidden');
+    }
+
+    function persistAgenteFromPayload(codigo, a) {
+      localStorage.setItem('agente_codigo', String(codigo));
+      localStorage.setItem('agente_nome', a?.nome || `Agente ${codigo}`);
+      localStorage.setItem('agente_carteira', a?.carteira || 'ConnectZap');
+      localStorage.setItem('agente_origem_bd', a?.origem_bd || '');
+      localStorage.setItem('agente_permite_envio_individual', String(!!a?.permite_envio_individual));
+      renderPermissaoEnvioIndividual();
+    }
+
+    function normalizeApiError(j, fallback) {
+      if (!j) return fallback;
+      return j.erro || j.error || j.message || fallback;
+    }
+
+    async function legacyLoginByCode(codigo) {
+      // compatibilidade: mantém funcionamento caso o backend ainda não tenha /agentes/login
+      const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(codigo)}`);
+      const j = await r.json();
+      if (!j.ok) throw new Error(normalizeApiError(j, 'Agente não encontrado'));
+      persistAgenteFromPayload(codigo, j.agente || {});
+      fecharModalLogin();
+      showApp();
+      await boot();
+      switchTab('home');
+      updateAuthButton();
+    }
+
+    function shouldSwitchToCreate(msg) {
+      return /sem\s+senha|nao\s+possui\s+senha|sem\s+senha\s+cadastrada/i.test(msg || '');
+    }
+
+    function shouldSwitchToChange(msg) {
+      return /expirad|expirou|senha\s+expirada/i.test(msg || '');
+    }
+
+    async function attemptLogin() {
+      const codigoRaw = (_el('loginCodigoAgente')?.value || '').trim();
+      const senha = (_el('loginSenha')?.value || '').trim();
+
+      if (!codigoRaw || !/^\d+$/.test(codigoRaw)) {
+        showLoginError('Informe um código numérico válido.');
+        return;
+      }
+      const codigo = Number(codigoRaw);
+
+      if (!senha) {
+        // tenta identificar se o agente ainda não possui senha (primeiro acesso)
+        // ou se a senha está expirada, para direcionar o fluxo corretamente
+        try {
+          const r0 = await fetch(`${FILA_API}/agentes/${encodeURIComponent(codigo)}`);
+          const j0 = await r0.json();
+          if (j0?.ok) {
+            const a0 = j0.agente || {};
+            if (a0.tem_senha === false) {
+              setLoginMode('create');
+              _el('novaSenha')?.focus();
+              return;
+            }
+            if (a0.senha_expirada) {
+              setLoginMode('change');
+              _el('senhaAtual')?.focus();
+              return;
+            }
+          }
+        } catch { }
+
+        showLoginError('Informe sua senha.');
+        return;
+      }
+
+      // 1) tenta endpoint novo de login
+      try {
+        const r = await fetch(`${FILA_API}/agentes/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ codigo_do_agente: codigo, senha })
+        });
+
+        // se endpoint não existe, mantém compatibilidade
+        if (r.status === 404 || r.status === 405) {
+          return await legacyLoginByCode(codigo);
+        }
+
+        let j = null;
+        try { j = await r.json(); } catch { j = null; }
+
+        if (!r.ok || !j?.ok) {
+          const msg = normalizeApiError(j, 'Falha ao autenticar');
+          if (shouldSwitchToCreate(msg)) {
+            setLoginMode('create');
+            _el('novaSenha')?.focus();
+            return;
+          }
+          if (shouldSwitchToChange(msg)) {
+            setLoginMode('change');
+            _el('senhaAtual')?.focus();
+            return;
+          }
+          showLoginError(msg);
+          return;
+        }
+
+        persistAgenteFromPayload(codigo, j.agente || {});
         fecharModalLogin();
         showApp();
         await boot();
         switchTab('home');
         updateAuthButton();
-      } catch (e) { erro.textContent = e?.message || 'Falha ao validar código.'; erro.classList.remove('hidden') }
+      } catch (e) {
+        showLoginError(e?.message || 'Falha ao autenticar.');
+      }
     }
-    document.getElementById('btnDoLogin').onclick = login;
-    document.getElementById('loginCodigoAgente').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); login(); } });
+
+    async function submitSenha() {
+      const codigoRaw = (_el('loginCodigoAgente')?.value || '').trim();
+      if (!codigoRaw || !/^\d+$/.test(codigoRaw)) {
+        showLoginError('Informe um código numérico válido.');
+        return;
+      }
+      const codigo = Number(codigoRaw);
+
+      const senha_atual = (_el('senhaAtual')?.value || '').trim();
+      const nova_senha = (_el('novaSenha')?.value || '').trim();
+      const confirmar_senha = (_el('confirmarSenha')?.value || '').trim();
+
+      if (!nova_senha) { showLoginError('Informe a nova senha.'); return; }
+      if (nova_senha.length < 8) { showLoginError('A nova senha deve ter pelo menos 8 caracteres.'); return; }
+      if (nova_senha !== confirmar_senha) { showLoginError('A confirmação não confere com a nova senha.'); return; }
+      if (loginMode === 'change' && !senha_atual) { showLoginError('Informe a senha atual para trocar a senha.'); return; }
+
+      const payload = { nova_senha, confirmar_senha };
+      if (loginMode === 'change') payload.senha_atual = senha_atual;
+
+      try {
+        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(codigo)}/senha`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        let j = null;
+        try { j = await r.json(); } catch { j = null; }
+
+        if (!r.ok || !j?.ok) {
+          showLoginError(normalizeApiError(j, 'Erro ao salvar senha'));
+          return;
+        }
+
+        // preenche a senha no modo login e tenta autenticar
+        if (_el('loginSenha')) _el('loginSenha').value = nova_senha;
+        setLoginMode('login');
+        await attemptLogin();
+      } catch (e) {
+        showLoginError(e?.message || 'Erro ao salvar senha.');
+      }
+    }
+
+    async function loginPrimary() {
+      clearLoginError();
+      const btn = _el('btnDoLogin');
+      if (btn) btn.disabled = true;
+      try {
+        if (loginMode === 'login') await attemptLogin();
+        else await submitSenha();
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    // Botões / atalhos
+    _el('btnDoLogin').onclick = loginPrimary;
+
+    _el('btnLoginCriarSenha')?.addEventListener('click', async () => {
+      clearLoginError();
+      const codigoRaw = (_el('loginCodigoAgente')?.value || '').trim();
+      if (!codigoRaw || !/^\d+$/.test(codigoRaw)) {
+        showLoginError('Informe o código do agente para criar/trocar a senha.');
+        _el('loginCodigoAgente')?.focus();
+        return;
+      }
+      const codigo = Number(codigoRaw);
+
+      // tenta descobrir se já existe senha cadastrada para escolher o modo certo
+      try {
+        const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(codigo)}`);
+        const j = await r.json();
+        if (j?.ok) {
+          const a = j.agente || {};
+          if (a.tem_senha === false) {
+            setLoginMode('create');
+            _el('novaSenha')?.focus();
+            return;
+          }
+          setLoginMode('change');
+          _el('senhaAtual')?.focus();
+          return;
+        }
+      } catch { }
+
+      // fallback: se não der pra consultar, assume primeiro acesso
+      setLoginMode('create');
+      _el('novaSenha')?.focus();
+    });
+
+    _el('btnLoginBack')?.addEventListener('click', () => {
+      setLoginMode('login');
+      _el('loginSenha')?.focus();
+    });
+
+    // Enter dispara ação principal
+    const loginInputs = ['loginCodigoAgente', 'loginSenha', 'senhaAtual', 'novaSenha', 'confirmarSenha'];
+    loginInputs.forEach(id => {
+      const el = _el(id);
+      if (!el) return;
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          loginPrimary();
+        }
+      });
+    });
+
 
     /** ============== MODAL FEEDBACK (Logout / login required) ============== */
     const modalFeedback = document.getElementById('modalFeedback');
