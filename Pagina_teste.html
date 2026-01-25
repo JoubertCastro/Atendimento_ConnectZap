@@ -801,6 +801,66 @@
       outline-offset: 2px;
     }
 
+  
+    /* ===== Auto-entrega (interruptor) ===== */
+    .auto-switch {
+      position: relative;
+      width: 124px;
+      height: 34px;
+      padding: 0;
+      border-radius: 999px;
+      border: 1px solid var(--outline);
+      background: #0ea5e9;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .auto-switch:disabled,
+    .auto-switch[disabled] {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+    .auto-switch .knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 6px 16px rgba(0,0,0,.18);
+      transition: left .18s ease;
+    }
+    .auto-switch[aria-checked="true"] {
+      background: var(--accent);
+    }
+    .auto-switch[aria-checked="true"] .knob {
+      left: calc(100% - 32px);
+    }
+    .auto-switch .txt {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      flex-direction: column;
+      line-height: 1;
+      text-align: center;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+    .auto-switch .txt small {
+      font-size: 10px;
+      opacity: .92;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .auto-switch .txt span {
+      font-size: 12px;
+    }
+
   </style>
 </head>
 
@@ -983,9 +1043,12 @@
               </button>
               <button id="btnPrioridade" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50"
                 disabled style="background: rebeccapurple">Pedir prioridade</button>
-                            <button id="btnAutoEntrega" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50"
-                disabled style="background: #0ea5e9" aria-pressed="false"
-                title="Entrega automática de conversas">Auto: OFF</button>
+                            <button id="btnAutoEntrega" class="btn auto-switch disabled:opacity-50"
+                disabled role="switch" aria-checked="false"
+                title="Entrega automática de conversas">
+                <span class="knob" aria-hidden="true"></span>
+                <span class="txt"><small>Auto-entrega</small><span id="autoEntregaState">OFF</span></span>
+              </button>
 <button id="btnTheme" class="mt-2 btn btn-ghost px-3 py-1 text-xs" aria-haspopup="true"
                 aria-controls="themeDrawer">🎨 Tema</button>
             </div>
@@ -4052,13 +4115,13 @@ function renderMsg(m, incremental) {
       const btn = _btnAutoEntrega();
       if (!btn) return;
 
-      btn.setAttribute("aria-pressed", autoEntregaEnabled ? "true" : "false");
-      btn.textContent = autoEntregaEnabled ? "Auto: ON" : "Auto: OFF";
+      // switch acessível
+      btn.setAttribute("role", "switch");
+      btn.setAttribute("aria-checked", autoEntregaEnabled ? "true" : "false");
 
-      // Mantém simples via style inline para não mexer no CSS existente
-      btn.style.background = autoEntregaEnabled ? "var(--accent)" : "#0ea5e9";
+      const st = document.getElementById("autoEntregaState");
+      if (st) st.textContent = autoEntregaEnabled ? "ON" : "OFF";
     }
-
     function stopAutoEntregaLoops() {
       if (autoEntregaLoop) { clearInterval(autoEntregaLoop); autoEntregaLoop = null; }
       if (autoEntregaStatusPoll) { clearInterval(autoEntregaStatusPoll); autoEntregaStatusPoll = null; }
@@ -4069,21 +4132,23 @@ function renderMsg(m, incremental) {
       const payload = {
         codigo_do_agente: parseInt(agente.codigo, 10),
         carteira: agente.carteira,
-        auto_entrega: !!on,
-        ativo: !!on
+        enabled: !!on
       };
+
       const r = await fetch(`${FILA_API}/fila/auto_entrega`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
+
       let j = null;
       try { j = await r.json(); } catch (_) { }
+
       if (!r.ok || (j && j.ok === false)) {
         throw new Error(j?.erro || "Falha ao atualizar auto entrega");
       }
       return j;
-    }
+    }      
 
     async function getMeuStatusFila() {
       if (!agente?.carteira) return null;
@@ -4109,6 +4174,7 @@ function renderMsg(m, incremental) {
         }
 
         const serverOn = !!(
+          row.enabled ??
           row.auto_entrega ??
           row.autoEntrega ??
           row.auto ??
