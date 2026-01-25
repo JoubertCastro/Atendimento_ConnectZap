@@ -3372,7 +3372,14 @@ async function refreshAtivosELimite(forceLimit = false) {
           elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden');
           renderAtivosLimiteUI(); return;
         }
-        if (!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
+        if (!r.ok || !j.ok) {
+          const _msg = (j && j.erro) ? String(j.erro) : "Sem conversas disponíveis.";
+          // Se a entrega automática estiver ligada, evitamos notificar quando o motivo for "sem conversas".
+          if (!(autoEntregaEnabled && /sem\s+conversas\s+dispon[ií]veis/i.test(_msg))) {
+            alert(_msg);
+          }
+          return;
+        }
         if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) { tickets.unshift(j.ticket); saveTickets(); }
         renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosLimiteUI();
       } catch (e) { alert("Falha ao pegar próxima."); }
@@ -4151,18 +4158,16 @@ function renderMsg(m, incremental) {
     }      
 
     async function getMeuStatusFila() {
-  // Backend (server.py) espera: /api/fila/status_auto_entrega?codigo_do_agente=...&carteira=...
-  // e retorna um OBJETO (não lista): { ok, online, auto_entrega, data_hora }
   if (!agente?.carteira || !agente?.codigo) return null;
 
   const codigo = parseInt(agente.codigo, 10);
   const carteira = String(agente.carteira || "");
 
-  // Tentativas (mantém compatibilidade caso você tenha renomeado endpoints)
+  // Tentativas
   const tries = [
     `${FILA_API}/fila/status_auto_entrega?codigo_do_agente=${encodeURIComponent(codigo)}&carteira=${encodeURIComponent(carteira)}`,
-    `${FILA_API}/fila/auto_entrega?codigo_do_agente=${encodeURIComponent(codigo)}&carteira=${encodeURIComponent(carteira)}`, // se existir GET equivalente
-    `${FILA_API}/fila/status?carteira=${encodeURIComponent(carteira)}` // fallback (não traz auto_entrega no server.py atual)
+    `${FILA_API}/fila/auto_entrega?codigo_do_agente=${encodeURIComponent(codigo)}&carteira=${encodeURIComponent(carteira)}`,
+    `${FILA_API}/fila/status?carteira=${encodeURIComponent(carteira)}` 
   ];
 
   for (const url of tries) {
