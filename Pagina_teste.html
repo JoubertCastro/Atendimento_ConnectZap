@@ -4087,7 +4087,7 @@ function renderMsg(m, incremental) {
 
     async function getMeuStatusFila() {
       if (!agente?.carteira) return null;
-      const r = await fetch(`${FILA_API}/fila/status?carteira=${encodeURIComponent(agente.carteira)}`);
+      const r = await fetch(`${FILA_API}/fila/status_auto_entrega?carteira=${encodeURIComponent(agente.carteira)}`);
       const lista = await r.json();
       if (!Array.isArray(lista)) return null;
       return lista.find(x => String(x.codigo_do_agente) === String(agente.codigo)) || null;
