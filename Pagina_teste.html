@@ -802,64 +802,121 @@
     }
 
   
-    /* ===== Auto-entrega (interruptor) ===== */
-    .auto-switch {
-      position: relative;
-      width: 124px;
-      height: 34px;
-      padding: 0;
-      border-radius: 999px;
-      border: 1px solid var(--outline);
-      background: #0ea5e9;
-      color: #fff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .auto-switch:disabled,
-    .auto-switch[disabled] {
-      opacity: .55;
-      cursor: not-allowed;
-    }
-    .auto-switch .knob {
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 30px;
-      height: 30px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.95);
-      box-shadow: 0 6px 16px rgba(0,0,0,.18);
-      transition: left .18s ease;
-    }
-    .auto-switch[aria-checked="true"] {
-      background: var(--accent);
-    }
-    .auto-switch[aria-checked="true"] .knob {
-      left: calc(100% - 32px);
-    }
-    .auto-switch .txt {
-      position: relative;
-      z-index: 1;
-      display: inline-flex;
-      flex-direction: column;
-      line-height: 1;
-      text-align: center;
-      font-weight: 700;
-      letter-spacing: .2px;
-    }
-    .auto-switch .txt small {
-      font-size: 10px;
-      opacity: .92;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .auto-switch .txt span {
-      font-size: 12px;
-    }
+    /* ===== Auto-entrega (interruptor) =====
+   Objetivo: ser autoexplicativo e "bonito" (estilo switch), sem poluir a tela. */
+.auto-switch{
+  display:inline-flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+
+  height:40px;
+  min-width:180px;
+  padding:0 12px;
+
+  border-radius:14px;
+  border:1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  color: var(--text);
+
+  box-shadow: 0 6px 16px rgba(15, 23, 42, .06);
+  cursor:pointer;
+  user-select:none;
+  transition: transform .06s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+}
+.auto-switch:hover{
+  box-shadow: 0 10px 24px rgba(15, 23, 42, .10);
+}
+.auto-switch:active{
+  transform: translateY(1px);
+}
+.auto-switch:focus-visible{
+  outline:none;
+  box-shadow: 0 0 0 4px var(--ring), 0 10px 24px rgba(15, 23, 42, .10);
+}
+
+.auto-switch[disabled],
+.auto-switch:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  box-shadow:none;
+  background: #f3f4f6;
+}
+
+.auto-switch .auto-label{
+  display:flex;
+  flex-direction:column;
+  line-height:1.05;
+}
+.auto-switch .auto-label .t{
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.2px;
+}
+.auto-switch .auto-label .s{
+  font-size:10px;
+  color: var(--muted);
+  font-weight:700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-top:2px;
+}
+
+.auto-switch .auto-right{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+}
+
+.auto-switch .auto-badge{
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.8px;
+  padding:3px 10px;
+  border-radius:999px;
+  background:#eef2f7;
+  color:#475569;
+  border:1px solid rgba(148,163,184,.35);
+}
+
+.auto-switch .auto-track{
+  width:46px;
+  height:26px;
+  border-radius:999px;
+  background:#e5e7eb;
+  position:relative;
+  box-shadow: inset 0 0 0 1px rgba(148,163,184,.35);
+  transition: background .15s ease, box-shadow .15s ease;
+}
+.auto-switch .auto-thumb{
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  background:#ffffff;
+  position:absolute;
+  top:2px;
+  left:2px;
+  box-shadow: 0 6px 14px rgba(15,23,42,.20);
+  transition: transform .18s ease;
+}
+
+/* ON */
+.auto-switch[aria-checked="true"]{
+  border-color: rgba(34,197,94,.45);
+  background: linear-gradient(180deg, rgba(34,197,94,.12) 0%, rgba(34,197,94,.03) 100%);
+}
+.auto-switch[aria-checked="true"] .auto-badge{
+  background: rgba(34,197,94,.14);
+  border-color: rgba(34,197,94,.30);
+  color: #166534;
+}
+.auto-switch[aria-checked="true"] .auto-track{
+  background: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.04), 0 0 0 3px rgba(34,197,94,.12);
+}
+.auto-switch[aria-checked="true"] .auto-thumb{
+  transform: translateX(20px);
+}
 
   </style>
 </head>
@@ -1046,8 +1103,14 @@
                             <button id="btnAutoEntrega" class="btn auto-switch disabled:opacity-50"
                 disabled role="switch" aria-checked="false"
                 title="Entrega automática de conversas">
-                <span class="knob" aria-hidden="true"></span>
-                <span class="txt"><small>Auto-entrega</small><span id="autoEntregaState">OFF</span></span>
+<span class="auto-label">
+  <span class="t">Auto-entrega</span>
+  <span class="s">conversas</span>
+</span>
+<span class="auto-right">
+  <span id="autoEntregaState" class="auto-badge">OFF</span>
+  <span class="auto-track" aria-hidden="true"><span class="auto-thumb"></span></span>
+</span>
               </button>
 <button id="btnTheme" class="mt-2 btn btn-ghost px-3 py-1 text-xs" aria-haspopup="true"
                 aria-controls="themeDrawer">🎨 Tema</button>
@@ -4158,16 +4221,18 @@ function renderMsg(m, incremental) {
     }      
 
     async function getMeuStatusFila() {
+  // Backend (server.py) espera: /api/fila/status_auto_entrega?codigo_do_agente=...&carteira=...
+  // e retorna um OBJETO (não lista): { ok, online, auto_entrega, data_hora }
   if (!agente?.carteira || !agente?.codigo) return null;
 
   const codigo = parseInt(agente.codigo, 10);
   const carteira = String(agente.carteira || "");
 
-  // Tentativas
+  // Tentativas (mantém compatibilidade caso você tenha renomeado endpoints)
   const tries = [
     `${FILA_API}/fila/status_auto_entrega?codigo_do_agente=${encodeURIComponent(codigo)}&carteira=${encodeURIComponent(carteira)}`,
-    `${FILA_API}/fila/auto_entrega?codigo_do_agente=${encodeURIComponent(codigo)}&carteira=${encodeURIComponent(carteira)}`,
-    `${FILA_API}/fila/status?carteira=${encodeURIComponent(carteira)}` 
+    `${FILA_API}/fila/auto_entrega?codigo_do_agente=${encodeURIComponent(codigo)}&carteira=${encodeURIComponent(carteira)}`, // se existir GET equivalente
+    `${FILA_API}/fila/status?carteira=${encodeURIComponent(carteira)}` // fallback (não traz auto_entrega no server.py atual)
   ];
 
   for (const url of tries) {
