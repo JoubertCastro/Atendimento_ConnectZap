@@ -801,6 +801,122 @@
       outline-offset: 2px;
     }
 
+  
+    /* ===== Auto-entrega (interruptor) =====*/
+.auto-switch{
+  display:inline-flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+
+  height:40px;
+  min-width:180px;
+  padding:0 12px;
+
+  border-radius:14px;
+  border:1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  color: var(--text);
+
+  box-shadow: 0 6px 16px rgba(15, 23, 42, .06);
+  cursor:pointer;
+  user-select:none;
+  transition: transform .06s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+}
+.auto-switch:hover{
+  box-shadow: 0 10px 24px rgba(15, 23, 42, .10);
+}
+.auto-switch:active{
+  transform: translateY(1px);
+}
+.auto-switch:focus-visible{
+  outline:none;
+  box-shadow: 0 0 0 4px var(--ring), 0 10px 24px rgba(15, 23, 42, .10);
+}
+
+.auto-switch[disabled],
+.auto-switch:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  box-shadow:none;
+  background: #f3f4f6;
+}
+
+.auto-switch .auto-label{
+  display:flex;
+  flex-direction:column;
+  line-height:1.05;
+}
+.auto-switch .auto-label .t{
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.2px;
+}
+.auto-switch .auto-label .s{
+  font-size:10px;
+  color: var(--muted);
+  font-weight:700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-top:2px;
+}
+
+.auto-switch .auto-right{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+}
+
+.auto-switch .auto-badge{
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.8px;
+  padding:3px 10px;
+  border-radius:999px;
+  background:#eef2f7;
+  color:#475569;
+  border:1px solid rgba(148,163,184,.35);
+}
+
+.auto-switch .auto-track{
+  width:46px;
+  height:26px;
+  border-radius:999px;
+  background:#e5e7eb;
+  position:relative;
+  box-shadow: inset 0 0 0 1px rgba(148,163,184,.35);
+  transition: background .15s ease, box-shadow .15s ease;
+}
+.auto-switch .auto-thumb{
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  background:#ffffff;
+  position:absolute;
+  top:2px;
+  left:2px;
+  box-shadow: 0 6px 14px rgba(15,23,42,.20);
+  transition: transform .18s ease;
+}
+
+/* ON */
+.auto-switch[aria-checked="true"]{
+  border-color: rgba(34,197,94,.45);
+  background: linear-gradient(180deg, rgba(34,197,94,.12) 0%, rgba(34,197,94,.03) 100%);
+}
+.auto-switch[aria-checked="true"] .auto-badge{
+  background: rgba(34,197,94,.14);
+  border-color: rgba(34,197,94,.30);
+  color: #166534;
+}
+.auto-switch[aria-checked="true"] .auto-track{
+  background: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.04), 0 0 0 3px rgba(34,197,94,.12);
+}
+.auto-switch[aria-checked="true"] .auto-thumb{
+  transform: translateX(20px);
+}
+
   </style>
 </head>
 
@@ -983,7 +1099,19 @@
               </button>
               <button id="btnPrioridade" class="btn px-3 py-2 text-sm rounded-md text-white disabled:opacity-50"
                 disabled style="background: rebeccapurple">Pedir prioridade</button>
-              <button id="btnTheme" class="mt-2 btn btn-ghost px-3 py-1 text-xs" aria-haspopup="true"
+                            <button id="btnAutoEntrega" class="btn auto-switch disabled:opacity-50"
+                disabled role="switch" aria-checked="false"
+                title="Entrega automática de conversas">
+<span class="auto-label">
+  <span class="t">Auto-entrega</span>
+  <span class="s">conversas</span>
+</span>
+<span class="auto-right">
+  <span id="autoEntregaState" class="auto-badge">OFF</span>
+  <span class="auto-track" aria-hidden="true"><span class="auto-thumb"></span></span>
+</span>
+              </button>
+<button id="btnTheme" class="mt-2 btn btn-ghost px-3 py-1 text-xs" aria-haspopup="true"
                 aria-controls="themeDrawer">🎨 Tema</button>
             </div>
           </div>
@@ -3306,7 +3434,14 @@ async function refreshAtivosELimite(forceLimit = false) {
           elMsgLimite.textContent = j.erro || `Limite de ${limitPerAgent} atingido.`; elMsgLimite.classList.remove('hidden');
           renderAtivosLimiteUI(); return;
         }
-        if (!r.ok || !j.ok) { alert(j.erro || "Sem conversas disponíveis."); return; }
+        if (!r.ok || !j.ok) {
+          const _msg = (j && j.erro) ? String(j.erro) : "Sem conversas disponíveis.";
+          // Se a entrega automática estiver ligada, evitamos notificar quando o motivo for "sem conversas".
+          if (!(autoEntregaEnabled && /sem\s+conversas\s+dispon[ií]veis/i.test(_msg))) {
+            alert(_msg);
+          }
+          return;
+        }
         if (!tickets.find(t => t.remetente === j.ticket.remetente && t.phone_id === j.ticket.phone_id)) { tickets.unshift(j.ticket); saveTickets(); }
         renderTickets(); abrirTicket(j.ticket); ativosCount++; renderAtivosLimiteUI();
       } catch (e) { alert("Falha ao pegar próxima."); }
@@ -4034,6 +4169,271 @@ function renderMsg(m, incremental) {
         renderNotices(notices);
       });
     });
+
+    
+    /** ============== AUTO ENTREGA (NOVO) ============== */
+    let autoEntregaEnabled = false;
+    let autoEntregaLoop = null;
+    let autoEntregaStatusPoll = null;
+    let autoEntregaInFlight = false;
+
+    function _btnAutoEntrega() { return document.getElementById("btnAutoEntrega"); }
+
+    function setAutoEntregaUI(on) {
+      autoEntregaEnabled = !!on;
+      const btn = _btnAutoEntrega();
+      if (!btn) return;
+
+      // switch acessível
+      btn.setAttribute("role", "switch");
+      btn.setAttribute("aria-checked", autoEntregaEnabled ? "true" : "false");
+
+      const st = document.getElementById("autoEntregaState");
+      if (st) st.textContent = autoEntregaEnabled ? "ON" : "OFF";
+    }
+    function stopAutoEntregaLoops() {
+      if (autoEntregaLoop) { clearInterval(autoEntregaLoop); autoEntregaLoop = null; }
+      if (autoEntregaStatusPoll) { clearInterval(autoEntregaStatusPoll); autoEntregaStatusPoll = null; }
+      autoEntregaInFlight = false;
+    }
+
+    async function setAutoEntregaServer(on) {
+      const payload = {
+        codigo_do_agente: parseInt(agente.codigo, 10),
+        carteira: agente.carteira,
+        enabled: !!on
+      };
+
+      const r = await fetch(`${FILA_API}/fila/auto_entrega`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      let j = null;
+      try { j = await r.json(); } catch (_) { }
+
+      if (!r.ok || (j && j.ok === false)) {
+        throw new Error(j?.erro || "Falha ao atualizar auto entrega");
+      }
+      return j;
+    }      
+
+    async function getMeuStatusFila() {
+  // Backend (server.py) espera: /api/fila/status_auto_entrega?codigo_do_agente=...&carteira=...
+  // e retorna um OBJETO (não lista): { ok, online, auto_entrega, data_hora }
+  if (!agente?.carteira || !agente?.codigo) return null;
+
+  const codigo = parseInt(agente.codigo, 10);
+  const carteira = String(agente.carteira || "");
+
+  // Tentativas (mantém compatibilidade caso você tenha renomeado endpoints)
+  const tries = [
+    `${FILA_API}/fila/status_auto_entrega?codigo_do_agente=${encodeURIComponent(codigo)}&carteira=${encodeURIComponent(carteira)}`,
+    `${FILA_API}/fila/auto_entrega?codigo_do_agente=${encodeURIComponent(codigo)}&carteira=${encodeURIComponent(carteira)}`, // se existir GET equivalente
+    `${FILA_API}/fila/status?carteira=${encodeURIComponent(carteira)}` // fallback (não traz auto_entrega no server.py atual)
+  ];
+
+  for (const url of tries) {
+    try {
+      const r = await fetch(url);
+      const payload = await r.json().catch(() => null);
+
+      // Caso 1: endpoint retorna lista
+      if (Array.isArray(payload)) {
+        const row = payload.find(x => String(x?.codigo_do_agente) === String(codigo));
+        if (row) return row;
+        continue;
+      }
+
+      // Caso 2: endpoint retorna objeto no padrão do status_auto_entrega
+      if (payload && typeof payload === 'object') {
+        if (payload.ok === false) continue;
+        if (payload.online === false) return null;
+        // anexa campos esperados pelo front para unificar
+        return {
+          ...payload,
+          codigo_do_agente: codigo,
+          carteira
+        };
+      }
+    } catch (_) {
+      // tenta próxima alternativa
+    }
+  }
+
+  return null;
+}
+
+    async function syncAutoEntregaFromServer() {
+      const btn = _btnAutoEntrega();
+      if (!btn) return;
+
+      try {
+        const row = await getMeuStatusFila();
+
+        // Se não estiver na fila, desabilita e encerra
+        if (!row) {
+          btn.disabled = true;
+          setAutoEntregaUI(false);
+          stopAutoEntregaLoops();
+          return;
+        }
+
+        const serverOn = !!(
+          row.enabled ??
+          row.auto_entrega ??
+          row.autoEntrega ??
+          row.auto ??
+          row.entrega_automatica ??
+          row.entregaAutomatica
+        );
+
+        const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+        btn.disabled = !agente.online || atingiu;
+
+        setAutoEntregaUI(serverOn);
+
+        if (serverOn && !atingiu && agente.online) startAutoEntregaLoops();
+        else stopAutoEntregaLoops();
+      } catch (_) {
+        // se falhar, não quebra a tela
+      }
+    }
+
+    async function attemptAutoPick() {
+      if (!autoEntregaEnabled) return;
+      if (!agente?.online) { setAutoEntregaUI(false); stopAutoEntregaLoops(); return; }
+
+      const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+      if (atingiu) {
+        // Ao atingir o limite, desliga localmente + tenta refletir no backend
+        setAutoEntregaUI(false);
+        stopAutoEntregaLoops();
+        try { await setAutoEntregaServer(false); } catch (_) { }
+        return;
+      }
+
+      if (autoEntregaInFlight) return;
+      if (!btnPegarProxima || btnPegarProxima.disabled) return;
+
+      autoEntregaInFlight = true;
+      try {
+        if (typeof btnPegarProxima.onclick === "function") await btnPegarProxima.onclick();
+        else btnPegarProxima.click();
+      } catch (_) {
+        // ignora; o fluxo normal já exibe alertas/avisos
+      } finally {
+        autoEntregaInFlight = false;
+      }
+    }
+
+    function startAutoEntregaLoops() {
+      stopAutoEntregaLoops();
+      // tenta buscar imediatamente e continua em loop moderado
+      attemptAutoPick();
+      autoEntregaLoop = setInterval(attemptAutoPick, 4500);
+      // sincroniza com o backend (caso ele force false ao atingir limite)
+      autoEntregaStatusPoll = setInterval(syncAutoEntregaFromServer, 12000);
+    }
+
+    function initAutoEntregaButton() {
+      const btn = _btnAutoEntrega();
+      if (!btn) return;
+
+      // estado inicial
+      btn.disabled = true;
+      setAutoEntregaUI(false);
+
+      btn.onclick = async () => {
+        if (!agente.carteira || !agente.codigo) { abrirModalLogin(); return; }
+        if (!agente.online) { alert("Você está offline. Vá na Home e clique em “Ficar online”."); return; }
+
+        const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+        if (atingiu) {
+          if (elMsgLimite) {
+            elMsgLimite.textContent = `Limite de ${limitPerAgent} tickets simultâneos atingido. Conclua ou libere um atendimento para continuar.`;
+            elMsgLimite.classList.remove("hidden");
+          }
+          try { renderAtivosLimiteUI(); } catch (_) { }
+          return;
+        }
+
+        btn.disabled = true;
+        try {
+          const desired = !autoEntregaEnabled;
+          await setAutoEntregaServer(desired);
+          // sincroniza com o estado final (backend pode forçar false)
+          await syncAutoEntregaFromServer();
+        } catch (e) {
+          alert(e?.message || "Falha ao alterar auto entrega");
+        } finally {
+          const atingiu2 = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+          btn.disabled = !agente.online || atingiu2;
+        }
+      };
+    }
+
+    // Hooks para manter o botão sempre coerente com o estado da tela (sem refatorar o que já existe)
+    (function patchAutoEntregaHooks() {
+      try {
+        const _oldSetStatus = setStatus;
+        setStatus = function (online) {
+          _oldSetStatus(online);
+
+          const btn = _btnAutoEntrega();
+          if (!btn) return;
+
+          const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+          btn.disabled = !agente.online || atingiu;
+
+          if (!online) {
+            setAutoEntregaUI(false);
+            stopAutoEntregaLoops();
+          } else {
+            // ao ficar online, tenta pegar estado do backend
+            syncAutoEntregaFromServer();
+          }
+        };
+      } catch (_) { }
+
+      try {
+        const _oldRenderAtivosLimiteUI = renderAtivosLimiteUI;
+        renderAtivosLimiteUI = function () {
+          _oldRenderAtivosLimiteUI();
+
+          const btn = _btnAutoEntrega();
+          if (!btn) return;
+
+          const atingiu = (limitPerAgent > 0 && ativosCount >= limitPerAgent);
+          btn.disabled = !agente.online || atingiu;
+
+          if (atingiu && autoEntregaEnabled) {
+            setAutoEntregaUI(false);
+            stopAutoEntregaLoops();
+            // best effort no backend
+            setAutoEntregaServer(false).catch(() => { });
+          }
+        };
+      } catch (_) { }
+
+      try {
+        const _oldVerificarOnline = verificarOnline;
+        verificarOnline = async function () {
+          await _oldVerificarOnline();
+          await syncAutoEntregaFromServer();
+        };
+      } catch (_) { }
+    })();
+
+    // Inicializa o botão (sem mexer no INIT existente)
+    document.addEventListener('DOMContentLoaded', () => {
+      initAutoEntregaButton();
+      // pequeno delay para boot preencher agente/carteira antes do sync
+      setTimeout(() => syncAutoEntregaFromServer(), 600);
+    });
+
+
 
     /** ============== INIT (carregamento) ============== */
     document.addEventListener('DOMContentLoaded', async () => {
