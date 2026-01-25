@@ -4135,7 +4135,7 @@ function renderMsg(m, incremental) {
         enabled: !!on
       };
 
-      const r = await fetch(`${FILA_API}/fila/status_auto_entrega`, {
+      const r = await fetch(`${FILA_API}/fila/auto_entrega`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -4151,12 +4151,50 @@ function renderMsg(m, incremental) {
     }      
 
     async function getMeuStatusFila() {
-      if (!agente?.carteira) return null;
-      const r = await fetch(`${FILA_API}/fila/status_auto_entrega?carteira=${encodeURIComponent(agente.carteira)}`);
-      const lista = await r.json();
-      if (!Array.isArray(lista)) return null;
-      return lista.find(x => String(x.codigo_do_agente) === String(agente.codigo)) || null;
+  // Backend (server.py) espera: /api/fila/status_auto_entrega?codigo_do_agente=...&carteira=...
+  // e retorna um OBJETO (não lista): { ok, online, auto_entrega, data_hora }
+  if (!agente?.carteira || !agente?.codigo) return null;
+
+  const codigo = parseInt(agente.codigo, 10);
+  const carteira = String(agente.carteira || "");
+
+  // Tentativas (mantém compatibilidade caso você tenha renomeado endpoints)
+  const tries = [
+    `${FILA_API}/fila/status_auto_entrega?codigo_do_agente=${encodeURIComponent(codigo)}&carteira=${encodeURIComponent(carteira)}`,
+    `${FILA_API}/fila/auto_entrega?codigo_do_agente=${encodeURIComponent(codigo)}&carteira=${encodeURIComponent(carteira)}`, // se existir GET equivalente
+    `${FILA_API}/fila/status?carteira=${encodeURIComponent(carteira)}` // fallback (não traz auto_entrega no server.py atual)
+  ];
+
+  for (const url of tries) {
+    try {
+      const r = await fetch(url);
+      const payload = await r.json().catch(() => null);
+
+      // Caso 1: endpoint retorna lista
+      if (Array.isArray(payload)) {
+        const row = payload.find(x => String(x?.codigo_do_agente) === String(codigo));
+        if (row) return row;
+        continue;
+      }
+
+      // Caso 2: endpoint retorna objeto no padrão do status_auto_entrega
+      if (payload && typeof payload === 'object') {
+        if (payload.ok === false) continue;
+        if (payload.online === false) return null;
+        // anexa campos esperados pelo front para unificar
+        return {
+          ...payload,
+          codigo_do_agente: codigo,
+          carteira
+        };
+      }
+    } catch (_) {
+      // tenta próxima alternativa
     }
+  }
+
+  return null;
+}
 
     async function syncAutoEntregaFromServer() {
       const btn = _btnAutoEntrega();
