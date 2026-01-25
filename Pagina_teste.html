@@ -4135,7 +4135,7 @@ function renderMsg(m, incremental) {
         enabled: !!on
       };
 
-      const r = await fetch(`${FILA_API}/fila/auto_entrega`, {
+      const r = await fetch(`${FILA_API}/fila/status_auto_entrega`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
