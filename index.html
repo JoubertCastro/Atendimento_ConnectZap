@@ -1774,7 +1774,7 @@ document.addEventListener('visibilitychange', schedulePolls);
     const avisosCountPill = document.getElementById('avisosCountPill');
 
     /** ============== MENU CONCLUIR ============== */
-    const MOTIVOS_CONCLUSAO = ["Realizou negociação", "Solicitou 2ª via de boleto", "Recusou a proposta", "Dúvidas gerais", "Cliente ficou inativo"];
+    const MOTIVOS_CONCLUSAO = ["Realizou negociação", "Solicitou 2ª via de boleto", "Recusou a proposta", "Dúvidas gerais", "Cliente ficou inativo","Comprovante recebido"];
     function renderMenuConcluir() {
       menuConcluir.innerHTML = MOTIVOS_CONCLUSAO.map(m => `<button type="button" data-motivo="${m}" class="w-full text-left px-3 py-2 text-sm" style="border-bottom:1px solid var(--border)">${m}</button>`).join("");
       menuConcluir.querySelectorAll("button[data-motivo]").forEach(btn => {
@@ -3869,7 +3869,8 @@ function renderMsg(m, incremental) {
           duvidas: Number(row[3] || 0),
           segunda_via: Number(row[4] || 0),
           recusou: Number(row[5] || 0),
-          negociacao: Number(row[6] || 0)
+          negociacao: Number(row[6] || 0),
+          pagamento: Number(row[7] || 0)
         };
       }
       return {
@@ -3879,7 +3880,8 @@ function renderMsg(m, incremental) {
         duvidas: Number(row.duvidas_gerais || 0),
         segunda_via: Number(row.solicitou_2ª_via_de_boleto || row.solicitou_2a_via_de_boleto || 0),
         recusou: Number(row.recusou_a_proposta || 0),
-        negociacao: Number(row.realizou_negociacao || 0)
+        negociacao: Number(row.realizou_negociacao || 0),
+        pagamento: Number(row.comprovante_recebido || 0)
       };
     }
     function pct(v, tot) { if (!tot) return '0%'; return Math.round((v / tot) * 100) + '%'; }
@@ -3931,7 +3933,8 @@ function renderMsg(m, incremental) {
             ['Solicitou 2ª via de boleto', r.segunda_via],
             ['Recusou a proposta', r.recusou],
             ['Dúvidas gerais', r.duvidas],
-            ['Cliente ficou inativo', r.inativo]
+            ['Cliente ficou inativo', r.inativo],
+            ['Comprovante recebido', r.comprovante]
           ].map(([mot, v]) => `
                     <tr>
                       <td>${escapeHtml(mot)}</td>
