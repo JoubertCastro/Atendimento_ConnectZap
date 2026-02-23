@@ -165,7 +165,7 @@
       <div class="min-w-0">
         <h1 class="text-2xl font-extrabold">📄 Envio de boletos (PDF)</h1>
         <p class="text-sm" style="color:var(--muted)">
-          Página de uso <strong>exclusivo</strong> para envio de boleto em <strong>PDF</strong> via template <strong>enviar_boleto</strong>.
+          Página de uso <strong>exclusivo</strong> para envio de boleto em <strong>PDF</strong>.
         </p>
       </div>
 
@@ -267,24 +267,24 @@
 
         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div class="md:col-span-2">
-            <label class="label">Telefone (destino)</label>
+            <label class="label">Telefone</label>
             <input id="telInput" class="input" placeholder="Ex: 61999999999 ou 5561999999999" inputmode="numeric" />
-            <p class="hint mt-1">Você pode selecionar via busca (código) ou preencher manualmente.</p>
+            <p class="hint mt-1">Você pode selecionar via busca no sic ou preencher manualmente.</p>
           </div>
 
           <div class="md:col-span-2">
-            <label class="label">Nome (variável {{1}})</label>
+            <label class="label">Nome</label>
             <input id="nomeInput" class="input" placeholder="Ex: José da Silva" />
           </div>
 
           <div>
-            <label class="label">Valor (variável {{2}})</label>
+            <label class="label">Valor do boleto</label>
             <input id="valorInput" class="input" placeholder="Ex: R$ 123,45" />
           </div>
 
           <div>
-            <label class="label">Vencimento (variável {{3}})</label>
-            <input id="vencInput" class="input" placeholder="Ex: 25/02/2026" />
+            <label class="label">Vencimento</label>
+            <input id="vencInput" class="input" placeholder="Ex: 22/02/2026" />
           </div>
         </div>
 
@@ -346,7 +346,7 @@
 
           <!-- Nota -->
           <p class="hint mt-2">
-            Dica: se você trocar qualquer campo (Telefone/Nome/Valor/Vencimento), o sistema pedirá uma nova confirmação antes de enviar.
+            Dica: Leia atentamente os campos (Telefone/Nome/Valor/Vencimento), o sistema pedirá uma confirmação antes de enviar.
           </p>
         </div>
       </div>
@@ -611,7 +611,7 @@
       updateUploadEnabled();
     }
 
-    /** =================== Login (mesmo padrão simplificado da página de agentes) =================== */
+    /** =================== Login =================== */
     const modalLogin = document.getElementById('modalLogin');
     const loginTitle = document.getElementById('loginTitle');
     const loginCodigoAgente = document.getElementById('loginCodigoAgente');
