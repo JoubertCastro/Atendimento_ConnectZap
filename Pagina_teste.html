@@ -1,4 +1,4 @@
-<!-- Arquivo: Pagina_enviar_boletos.html -->
+<!-- Arquivo: Pagina_enviar_boletos.html (ATUALIZADA) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,6 +7,7 @@
   <title>ConnectZap — Enviar boletos (PDF)</title>
   <link rel="icon" href="https://joubertcastro.github.io/ConnectZap/favicon.ico" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
   <style>
     :root{
@@ -27,9 +28,29 @@
       --font-size: 14px;
     }
     html{ font-size: var(--font-size); }
-    body{ font-family: var(--font-family); background: var(--bg); color: var(--text); }
+    body{ font-family: var(--font-family); background: #f9fafb; color: var(--text); }
     *{ outline-color: var(--ring); }
 
+    /* ========= Identidade visual (inspirada na homepage) ========= */
+    .hero-gradient {
+      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-gradient::after{
+      content:"";
+      position:absolute;
+      top:-50%;
+      left:-50%;
+      width:200%;
+      height:200%;
+      background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+      animation: rotate 25s linear infinite;
+      z-index:0;
+    }
+    @keyframes rotate { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+
+    /* ========= UI base ========= */
     .card{ background:var(--content-bg); border:1px solid var(--border); border-radius: var(--card-radius); }
     .btn{
       border-radius: var(--btn-radius);
@@ -160,29 +181,42 @@
 </head>
 
 <body class="min-h-screen">
-  <header class="max-w-5xl mx-auto px-4 pt-6">
-    <div class="flex items-start justify-between gap-3">
-      <div class="min-w-0">
-        <h1 class="text-2xl font-extrabold">📄 Envio de boletos (PDF)</h1>
-        <p class="text-sm" style="color:var(--muted)">
-          Página de uso <strong>exclusivo</strong> para envio de boleto em <strong>PDF</strong>.
-        </p>
-      </div>
 
-      <div class="flex items-center gap-2 shrink-0">
-        <button id="btnLoginTop" class="btn btn-primary px-4 py-2">Login</button>
-        <button id="btnLogoutTop" class="btn btn-danger px-4 py-2 hidden">Logout</button>
+  <!-- HERO (inspirado na homepage) -->
+  <section class="hero-gradient py-10 md:py-14 relative">
+    <div class="max-w-5xl mx-auto px-4 relative z-10">
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div class="flex items-center gap-4">
+          <img
+            src="https://i.imgur.com/WvCYX1x.png"
+            alt="Logo ConnectZap"
+            class="w-14 h-14 rounded-full shadow-lg border-4 border-white"
+          />
+          <div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">
+              📄 Envio de boletos (PDF)
+            </h1>
+            <p class="text-sm md:text-base text-gray-700">
+              Página de uso <strong>exclusivo</strong> para envio de boleto em <strong>PDF</strong>.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btnLoginTop" class="btn btn-primary px-4 py-2">Login</button>
+          <button id="btnLogoutTop" class="btn btn-danger px-4 py-2 hidden">Logout</button>
+        </div>
       </div>
     </div>
-  </header>
+  </section>
 
-  <main class="max-w-5xl mx-auto px-4 pb-10 pt-4 space-y-4">
+  <main class="max-w-5xl mx-auto px-4 pb-10 pt-6 space-y-4">
     <!-- Banner crítico -->
     <div class="alert alert-danger">
       <div class="font-extrabold">⚠️ Atenção</div>
       <div class="text-sm mt-1">
         Antes de enviar, <strong>confira o PDF</strong> e confirme no checkbox de autorização.
-        Este fluxo registra envio como mensagem avulsa e pode criar/reservar conversa automaticamente.
+        Este fluxo registra envio como <strong>mensagem avulsa</strong>.
       </div>
     </div>
 
@@ -201,6 +235,14 @@
         </div>
       </div>
 
+      <!-- Flash (mantém o sucesso mesmo após limpar) -->
+      <div id="flashBox" class="mt-3 hidden">
+        <div class="alert" style="border-left: 6px solid var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--content-bg));">
+          <div class="font-extrabold" style="color:#065f46" id="flashTitle">Sucesso</div>
+          <div class="text-sm mt-1" style="color:#065f46" id="flashMsg">—</div>
+        </div>
+      </div>
+
       <div id="opAviso" class="mt-3 text-sm hidden" style="color:#b45309"></div>
     </section>
 
@@ -208,13 +250,12 @@
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- Busca por código -->
       <div class="card p-5">
-        <div class="flex items-start justify-between gap-2">
-          <div>
-            <h2 class="text-lg font-extrabold">🔎 Buscar telefone pelo código</h2>
-            <p class="text-sm mt-1" style="color:var(--muted)">
-              Use o <strong>código do cliente</strong> para listar telefones do SIC e selecionar um. Se preferir, preencha manualmente no formulário ao lado.
-            </p>
-          </div>
+        <div>
+          <h2 class="text-lg font-extrabold">🔎 Buscar telefone pelo código</h2>
+          <p class="text-sm mt-1" style="color:var(--muted)">
+            Use o <strong>código do cliente</strong> para listar telefones do SIC e selecionar um.
+            Se preferir, preencha manualmente no formulário ao lado.
+          </p>
         </div>
 
         <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -269,7 +310,7 @@
           <div class="md:col-span-2">
             <label class="label">Telefone</label>
             <input id="telInput" class="input" placeholder="Ex: 61999999999 ou 5561999999999" inputmode="numeric" />
-            <p class="hint mt-1">Você pode selecionar via busca no sic ou preencher manualmente.</p>
+            <p class="hint mt-1">Você pode selecionar via busca no SIC ou preencher manualmente.</p>
           </div>
 
           <div class="md:col-span-2">
@@ -344,9 +385,8 @@
             </div>
           </div>
 
-          <!-- Nota -->
           <p class="hint mt-2">
-            Dica: Leia atentamente os campos (Telefone/Nome/Valor/Vencimento), o sistema pedirá uma confirmação antes de enviar.
+            Dica: Leia atentamente os campos (Telefone/Nome/Valor/Vencimento). O sistema pede confirmação antes de enviar.
           </p>
         </div>
       </div>
@@ -367,7 +407,6 @@
           <input id="loginCodigoAgente" inputmode="numeric" pattern="[0-9]*" class="input" placeholder="Ex: 101" autocomplete="username" />
         </div>
 
-        <!-- Modo LOGIN -->
         <div id="loginSection" class="space-y-2">
           <div class="space-y-1">
             <label class="block text-sm" style="color:var(--muted)">Senha</label>
@@ -379,7 +418,6 @@
           </div>
         </div>
 
-        <!-- Modo CRIAR/TROCAR SENHA -->
         <div id="senhaSection" class="hidden space-y-3">
           <div id="senhaAtualWrap" class="hidden space-y-1">
             <label class="block text-sm" style="color:var(--muted)">Senha atual</label>
@@ -411,12 +449,11 @@
   </div>
 
   <script>
-    /** ================= CONFIG (mesmo padrão da página de agentes) ================= */
+    /** ================= CONFIG ================= */
     const FILA_API   = (window.FILA_API   || "https://whatsapp-webhook-production-9a27.up.railway.app/api").replace(/\/+$/, '');
     const CONV_API   = (window.CONV_API   || "https://conversas-api-production.up.railway.app").replace(/\/+$/, '');
     const ESTRAT_API = (window.ESTRAT_API || "https://consultasic-production.up.railway.app").replace(/\/+$/, '');
 
-    /** Phone IDs (para escolher automaticamente o primeiro da carteira do agente) */
     const phoneIdMap = {
       "977152815488698": "ConnectZap",
       "805610009301153": "Banco PAN",
@@ -437,9 +474,7 @@
       return acc;
     }, {});
 
-    /** ================= Estado ================= */
     let agente = { codigo:null, nome:null, carteira:null, origem_bd:null, permite_envio_individual:true };
-
     let buscaRows = [];
     let uploaded = { file_url:null, filename:null };
     let lastPayloadFingerprint = "";
@@ -448,12 +483,14 @@
     const opNome = document.getElementById('opNome');
     const opCarteira = document.getElementById('opCarteira');
     const opAviso = document.getElementById('opAviso');
-
     const pillAuth = document.getElementById('pillAuth');
     const pillStep = document.getElementById('pillStep');
-
     const btnLoginTop = document.getElementById('btnLoginTop');
     const btnLogoutTop = document.getElementById('btnLogoutTop');
+
+    const flashBox = document.getElementById('flashBox');
+    const flashTitle = document.getElementById('flashTitle');
+    const flashMsg = document.getElementById('flashMsg');
 
     const baseSelect = document.getElementById('baseSelect');
     const baseLockHint = document.getElementById('baseLockHint');
@@ -494,7 +531,6 @@
       if(!d.startsWith("55")) d = "55" + d;
       return d;
     }
-
     function formatTelefoneBR(msisdn){
       const d = String(msisdn||"").replace(/\D+/g,"");
       let x = d;
@@ -506,7 +542,6 @@
       if(num.length === 8) return `(${dd}) ${num.slice(0,4)}-${num.slice(4)}`;
       return `(${dd}) ${num}`;
     }
-
     function pickDefaultPhoneId(){
       const ids = (carteiraToPhoneIds[agente?.carteira] || []).map(String);
       return ids.length ? ids[0] : "";
@@ -531,11 +566,28 @@
         statusMsg.textContent = '';
       }
     }
-
     function hideStatus(){
       statusPill.classList.add('hidden');
       statusMsg.classList.add('hidden');
       statusMsg.textContent = '';
+    }
+
+    function flash(kind, title, msg, ms=6500){
+      flashTitle.textContent = title || '';
+      flashMsg.textContent = msg || '';
+      flashBox.classList.remove('hidden');
+
+      // cor rápida (apenas via texto/estilo do alert já verde)
+      if(kind === 'fail'){
+        flashTitle.style.color = '#7f1d1d';
+        flashMsg.style.color = '#7f1d1d';
+      }else{
+        flashTitle.style.color = '#065f46';
+        flashMsg.style.color = '#065f46';
+      }
+
+      clearTimeout(window.__flashTimer);
+      window.__flashTimer = setTimeout(()=> flashBox.classList.add('hidden'), ms);
     }
 
     function payloadFingerprint(){
@@ -582,14 +634,23 @@
       const ok = isLogged() && hasRequiredFields();
       btnUpload.disabled = !ok;
       if(!ok){
-        // qualquer alteração invalida confirmação e envio
         confirmChk.checked = false;
         btnEnviar.disabled = true;
       }
       updateStepPill();
     }
 
-    function resetUploaded(keepFields=false){
+    // 🔥 NOVO: limpeza total (mantém login do operador)
+    function clearAfterSuccess(){
+      // limpa busca por código + resultados
+      buscaRows = [];
+      buscaBox.classList.add('hidden');
+      resultWrap.classList.add('hidden');
+      buscaMsg.textContent = '—';
+      resultTbody.innerHTML = '';
+      codigoInput.value = '';
+
+      // limpa formulário + upload + preview
       uploaded = { file_url:null, filename:null };
       previewBox.classList.add('hidden');
       previewFrame.src = "about:blank";
@@ -597,21 +658,25 @@
       previewFilename.textContent = "—";
       confirmChk.checked = false;
       btnEnviar.disabled = true;
-      if(!keepFields){
-        telInput.value = "";
-        nomeInput.value = "";
-        valorInput.value = "";
-        vencInput.value = "";
-      }
+
+      telInput.value = "";
+      nomeInput.value = "";
+      valorInput.value = "";
+      vencInput.value = "";
+
       hideStatus();
       uploadInfo.classList.add('hidden');
       uploadInfo.textContent = "";
       uploadInfo.style.color = "var(--muted)";
       lastPayloadFingerprint = payloadFingerprint();
+
       updateUploadEnabled();
+      updateStepPill();
+      // scroll pra cima pra reforçar o “reset” (opcional)
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    /** =================== Login =================== */
+    /** =================== Login (igual o seu) =================== */
     const modalLogin = document.getElementById('modalLogin');
     const loginTitle = document.getElementById('loginTitle');
     const loginCodigoAgente = document.getElementById('loginCodigoAgente');
@@ -631,7 +696,7 @@
     const btnCloseLogin = document.getElementById('btnCloseLogin');
     const btnCancelLogin = document.getElementById('btnCancelLogin');
 
-    let loginMode = 'login'; // 'login' | 'create' | 'change'
+    let loginMode = 'login';
 
     function openLogin(){
       modalLogin.style.display = 'flex';
@@ -717,10 +782,7 @@
       if(!codigoRaw || !/^\d+$/.test(codigoRaw)){ showLoginError('Informe um código numérico válido.'); return; }
       const codigo = Number(codigoRaw);
 
-      if(!senha){
-        showLoginError('Informe sua senha.');
-        return;
-      }
+      if(!senha){ showLoginError('Informe sua senha.'); return; }
 
       try{
         const r = await fetch(`${FILA_API}/agentes/login`, {
@@ -826,9 +888,7 @@
     });
 
     [loginCodigoAgente, loginSenha, senhaAtual, novaSenha, confirmarSenha].forEach(el=>{
-      el.addEventListener('keydown', (e)=>{
-        if(e.key === 'Enter'){ e.preventDefault(); loginPrimary(); }
-      });
+      el.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); loginPrimary(); } });
     });
 
     /** =================== Boot / UI do operador =================== */
@@ -856,7 +916,6 @@
       opCarteira.textContent = agente.carteira;
       setPill(pillAuth, 'success', '✅ Logado');
 
-      // trava base pela origem_bd (igual padrão)
       if(agente.origem_bd){
         const hasOpt = Array.from(baseSelect.options).some(o => String(o.value).toLowerCase() === agente.origem_bd);
         if(!hasOpt){
@@ -883,8 +942,6 @@
 
     async function boot(){
       applyOperadorUI();
-
-      // se logado, valida/atualiza dados do agente no backend (para garantir carteira e origem_bd)
       if(isLogged()){
         try{
           const r = await fetch(`${FILA_API}/agentes/${encodeURIComponent(localStorage.getItem('agente_codigo'))}`);
@@ -906,16 +963,14 @@
         localStorage.removeItem('agente_origem_bd');
         localStorage.removeItem('agente_permite_envio_individual');
       }catch{}
-      resetUploaded(false);
+      clearAfterSuccess();
       applyOperadorUI();
       openLogin();
     };
 
     /** =================== Busca por código (SIC) =================== */
     async function pesquisarPorCodigo(){
-      if(!isLogged()){
-        openLogin(); return;
-      }
+      if(!isLogged()){ openLogin(); return; }
 
       const base = (baseSelect.value||'').trim();
       const codigo = (codigoInput.value||'').trim();
@@ -934,7 +989,6 @@
       try{
         const url = `${ESTRAT_API}/api/estrategias/pesquisa/${encodeURIComponent(base)}/${encodeURIComponent(codigo)}`;
         const res = await fetch(url, { method:'GET', mode:'cors', credentials:'omit', cache:'no-store' });
-
         if(!res.ok){
           const t = await res.text().catch(()=> '');
           throw new Error(`Falha ao buscar cadastro (${res.status}): ${t}`);
@@ -943,7 +997,6 @@
         const data = await res.json();
         const rows = Array.isArray(data) ? data : (Array.isArray(data?.dados) ? data.dados : []);
         const norm = rows.map(r => ({
-          raw: r,
           tel: normalizeMsisdnBR(r.TELEFONE || r.telefone || r.to_msisdn || r.to || ''),
           nome: (r.PrimeiroNome || r.primeiro_nome || r.nome || '').trim()
         })).filter(x => x.tel && x.tel.length >= 12);
@@ -957,19 +1010,18 @@
         buscaMsg.textContent = `✅ ${norm.length} telefone(s) encontrado(s). Selecione um para preencher.`;
 
         resultTbody.innerHTML = '';
-        norm.forEach((x, i) => {
+        norm.forEach((x) => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td class="font-mono">${escapeHtml(formatTelefoneBR(x.tel))}</td>
             <td>${escapeHtml(x.nome || '—')}</td>
             <td class="text-right">
-              <button class="btn btn-neutral px-3 py-1 text-xs" type="button" data-i="${i}">Selecionar</button>
+              <button class="btn btn-neutral px-3 py-1 text-xs" type="button">Selecionar</button>
             </td>
           `;
           tr.querySelector('button').onclick = () => {
             telInput.value = x.tel;
             if(x.nome) nomeInput.value = x.nome;
-            // qualquer seleção muda o fingerprint => pede reconfirmação
             confirmChk.checked = false;
             btnEnviar.disabled = true;
             updateUploadEnabled();
@@ -987,7 +1039,7 @@
     btnBuscar.onclick = pesquisarPorCodigo;
     codigoInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); pesquisarPorCodigo(); } });
 
-    /** =================== Upload do PDF (S3 presigned via backend) =================== */
+    /** =================== Upload do PDF =================== */
     btnUpload.onclick = ()=> pdfInput.click();
 
     async function doUploadPdf(file){
@@ -999,7 +1051,6 @@
         uploadInfo.textContent = 'Somente arquivos PDF são permitidos.';
         return;
       }
-
       if(!hasRequiredFields()){
         uploadInfo.classList.remove('hidden');
         uploadInfo.style.color = '#b91c1c';
@@ -1007,7 +1058,6 @@
         return;
       }
 
-      // invalida confirmação anterior
       confirmChk.checked = false;
       btnEnviar.disabled = true;
       hideStatus();
@@ -1019,7 +1069,6 @@
       uploadInfo.textContent = '⏳ Gerando link de upload...';
 
       try{
-        // 1) presign
         const r = await fetch(`${CONV_API}/api/upload/pdf`, {
           method:'POST',
           headers:{'Content-Type':'application/json'},
@@ -1032,7 +1081,6 @@
 
         uploadInfo.textContent = '⏳ Enviando PDF para o armazenamento...';
 
-        // 2) PUT no S3
         const put = await fetch(j.upload_url, {
           method:'PUT',
           headers:{ 'Content-Type':'application/pdf' },
@@ -1043,14 +1091,12 @@
           throw new Error(`Falha no upload (S3): HTTP ${put.status} ${txt?.slice(0,200) || ''}`);
         }
 
-        // 3) salva e mostra preview
         uploaded.file_url = j.file_url;
         uploaded.filename = file.name;
 
         previewFilename.textContent = file.name;
         previewLink.href = uploaded.file_url;
         previewFrame.src = uploaded.file_url;
-
         previewBox.classList.remove('hidden');
 
         uploadInfo.style.color = '#065f46';
@@ -1090,12 +1136,10 @@
     }
 
     function syncSendEnabled(){
-      // se alterou dados após upload, pede reconfirmação
       const nowFP = payloadFingerprint();
       if(uploaded.file_url && lastPayloadFingerprint && nowFP !== lastPayloadFingerprint){
         confirmChk.checked = false;
       }
-
       btnEnviar.disabled = !canSendNow();
       updateStepPill();
     }
@@ -1125,7 +1169,7 @@
       const valor = (valorInput.value||"").trim();
       const venc = (vencInput.value||"").trim();
 
-      const phone_id = pickDefaultPhoneId(); // simples: primeiro phone_id da carteira
+      const phone_id = pickDefaultPhoneId();
       if(!phone_id){
         showStatus('fail','Falha','Não consegui identificar o phone_id da carteira do operador. Verifique o mapeamento.');
         return;
@@ -1139,17 +1183,7 @@
         vencimento: venc,
         file_url: uploaded.file_url,
         original_filename: uploaded.filename || "boleto.pdf",
-        phone_id: phone_id,
-
-        codigo_do_agente: parseInt(agente?.codigo || 0, 10) || null,
-        nome_agente: agente?.nome || null,
-        carteira: agente?.carteira || null,
-        agente: {
-          codigo_do_agente: parseInt(agente?.codigo || 0, 10) || null,
-          nome_agente: agente?.nome || null,
-          carteira: agente?.carteira || null,
-          phone_id: phone_id
-        }
+        phone_id: phone_id
       };
 
       btnEnviar.disabled = true;
@@ -1171,16 +1205,9 @@
           return;
         }
 
-        const msgId = j?.msg_id ? ` • msg_id: ${j.msg_id}` : '';
-        showStatus('success','Sucesso', `Boleto enviado com sucesso.${msgId}`);
-
-        // pós-sucesso: trava confirmação para evitar reenvio sem intenção
-        confirmChk.checked = false;
-        btnEnviar.disabled = true;
-
-        // mantém campos, mas permite novo upload se quiser reenviar corrigindo o arquivo
-        lastPayloadFingerprint = payloadFingerprint();
-        updateStepPill();
+        // ✅ mantém a confirmação visual, mas limpa tudo para evitar reenvio errado
+        flash('success', 'Sucesso', 'Boleto enviado com sucesso.');
+        clearAfterSuccess();
       }catch(err){
         showStatus('fail','Falha', err?.message || 'Erro de rede / CORS ao enviar.');
       }finally{
@@ -1192,18 +1219,10 @@
     btnEnviar.onclick = enviarBoleto;
 
     btnLimpar.onclick = ()=>{
-      // limpa tudo
-      buscaRows = [];
-      buscaBox.classList.add('hidden');
-      resultWrap.classList.add('hidden');
-      buscaMsg.textContent = '—';
-      codigoInput.value = '';
-      resetUploaded(false);
-      updateStepPill();
+      clearAfterSuccess();
     };
 
     /** =================== Init =================== */
-    btnLoginTop.addEventListener('click', openLogin);
     window.addEventListener('load', async ()=>{
       await boot();
       if(!isLogged()) openLogin();
